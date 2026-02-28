@@ -1,0 +1,8 @@
+{
+  "last_updated": null,
+  "tickers": [
+    {"ticker": "MU", "sector": "Semiconductors", "notes": "Historical DP buy signal at support"},
+    {"ticker": "ANET", "sector": "Networking", "notes": "Watching for distribution pattern"},
+    {"ticker": "XLU", "sector": "Utilities", "notes": "Potential sector rotation signal"}
+  ]
+}

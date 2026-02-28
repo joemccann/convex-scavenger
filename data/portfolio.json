@@ -1,0 +1,8 @@
+{
+  "bankroll": 100000,
+  "peak_value": 100000,
+  "positions": [],
+  "total_deployed_pct": 0,
+  "max_positions": null,
+  "avg_kelly_optimal": null
+}
