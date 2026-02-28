@@ -2,14 +2,17 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
+/**
+ * Startup Protocol Extension
+ * 
+ * Loads project documentation into context as durable memory.
+ * Note: SYSTEM.md is loaded automatically by pi (defines agent identity).
+ * Note: AGENTS.md is loaded automatically by pi (defines project workflow).
+ * This extension adds docs/* for additional project context.
+ */
 export default function (pi: ExtensionAPI) {
-  // Load persona and docs content at startup
-  let personaContent = "";
-  let docsContent = "";
-
-  const loadProjectMemory = (cwd: string) => {
+  const loadProjectDocs = (cwd: string) => {
     const files = [
-      { path: "PERSONA.md", label: "Persona" },
       { path: "docs/prompt.md", label: "Spec" },
       { path: "docs/plans.md", label: "Plans" },
       { path: "docs/implement.md", label: "Runbook" },
@@ -31,22 +34,18 @@ export default function (pi: ExtensionAPI) {
     return { loaded, content: contents.join("\n") };
   };
 
-  // Inject persona and docs into system prompt on first agent start
+  // Inject docs into system prompt context
   pi.on("before_agent_start", async (event, ctx) => {
-    // Load project memory
-    const { loaded, content } = loadProjectMemory(ctx.cwd);
+    const { loaded, content } = loadProjectDocs(ctx.cwd);
     
     if (content && loaded.length > 0) {
-      // Inject as additional system prompt context
       const injectedPrompt = `
-## PROJECT MEMORY (Auto-loaded at session start)
-
-The following durable project memory has been loaded. Follow these instructions precisely.
+## PROJECT DOCUMENTATION (Auto-loaded)
 
 ${content}
 
 ---
-END PROJECT MEMORY
+END PROJECT DOCUMENTATION
 ---
 `;
       
@@ -58,10 +57,10 @@ END PROJECT MEMORY
 
   // Notify on session start
   pi.on("session_start", async (_event, ctx) => {
-    const { loaded } = loadProjectMemory(ctx.cwd);
+    const { loaded } = loadProjectDocs(ctx.cwd);
     
     if (loaded.length > 0) {
-      ctx.ui.notify(`Loaded: ${loaded.join(", ")}`, "info");
+      ctx.ui.notify(`Docs loaded: ${loaded.join(", ")}`, "info");
     }
   });
 }

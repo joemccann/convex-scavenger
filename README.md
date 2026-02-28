@@ -19,9 +19,11 @@ If any gate fails, no trade is taken.
 ```
 convex-scavenger/
 ├── .pi/                          # PI agent configuration
-│   ├── AGENTS.md                 # Agent persona and workflow rules
+│   ├── SYSTEM.md                 # Core agent identity and trading rules (system prompt)
+│   ├── AGENTS.md                 # Project workflow, commands, file references
 │   ├── extensions/
-│   │   └── trading-tools.ts      # Kelly calculator tool + portfolio command
+│   │   ├── trading-tools.ts      # Kelly calculator tool
+│   │   └── startup-protocol.ts   # Auto-loads docs/* into context
 │   ├── prompts/
 │   │   ├── evaluate.md           # /evaluate [TICKER] — full trade analysis
 │   │   ├── journal.md            # /journal — log decisions to trade_log.json
@@ -35,6 +37,11 @@ convex-scavenger/
 │   ├── trade_log.json            # Append-only decision journal
 │   ├── watchlist.json            # Tickers under surveillance
 │   └── ticker_cache.json         # Local cache of ticker → company name mappings
+├── docs/
+│   ├── prompt.md                 # Spec, constraints, deliverables
+│   ├── plans.md                  # Milestone workflow with validation steps
+│   ├── implement.md              # Execution runbook
+│   └── status.md                 # Current state and decision audit log
 ├── scripts/
 │   ├── discover.py               # Market-wide flow scanner for new candidates
 │   ├── fetch_flow.py             # Dark pool + options flow from Unusual Whales
@@ -42,7 +49,6 @@ convex-scavenger/
 │   ├── fetch_options.py          # Options chain data (stub — bring your own source)
 │   ├── kelly.py                  # Kelly criterion calculator
 │   └── scanner.py                # Batch scan watchlist for flow signals
-├── persona.md                    # Full agent persona specification
 └── README.md
 ```
 

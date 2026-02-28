@@ -40,7 +40,9 @@
 4. Scripts now correctly skip weekends/holidays (trading day logic added 2026-02-28)
 
 ## Infrastructure
-- **Startup Protocol Extension** (`.pi/extensions/startup-protocol.ts`): Auto-loads PERSONA.md and docs/* into system prompt on every session start
+- **SYSTEM.md** (`.pi/SYSTEM.md`): Core agent identity and trading rules (loaded automatically by pi)
+- **AGENTS.md** (`.pi/AGENTS.md`): Project workflow and commands (loaded automatically by pi)
+- **Startup Protocol Extension** (`.pi/extensions/startup-protocol.ts`): Loads docs/* into context
 
 ## Follow-ups
 - [ ] Implement `fetch_ticker.py` with live data source
