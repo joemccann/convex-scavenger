@@ -225,6 +225,102 @@ python scripts/fetch_ticker.py NVDA --add-cache "NVIDIA Corporation" "Technology
 
 The cache is checked automatically during ticker validation.
 
+## Glossary & Definitions
+
+### Acronyms
+
+| Acronym | Definition |
+|---------|------------|
+| **ATM** | At-The-Money — option strike price ≈ current stock price |
+| **DP** | Dark Pool — private exchanges where institutional orders execute away from public markets |
+| **ITM** | In-The-Money — option has intrinsic value (call: stock > strike, put: stock < strike) |
+| **IV** | Implied Volatility — market's expectation of future price movement, priced into options |
+| **NBBO** | National Best Bid and Offer — the best available bid/ask prices across all exchanges |
+| **OI** | Open Interest — total number of outstanding option contracts not yet closed or exercised |
+| **OTC** | Over-The-Counter — trades executed directly between parties, not on public exchanges |
+| **OTM** | Out-of-The-Money — option has no intrinsic value (call: stock < strike, put: stock > strike) |
+| **R:R** | Risk-to-Reward ratio — potential loss vs potential gain (we require ≥1:2, i.e., gain ≥ 2× loss) |
+| **UW** | Unusual Whales — data provider for dark pool and options flow |
+| **Vol/OI** | Volume-to-Open-Interest ratio — today's volume ÷ open interest; high ratio signals unusual activity |
+
+### Dark Pool Metrics
+
+| Metric | Definition | How It's Calculated |
+|--------|------------|---------------------|
+| **Buy Ratio** | Percentage of dark pool volume classified as buying | `buy_volume / (buy_volume + sell_volume)` — trades at/above NBBO midpoint = buys |
+| **Flow Direction** | Whether institutions are net buying or selling | >55% buy ratio = ACCUMULATION, <45% = DISTRIBUTION, else NEUTRAL |
+| **Flow Strength** | Intensity of the directional imbalance (0-100) | `(buy_ratio - 0.5) × 200` for accumulation, inverse for distribution |
+| **Prints** | Individual dark pool transaction records | Each print shows size, price, and NBBO context at execution time |
+| **Sustained Days** | Consecutive trading days with same flow direction | Counts from most recent day backward until direction changes |
+
+### Flow Directions
+
+| Direction | Buy Ratio | Meaning |
+|-----------|-----------|---------|
+| **ACCUMULATION** | ≥55% | Institutions are net buyers — bullish positioning |
+| **DISTRIBUTION** | ≤45% | Institutions are net sellers — bearish positioning or profit-taking |
+| **NEUTRAL** | 45-55% | No clear directional bias — noise or balanced flow |
+
+### Discovery Score Components
+
+| Component | Weight | Definition | Scoring Logic |
+|-----------|--------|------------|---------------|
+| **DP Strength** | 30% | How strong is the buy/sell imbalance? | Raw flow strength (0-100) from aggregate dark pool data |
+| **DP Sustained** | 20% | How many consecutive days in same direction? | 1 day = 20 pts, 2 days = 40 pts, ... 5 days = 100 pts |
+| **Confluence** | 20% | Do options flow and dark pool agree? | 100 if bullish options + DP accumulation (or bearish + distribution), else 0 |
+| **Vol/OI Ratio** | 15% | Is options volume unusually high vs open interest? | Normalized: 1.0 = normal, 2.0 = 50 pts, 4.0+ = 100 pts |
+| **Sweeps** | 15% | Are there sweep orders (urgent, multi-exchange fills)? | 0 sweeps = 0 pts, 1 sweep = 50 pts, 2+ sweeps = 100 pts |
+
+### Watchlist Scanner Score Components
+
+The watchlist scanner (`scanner.py`) uses a simpler additive scoring:
+
+| Component | Points | Condition |
+|-----------|--------|-----------|
+| **Base** | 0-100 | Aggregate DP flow strength |
+| **Sustained Bonus** | +20 | 2+ consecutive days same direction |
+| **Sustained Bonus** | +20 | 4+ consecutive days same direction |
+| **Recent Confirms** | +15 | Most recent day confirms aggregate direction with strength >50 |
+| **Recent Contradicts** | -30 | Most recent day contradicts aggregate direction |
+| **Low Prints Penalty** | -10 to -20 | <100 prints (statistically unreliable) |
+
+### Options Flow Metrics
+
+| Metric | Definition |
+|--------|------------|
+| **Call/Put Ratio** | `call_premium / put_premium` — >1.5 = bullish bias, <0.67 = bearish bias |
+| **Premium** | Total dollar value of options contracts traded (`price × size × 100`) |
+| **Sweep** | Large order split across multiple exchanges for fast execution — signals urgency |
+| **Options Bias** | Directional lean: BULLISH, BEARISH, or MIXED based on call/put premium ratio |
+
+### Trading Concepts
+
+| Concept | Definition |
+|---------|------------|
+| **Convexity** | Asymmetric payoff structure where potential gain >> potential loss. We require ≥2:1. |
+| **Edge** | A quantifiable, data-backed reason to believe the market is mispricing an outcome. |
+| **Kelly Criterion** | Optimal bet sizing formula: `f* = p - (q/b)` where p = win probability, q = 1-p, b = odds |
+| **Fractional Kelly** | Using 25-50% of full Kelly to account for estimation errors in probability |
+| **Confluence** | Multiple independent signals pointing in the same direction (e.g., DP + options flow agree) |
+
+### Signal Quality Tiers
+
+| Score Range | Label | Interpretation |
+|-------------|-------|----------------|
+| **60-100** | STRONG | Sustained flow + confluence — proceed to full evaluation |
+| **40-59** | MODERATE | Some components present — monitor closely, may develop |
+| **20-39** | WEAK | Early stage or conflicting signals — not actionable yet |
+| **0-19** | NONE | No detectable edge — skip |
+
+### Position Sizing Rules
+
+| Rule | Value | Rationale |
+|------|-------|-----------|
+| **Max per position** | 2.5% of bankroll | Hard cap regardless of Kelly output |
+| **Kelly fraction** | 0.25× to 0.5× | Conservative multiplier for estimation error |
+| **Max positions** | `Kelly_optimal / 2.5%` | Total exposure governed by average conviction |
+| **Kelly > 20%** | Restructure | Insufficient convexity if Kelly suggests huge bet |
+
 ## Data Files
 
 | File | Purpose |
@@ -232,3 +328,4 @@ The cache is checked automatically during ticker validation.
 | `data/portfolio.json` | Tracks bankroll, peak value, open positions, total deployment, and Kelly-derived position limits |
 | `data/trade_log.json` | Append-only journal of every trade decision — opens, closes, and skips with full rationale |
 | `data/watchlist.json` | Tickers under active surveillance with sector tags and notes |
+| `data/ticker_cache.json` | Local cache of ticker symbols to company names and sectors |
