@@ -107,6 +107,31 @@
         "Pattern suggests completed institutional trade (accumulated then exited)"
       ],
       "notes": "Institutional dark pool flow shows 4 days of accumulation (02-23 to 02-26) followed by extreme distribution on 02-27. Friday's selling (8.7M shares) nearly offset the entire week's buying. This is NOT a sustained signal - it's a completed round-trip trade. No edge for either direction."
+    },
+    {
+      "id": 5,
+      "date": "2026-03-01",
+      "time": "18:29:00",
+      "ticker": "SLOIF",
+      "ticker_verified": false,
+      "validation_method": "dark_pool_activity",
+      "action": "NO_TRADE",
+      "decision": "REJECTED",
+      "failing_gate": "VALIDATION",
+      "gates_evaluated": ["VALIDATION"],
+      "validation_result": {
+        "verified": false,
+        "error": "No dark pool activity found for 'SLOIF' (may be invalid or illiquid)",
+        "options_available": false,
+        "trading_days_checked": ["2026-02-27", "2026-02-26", "2026-02-25"]
+      },
+      "rejection_reasons": [
+        "OTC/Pink Sheets security - outside strategy universe",
+        "No dark pool activity detected",
+        "No options chain available",
+        "Illiquid - cannot construct convex positions"
+      ],
+      "notes": "SLOIF is an OTC ticker without dark pool activity or options availability. Strategy requires liquid securities with both dark pool flow data and options chains for convex position structuring. Ticker fails first gate immediately."
     }
   ]
 }
