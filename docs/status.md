@@ -1,13 +1,30 @@
 # Status & Decision Log
 
 ## Last Updated
-2026-02-28T11:30:00
+2026-03-02T07:20:00
 
 ## Current Portfolio State
-- Bankroll: $100,000
-- Deployed: $2,470 (2.47%)
-- Open Positions: 1 of 6 max
-- Position: IGV Bull Call Spread $85/$92 (Mar 20 expiry)
+- Bankroll: $981,353
+- Deployed: $1,812,896 (184.7% — on margin)
+- Open Positions: 19
+- Defined Risk: 7 positions
+- Undefined Risk: 12 positions (10 stock + 2 risk reversals)
+
+## Portfolio Health Assessment (2026-03-02)
+| Category | Count | Value | Action |
+|----------|-------|-------|--------|
+| ✅ Edge Confirmed | 3 | $469K | HOLD |
+| ❌ Edge Contra | 3 | $542K | EXIT |
+| ⚠️ Edge Absent | 11 | $641K | MONITOR |
+| ⛔ Undefined Risk | 2 | $160K | CLOSE |
+
+### Critical Alerts
+1. **BRZE Long Calls** — Flow DISTRIBUTION (42.2) vs bullish position. 18 DTE. Max loss $29K.
+2. **IGV/PLTR Risk Reversals** — Short puts violate "no undefined risk" rule.
+3. **MSFT Stock** — 98.4% distribution on 02-27 after 4-day accumulation = round-trip complete.
+
+### Full Report
+See `reports/portfolio-evaluation-2026-03-02.html`
 
 ---
 
