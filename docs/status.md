@@ -1,7 +1,14 @@
 # Status & Decision Log
 
 ## Last Updated
-2026-03-02T07:20:00
+2026-03-02T14:11:17-08:00
+
+## Recent Commits
+- 2026-03-02 14:11:17 -0800 — `f0f50e4` Add persistent price direction arrows with flash indicators
+- 2026-03-02 12:12:10 -0800 — `4e1c3c4` Update npm run dev to start IB price server automatically
+- 2026-03-02 12:09:32 -0800 — `8d8b4f3` Add real-time IB price streaming (separate from periodic sync)
+- 2026-03-02 11:51:21 -0800 — `b135a90` Add kelly_calc.py - Kelly criterion calculator script
+- 2026-03-02 11:47:12 -0800 — `80f771c` Add analyst ratings scanner with IB/Yahoo fallback
 
 ## Current Portfolio State
 - Bankroll: $981,353

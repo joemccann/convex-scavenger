@@ -60,6 +60,18 @@ The `npm run dev` command starts both:
 | `ib_sync.py` | Portfolio positions, P&L, account values | Every 30 seconds |
 | `ib_realtime_server.py` | Live bid/ask/last prices | Real-time (<1ms latency) |
 
+### Portfolio Price Table Indicators
+
+Portfolio tables now visually mark live price updates on each tick:
+
+- `Last Price` and leg `market_price` cells flash briefly on change:
+  - Green flash for an uptick
+  - Red flash for a downtick
+- Direction arrows remain visible after the flash:
+  - Green up arrow for price increases
+  - Red down arrow for price decreases
+- Flash duration is `2.5s` to keep updates readable without being too aggressive.
+
 ## API Keys
 
 Create `web/.env` from the template:
@@ -232,3 +244,7 @@ python3 ../scripts/ib_realtime_server.py 2>&1 | head -20
 ### Rate Limiting (Yahoo Finance fallback)
 
 If IB is unavailable, some features fall back to Yahoo Finance which has aggressive rate limits. Wait a few minutes and retry, or ensure IB is connected.
+
+### Recent UI Changes
+
+- `f0f50e4` — Added persistent directional arrows and 2.5s flash highlighting for `Last Price` / `market_price` updates in portfolio tables.
