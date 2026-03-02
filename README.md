@@ -87,7 +87,42 @@ Add this to your shell profile (`.zshrc`, `.bashrc`, etc.) to persist across ses
 - Interactive Brokers TWS API
 - CBOE DataShop
 
-### 4. Launch the agent
+### 4. Initialize context engineering (optional)
+
+The project includes a context engineering skill for persistent memory across sessions. To enable it:
+
+```bash
+# Bootstrap the context repository
+bash .pi/skills/context-engineering/scripts/init-context-repo.sh .
+```
+
+This creates a `/context/` directory with structured memory tiers:
+
+```
+context/
+├── history/          # Immutable session logs (append-only)
+├── memory/
+│   ├── fact/         # Atomic key-value facts (long-term)
+│   ├── episodic/     # Session summaries (medium-term)
+│   ├── procedural/   # Tool/function definitions
+│   ├── user/         # User preferences & profiles
+│   └── experiential/ # Action-observation trajectories
+├── pad/              # Ephemeral scratchpads (task-scoped)
+├── human/            # Human annotations & overrides
+├── tools/            # Mounted external services
+├── knowledge/        # RAG sources & documents
+└── metadata.json     # Governance & token budget config
+```
+
+To inspect your context repository and token budget:
+
+```bash
+bash .pi/skills/context-engineering/scripts/context-manifest.sh ./context
+```
+
+See `.pi/skills/context-engineering/SKILL.md` for full documentation on the Constructor → Updater → Evaluator pipeline.
+
+### 5. Launch the agent
 
 Open the project in PI:
 
@@ -104,7 +139,7 @@ The agent loads the persona from `.pi/AGENTS.md` and has four core commands:
 | `portfolio` | Current positions, exposure, capacity, and drawdown |
 | `journal` | Log a trade decision (open, close, or skip) to the trade log |
 
-### 5. Seed your watchlist
+### 6. Seed your watchlist
 
 Edit `data/watchlist.json` to add tickers you want the scanner to monitor:
 
@@ -118,7 +153,7 @@ Edit `data/watchlist.json` to add tickers you want the scanner to monitor:
 }
 ```
 
-### 6. Run your first scan
+### 7. Run your first scan
 
 Tell the agent `scan` and it will pull dark pool flow data for every ticker in your watchlist, classify signals, and report candidates worth evaluating.
 
@@ -157,6 +192,43 @@ python scripts/kelly.py --prob 0.35 --odds 3.5 --fraction 0.25 --bankroll 100000
 # Scan entire watchlist
 python scripts/scanner.py --top 15
 ```
+
+## Skills
+
+PI skills are on-demand capabilities loaded when tasks match their descriptions. This project includes:
+
+| Skill | Trigger Phrases | Purpose |
+|-------|-----------------|---------|
+| `options-analysis` | "analyze options", "options chain", "IV analysis" | Options pricing and structure analysis |
+| `web-fetch` | "fetch website", "scrape page", "open URL" | Browser automation via agent-browser CLI |
+| `html-report` | "generate report", "create HTML", "export dashboard" | Styled HTML reports using Terminal theme |
+| `context-engineering` | "persistent memory", "context pipeline", "token budget" | File-system context management for agent memory |
+
+### Context Engineering
+
+The context-engineering skill implements the "Everything is Context" architecture (Xu et al., arXiv:2512.05470) for managing LLM context as persistent, governed, traceable artifacts.
+
+**Key components:**
+
+- **Context Constructor** — Selects and compresses context from repository into token window
+- **Context Updater** — Refreshes context during multi-turn sessions, handles staleness
+- **Context Evaluator** — Validates outputs, extracts facts, routes low-confidence to human review
+
+**Initialize:**
+
+```bash
+bash .pi/skills/context-engineering/scripts/init-context-repo.sh .
+```
+
+**Inspect token budget:**
+
+```bash
+bash .pi/skills/context-engineering/scripts/context-manifest.sh ./context
+```
+
+**Reference docs:**
+- `.pi/skills/context-engineering/references/architecture.md` — Full spec
+- `.pi/skills/context-engineering/references/pipeline.md` — Implementation patterns (TypeScript + Python)
 
 ## Discovery & Scoring
 
