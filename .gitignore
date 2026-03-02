@@ -96,6 +96,7 @@ test-results/
 *.tmp
 *.temp
 reports/*.html
+reports/*.json
 
 # Ticker/market data caches (regenerated at runtime)
 data/ticker_cache.json
