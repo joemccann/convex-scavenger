@@ -297,7 +297,7 @@ function getLastPrice(pos: PortfolioPosition): number | null {
   return mv / (pos.contracts * mult);
 }
 
-function PositionRow({ pos }: { pos: PortfolioPosition }) {
+function PositionRow({ pos, showExpiry = true }: { pos: PortfolioPosition; showExpiry?: boolean }) {
   const mv = resolveMarketValue(pos);
   const entryCost = resolveEntryCost(pos);
   const pnl = mv != null ? mv - entryCost : null;
@@ -322,7 +322,7 @@ function PositionRow({ pos }: { pos: PortfolioPosition }) {
         <td className={`right ${pnl != null ? (pnl >= 0 ? "positive" : "negative") : ""}`}>
           {pnl != null ? `${pnl >= 0 ? "+" : ""}${fmtUsd(Math.abs(pnl))} (${pnlPct!.toFixed(1)}%)` : "—"}
         </td>
-        <td>{pos.expiry !== "N/A" ? pos.expiry : "—"}</td>
+        {showExpiry && <td>{pos.expiry !== "N/A" ? pos.expiry : "—"}</td>}
       </tr>
       {pos.legs.length > 1 && pos.legs.map((leg, i) => (
         <tr key={`${pos.id}-leg-${i}`} className="leg-row">
@@ -335,7 +335,7 @@ function PositionRow({ pos }: { pos: PortfolioPosition }) {
           <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{fmtUsd(Math.abs(leg.entry_cost))}</td>
           <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
           <td></td>
-          <td></td>
+          {showExpiry && <td></td>}
         </tr>
       ))}
     </>
@@ -360,7 +360,7 @@ const positionExtract = (pos: PortfolioPosition, key: PositionSortKey): string |
   }
 };
 
-function PositionTable({ positions }: { positions: PortfolioPosition[] }) {
+function PositionTable({ positions, showExpiry = true }: { positions: PortfolioPosition[]; showExpiry?: boolean }) {
   const { sorted, sort, toggle } = useSort(positions, positionExtract);
 
   return (
@@ -375,12 +375,12 @@ function PositionTable({ positions }: { positions: PortfolioPosition[] }) {
           <SortTh<PositionSortKey> label="Entry Cost" sortKey="entry_cost" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Market Value" sortKey="market_value" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="P&L" sortKey="pnl" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
-          <SortTh<PositionSortKey> label="Expiry" sortKey="expiry" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+          {showExpiry && <SortTh<PositionSortKey> label="Expiry" sortKey="expiry" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />}
         </tr>
       </thead>
       <tbody>
         {sorted.map((pos) => (
-          <PositionRow key={pos.id} pos={pos} />
+          <PositionRow key={pos.id} pos={pos} showExpiry={showExpiry} />
         ))}
       </tbody>
     </table>
@@ -436,7 +436,7 @@ function PortfolioSections({ portfolio }: { portfolio: PortfolioData | null }) {
             <span className="pill neutral">{equityPositions.length} POSITIONS</span>
           </div>
           <div className="section-body">
-            <PositionTable positions={equityPositions} />
+            <PositionTable positions={equityPositions} showExpiry={false} />
           </div>
         </div>
       )}
