@@ -7,12 +7,28 @@ description: Generate styled HTML reports using the Terminal Dashboard theme. Us
 
 Generate professional HTML reports using the Terminal Dashboard theme — a precision-focused, monochromatic, high-density design supporting both dark and light modes.
 
+## ⚠️ REQUIRED: Theme Handling
+
+**Every report MUST:**
+
+1. **Defer to system theme by default** — Use `prefers-color-scheme` media query, do NOT hardcode `data-theme="dark"` on the `<html>` element
+2. **Include a theme toggle button** — Always provide a visible toggle in the header
+
+```html
+<!-- CORRECT: No data-theme attribute, lets system preference apply -->
+<html lang="en">
+
+<!-- WRONG: Hardcodes dark mode, ignores user preference -->
+<html lang="en" data-theme="dark">
+```
+
 ## Design Principles
 
 - **Monochromatic**: No color accents, gradients, or shadows
 - **High-density**: Data-first, surgical whitespace
 - **Terminal aesthetic**: Sharp 1px borders, monospaced data, keyboard-first feel
 - **Dual themes**: Dark and light modes via CSS custom properties
+- **System-aware**: Respects OS light/dark preference by default
 
 See `THEME.md` in this skill directory for full design specification.
 
@@ -20,6 +36,7 @@ See `THEME.md` in this skill directory for full design specification.
 
 ```html
 <!DOCTYPE html>
+<!-- NOTE: Do NOT add data-theme attribute here - let system preference apply -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -28,7 +45,14 @@ See `THEME.md` in this skill directory for full design specification.
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* Theme Tokens - Dark mode default */
+    /* 
+     * THEME SYSTEM
+     * 1. Default: dark mode tokens
+     * 2. System preference: auto-detect via prefers-color-scheme
+     * 3. Manual override: data-theme attribute on <html>
+     */
+    
+    /* Default tokens (dark mode) - applies when no system preference or dark preferred */
     :root {
       --bg-base: #050505;
       --bg-panel: #0A0A0A;
@@ -41,7 +65,7 @@ See `THEME.md` in this skill directory for full design specification.
       --accent-text: #000000;
     }
     
-    /* Auto-detect system light mode preference */
+    /* System preference: light mode - auto-applies unless manually overridden */
     @media (prefers-color-scheme: light) {
       :root:not([data-theme="dark"]) {
         --bg-base: #F5F5F5;
@@ -56,7 +80,7 @@ See `THEME.md` in this skill directory for full design specification.
       }
     }
 
-    /* Manual override: explicit light mode */
+    /* Manual override: explicit light mode (user clicked toggle) */
     [data-theme="light"] {
       --bg-base: #F5F5F5;
       --bg-panel: #FFFFFF;
@@ -69,7 +93,7 @@ See `THEME.md` in this skill directory for full design specification.
       --accent-text: #FFFFFF;
     }
     
-    /* Manual override: explicit dark mode */
+    /* Manual override: explicit dark mode (user clicked toggle) */
     [data-theme="dark"] {
       --bg-base: #050505;
       --bg-panel: #0A0A0A;
@@ -354,11 +378,33 @@ See `THEME.md` in this skill directory for full design specification.
   </div>
 
   <script>
+    // Theme toggle - respects system preference, allows manual override
     function toggleTheme() {
       const html = document.documentElement;
-      const current = html.getAttribute('data-theme');
-      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+      const currentTheme = html.getAttribute('data-theme');
+      
+      if (currentTheme) {
+        // Already has manual override, toggle it
+        html.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+      } else {
+        // No manual override yet, detect current effective theme and set opposite
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        html.setAttribute('data-theme', prefersDark ? 'light' : 'dark');
+      }
     }
+    
+    // Update toggle button icon based on current effective theme
+    function updateToggleIcon() {
+      const btn = document.querySelector('.theme-toggle');
+      if (!btn) return;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        (!document.documentElement.getAttribute('data-theme') && 
+         window.matchMedia('(prefers-color-scheme: dark)').matches);
+      btn.textContent = isDark ? '☀ LIGHT' : '◐ DARK';
+    }
+    
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', updateToggleIcon);
   </script>
 </body>
 </html>
@@ -511,15 +557,30 @@ reports/
 
 When generating an HTML report:
 
-1. [ ] Use the full template with theme tokens
-2. [ ] Set appropriate `<title>` and `.title` heading
-3. [ ] Include generation timestamp
-4. [ ] Use semantic tokens (not hardcoded colors)
-5. [ ] Test dark/light theme toggle
-6. [ ] Ensure numeric data is right-aligned
-7. [ ] Use monospace for all data values
-8. [ ] Save to `reports/` directory
-9. [ ] Use descriptive filename with date
+1. [ ] **NO `data-theme` on `<html>` tag** — Let system preference apply
+2. [ ] **Include theme toggle button** in header (REQUIRED)
+3. [ ] Use the full template with theme tokens
+4. [ ] Set appropriate `<title>` and `.title` heading
+5. [ ] Include generation timestamp
+6. [ ] Use semantic tokens (not hardcoded colors)
+7. [ ] Ensure numeric data is right-aligned
+8. [ ] Use monospace for all data values
+9. [ ] Save to `reports/` directory
+10. [ ] Use descriptive filename with date
+
+### Theme Toggle Button (REQUIRED)
+
+Always include in the header:
+
+```html
+<header class="header">
+  <h1 class="title">Report Title</h1>
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <span class="timestamp">Generated: 2026-03-02</span>
+    <button class="theme-toggle" onclick="toggleTheme()">◐ DARK</button>
+  </div>
+</header>
+```
 
 ## Trading Report Templates
 

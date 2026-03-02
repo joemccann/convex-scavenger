@@ -170,6 +170,14 @@ Vega on 30Δ 2-year call ≈ 0.30-0.50 per 1% IV
 - Mature, stable business entering low-vol period
 - Mean-reversion after spike with no new catalysts
 
+### Data Source Priority for Options Pricing
+
+When fetching live options data, use sources in this order:
+
+1. **Interactive Brokers** — Most accurate real-time data (requires TWS/Gateway)
+2. **Unusual Whales** — Flow data, activity signals (options chain requires higher tier)
+3. **Yahoo Finance** — Fallback only (rate limited, can be delayed)
+
 ### Scripts
 
 ```bash

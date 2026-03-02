@@ -184,6 +184,21 @@ See `docs/strategies.md` for full methodology.
 | `docs/status.md` | Current state, recent decisions, audit log |
 | `docs/strategies.md` | Trading strategies (Dark Pool Flow, LEAP IV Mispricing) |
 
+## Data Source Priority
+
+When fetching live pricing data (quotes, options chains), use sources in this order:
+
+| Priority | Source | Use Case | Notes |
+|----------|--------|----------|-------|
+| **1** | Interactive Brokers | Real-time quotes, options chains | Requires TWS/Gateway running |
+| **2** | Unusual Whales | Flow data, options activity | API key in UW_TOKEN env var |
+| **3** | Yahoo Finance | Fallback for quotes/chains | Rate limited, use as last resort |
+
+**Rationale:**
+- IB provides the most accurate real-time data with tight spreads
+- UW excels at flow/activity data but options chain access requires higher tier
+- Yahoo Finance is free but rate-limited and data can be delayed
+
 ## Tools Available
 
 - `bash` — Run Python scripts in ./scripts/
