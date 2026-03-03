@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
   CheckCircle2,
@@ -372,12 +372,20 @@ function LegRow({
         {priceDirection === "up" && <ArrowUp size={11} className="price-trend-icon price-trend-up" aria-label="price up" />}
         {priceDirection === "down" && <ArrowDown size={11} className="price-trend-icon price-trend-down" aria-label="price down" />}
       </td>
+      <td></td>
       <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{fmtPrice(Math.abs(leg.entry_cost))}</td>
       <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
       <td></td>
       {showExpiry && <td></td>}
     </tr>
   );
+}
+
+function getDailyChange(realtimePrice?: PriceData | null): number | null {
+  if (!realtimePrice) return null;
+  const { last, close } = realtimePrice;
+  if (last == null || close == null || close === 0) return null;
+  return ((last - close) / close) * 100;
 }
 
 function PositionRow({ pos, showExpiry = true, realtimePrice }: { pos: PortfolioPosition; showExpiry?: boolean; realtimePrice?: PriceData | null }) {
@@ -393,6 +401,9 @@ function PositionRow({ pos, showExpiry = true, realtimePrice }: { pos: Portfolio
   const lastPrice = rtLast ?? getLastPrice(pos);
   const lastPriceIsCalculated = rtLast != null ? false : getLastPriceIsCalculated(pos);
   const { direction: priceDirection, flashDirection } = usePriceDirection(lastPrice);
+  // Only show underlying daily change for stock positions — for options/spreads,
+  // the WS streams the underlying stock price, not the position's value
+  const dailyChg = isStock ? getDailyChange(realtimePrice) : null;
 
   return (
     <>
@@ -409,6 +420,9 @@ function PositionRow({ pos, showExpiry = true, realtimePrice }: { pos: Portfolio
           {lastPrice != null ? fmtPriceOrCalculated(lastPrice, lastPriceIsCalculated) : "—"}
           {priceDirection === "up" && <ArrowUp size={11} className="price-trend-icon price-trend-up" aria-label="price up" />}
           {priceDirection === "down" && <ArrowDown size={11} className="price-trend-icon price-trend-down" aria-label="price down" />}
+        </td>
+        <td className={`right ${dailyChg != null ? (dailyChg >= 0 ? "positive" : "negative") : ""}`}>
+          {dailyChg != null ? `${dailyChg >= 0 ? "+" : ""}${dailyChg.toFixed(2)}%` : "—"}
         </td>
         <td className="right">{fmtUsd(entryCost)}</td>
         <td className="right">{mv != null ? fmtUsd(mv) : "—"}</td>
@@ -428,25 +442,29 @@ function PositionRow({ pos, showExpiry = true, realtimePrice }: { pos: Portfolio
   );
 }
 
-type PositionSortKey = "ticker" | "structure" | "direction" | "avg_entry" | "last_price" | "entry_cost" | "market_value" | "pnl" | "expiry";
+type PositionSortKey = "ticker" | "structure" | "direction" | "avg_entry" | "last_price" | "daily_chg" | "entry_cost" | "market_value" | "pnl" | "expiry";
 
-const positionExtract = (pos: PortfolioPosition, key: PositionSortKey): string | number | null => {
-  const mv = resolveMarketValue(pos);
-  switch (key) {
-    case "ticker": return pos.ticker;
-    case "structure": return pos.structure;
-    case "direction": return pos.direction;
-    case "avg_entry": return getAvgEntry(pos);
-    case "last_price": return getLastPrice(pos);
-    case "entry_cost": return resolveEntryCost(pos);
-    case "market_value": return mv;
-    case "pnl": return mv != null ? mv - resolveEntryCost(pos) : null;
-    case "expiry": return pos.expiry === "N/A" ? null : pos.expiry;
-    default: return null;
-  }
-};
+function makePositionExtract(prices?: Record<string, PriceData>) {
+  return (pos: PortfolioPosition, key: PositionSortKey): string | number | null => {
+    const mv = resolveMarketValue(pos);
+    switch (key) {
+      case "ticker": return pos.ticker;
+      case "structure": return pos.structure;
+      case "direction": return pos.direction;
+      case "avg_entry": return getAvgEntry(pos);
+      case "last_price": return getLastPrice(pos);
+      case "daily_chg": return getDailyChange(prices?.[pos.ticker]);
+      case "entry_cost": return resolveEntryCost(pos);
+      case "market_value": return mv;
+      case "pnl": return mv != null ? mv - resolveEntryCost(pos) : null;
+      case "expiry": return pos.expiry === "N/A" ? null : pos.expiry;
+      default: return null;
+    }
+  };
+}
 
 function PositionTable({ positions, showExpiry = true, prices }: { positions: PortfolioPosition[]; showExpiry?: boolean; prices?: Record<string, PriceData> }) {
+  const positionExtract = useMemo(() => makePositionExtract(prices), [prices]);
   const { sorted, sort, toggle } = useSort(positions, positionExtract);
 
   return (
@@ -458,6 +476,7 @@ function PositionTable({ positions, showExpiry = true, prices }: { positions: Po
           <SortTh<PositionSortKey> label="Direction" sortKey="direction" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Avg Entry" sortKey="avg_entry" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Last Price" sortKey="last_price" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+          <SortTh<PositionSortKey> label="Day Chg" sortKey="daily_chg" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Entry Cost" sortKey="entry_cost" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Market Value" sortKey="market_value" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="P&L" sortKey="pnl" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
@@ -735,8 +754,8 @@ function OrdersSections({ orders }: { orders: OrdersData | null }) {
                 </tr>
               </thead>
               <tbody>
-                {openSort.sorted.map((o) => (
-                  <tr key={o.orderId}>
+                {openSort.sorted.map((o, i) => (
+                  <tr key={`${o.orderId}-${i}`}>
                     <td><strong>{o.symbol}</strong></td>
                     <td>
                       <span className={`pill ${o.action === "BUY" ? "accum" : "distrib"}`}>
@@ -781,10 +800,10 @@ function OrdersSections({ orders }: { orders: OrdersData | null }) {
                 </tr>
               </thead>
               <tbody>
-                {execSort.sorted.map((e) => {
+                {execSort.sorted.map((e, i) => {
                   const displaySide = e.side === "BOT" ? "BUY" : e.side === "SLD" ? "SELL" : e.side;
                   return (
-                    <tr key={e.execId}>
+                    <tr key={`${e.execId}-${i}`}>
                       <td><strong>{e.symbol}</strong></td>
                       <td>
                         <span className={`pill ${displaySide === "BUY" ? "accum" : "distrib"}`}>
