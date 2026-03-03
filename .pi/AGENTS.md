@@ -25,6 +25,7 @@ When fetching ANY market data (quotes, options, fundamentals, analyst ratings, e
 | `portfolio` | Current positions, exposure, capacity |
 | `journal` | View recent trade log entries |
 | `sync` | Pull live portfolio from Interactive Brokers |
+| `blotter` | Trade blotter - today's fills, P&L, spread grouping |
 | `leap-scan [TICKERS]` | Scan for LEAP IV mispricing opportunities |
 | `seasonal [TICKERS]` | Seasonality assessment for one or more tickers |
 | `x-scan [@ACCOUNT]` | Fetch latest tweets and extract ticker sentiment |
@@ -254,6 +255,58 @@ Usage: `seasonal [TICKER]` or `seasonal [TICKER1] [TICKER2] ...`
 - Best/worst months of year
 - Rating with reasoning
 
+---
+
+## Trade Blotter Command
+
+Fetch and reconcile trades from Interactive Brokers. Calculates P&L deterministically including all commissions/fees.
+
+```bash
+# Today's trades with spread grouping
+python3 scripts/blotter.py
+
+# P&L summary only
+python3 scripts/blotter.py --summary
+
+# JSON output for programmatic use
+python3 scripts/blotter.py --json
+
+# Show execution details
+python3 scripts/blotter.py --verbose
+
+# Custom IB port
+python3 scripts/blotter.py --port 7497
+```
+
+**Output Includes:**
+- All today's fills grouped by contract
+- Spread identification (put spreads, call spreads, risk reversals)
+- Combined P&L for multi-leg spreads
+- Commission totals
+- Open vs closed position status
+
+**Spread Types Detected:**
+| Pattern | Name |
+|---------|------|
+| Long higher strike put + Short lower strike put | Put Spread |
+| Short higher strike put + Long lower strike put | Put Spread (Bull) |
+| Long call + Short call (same expiry) | Call Spread |
+| Short put + Long call (same expiry) | Risk Reversal |
+| Long put + Short call (same expiry) | Collar |
+
+**P&L Calculation:**
+- Cash flow = notional value ± commission (buy = negative, sell = positive)
+- Realized P&L = sum of all cash flows for closed positions
+- Commissions are always subtracted from cash flow
+- All calculations use Decimal for precision
+
+**Integration Tests:**
+```bash
+python3 scripts/trade_blotter/test_integration.py
+```
+
+---
+
 ## Output Format
 
 - Always show: signal → structure → Kelly math → decision
@@ -275,6 +328,7 @@ Usage: `seasonal [TICKER]` or `seasonal [TICKER1] [TICKER2] ...`
 | `scripts/discover.py` | Market-wide flow scanner for new candidates |
 | `scripts/kelly.py` | Kelly criterion calculator |
 | `scripts/ib_sync.py` | Sync live portfolio from Interactive Brokers (periodic) |
+| `scripts/blotter.py` | Trade blotter - reconcile fills, calculate P&L |
 | `scripts/ib_realtime_server.js` | Node.js WebSocket server for real-time IB price streaming |
 | `scripts/test_ib_realtime.py` | Tests for IB real-time connectivity |
 | `scripts/leap_iv_scanner.py` | LEAP IV mispricing scanner (IB connection required) |

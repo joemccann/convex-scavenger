@@ -473,3 +473,27 @@ It returns normalized command payloads used by the UI to render summaries, detai
 - `/portfolio` → reads `data/portfolio.json`
 - `/journal [--limit N]` → reads `data/trade_log.json`
 - `/watchlist add|remove|list` → reads/writes `data/watchlist.json`
+
+---
+
+## Troubleshooting
+
+### PI Agent: `TypeError: message.content is not iterable`
+
+There's a bug in `pi-coding-agent` (as of v0.55.4) where the compaction module crashes when processing certain tool results with null/undefined content.
+
+**Symptoms:**
+```
+TypeError: message.content is not iterable
+    at estimateTokens (.../compaction/compaction.js:192:45)
+```
+
+**Fix:**
+```bash
+# Run the patch script (safe to run multiple times)
+./scripts/patch-pi-agent.sh
+```
+
+**⚠️ Re-run this patch after every `npm update -g @mariozechner/pi-coding-agent`**
+
+The patch adds null/array checking before iterating over `message.content` in the `estimateTokens` function.
