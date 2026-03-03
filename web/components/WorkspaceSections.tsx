@@ -17,6 +17,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { ExecutedOrder, OpenOrder, OrdersData, PortfolioData, PortfolioPosition, WorkspaceSection } from "@/lib/types";
+import type { PriceData } from "@/lib/pricesProtocol";
 import { against, neutralRows, supports, watchRows } from "@/lib/data";
 import { useSort, type SortDirection } from "@/lib/useSort";
 
@@ -379,14 +380,18 @@ function LegRow({
   );
 }
 
-function PositionRow({ pos, showExpiry = true }: { pos: PortfolioPosition; showExpiry?: boolean }) {
-  const mv = resolveMarketValue(pos);
+function PositionRow({ pos, showExpiry = true, realtimePrice }: { pos: PortfolioPosition; showExpiry?: boolean; realtimePrice?: PriceData | null }) {
+  // For stock positions, prefer the real-time WS price over the stale sync price
+  const isStock = pos.structure_type === "Stock";
+  const rtLast = isStock && realtimePrice?.last != null ? realtimePrice.last : null;
+
+  const mv = rtLast != null ? rtLast * pos.contracts : resolveMarketValue(pos);
   const entryCost = resolveEntryCost(pos);
   const pnl = mv != null ? mv - entryCost : null;
   const pnlPct = pnl != null && entryCost !== 0 ? (pnl / Math.abs(entryCost)) * 100 : null;
   const avgEntry = getAvgEntry(pos);
-  const lastPrice = getLastPrice(pos);
-  const lastPriceIsCalculated = getLastPriceIsCalculated(pos);
+  const lastPrice = rtLast ?? getLastPrice(pos);
+  const lastPriceIsCalculated = rtLast != null ? false : getLastPriceIsCalculated(pos);
   const { direction: priceDirection, flashDirection } = usePriceDirection(lastPrice);
 
   return (
@@ -441,7 +446,7 @@ const positionExtract = (pos: PortfolioPosition, key: PositionSortKey): string |
   }
 };
 
-function PositionTable({ positions, showExpiry = true }: { positions: PortfolioPosition[]; showExpiry?: boolean }) {
+function PositionTable({ positions, showExpiry = true, prices }: { positions: PortfolioPosition[]; showExpiry?: boolean; prices?: Record<string, PriceData> }) {
   const { sorted, sort, toggle } = useSort(positions, positionExtract);
 
   return (
@@ -461,14 +466,14 @@ function PositionTable({ positions, showExpiry = true }: { positions: PortfolioP
       </thead>
       <tbody>
         {sorted.map((pos) => (
-          <PositionRow key={pos.id} pos={pos} showExpiry={showExpiry} />
+          <PositionRow key={pos.id} pos={pos} showExpiry={showExpiry} realtimePrice={prices?.[pos.ticker]} />
         ))}
       </tbody>
     </table>
   );
 }
 
-function PortfolioSections({ portfolio }: { portfolio: PortfolioData | null }) {
+function PortfolioSections({ portfolio, prices }: { portfolio: PortfolioData | null; prices?: Record<string, PriceData> }) {
   if (!portfolio) {
     return (
       <div className="section">
@@ -502,7 +507,7 @@ function PortfolioSections({ portfolio }: { portfolio: PortfolioData | null }) {
             <span className="pill defined">{definedPositions.length} POSITIONS</span>
           </div>
           <div className="section-body">
-            <PositionTable positions={definedPositions} />
+            <PositionTable positions={definedPositions} prices={prices} />
           </div>
         </div>
       )}
@@ -517,7 +522,7 @@ function PortfolioSections({ portfolio }: { portfolio: PortfolioData | null }) {
             <span className="pill neutral">{equityPositions.length} POSITIONS</span>
           </div>
           <div className="section-body">
-            <PositionTable positions={equityPositions} showExpiry={false} />
+            <PositionTable positions={equityPositions} showExpiry={false} prices={prices} />
           </div>
         </div>
       )}
@@ -532,7 +537,7 @@ function PortfolioSections({ portfolio }: { portfolio: PortfolioData | null }) {
             <span className="pill undefined">{undefinedPositions.length} POSITIONS</span>
           </div>
           <div className="section-body">
-            <PositionTable positions={undefinedPositions} />
+            <PositionTable positions={undefinedPositions} prices={prices} />
           </div>
         </div>
       )}
@@ -819,16 +824,17 @@ type WorkspaceSectionsProps = {
   section: WorkspaceSection;
   portfolio?: PortfolioData | null;
   orders?: OrdersData | null;
+  prices?: Record<string, PriceData>;
 };
 
-export default function WorkspaceSections({ section, portfolio, orders }: WorkspaceSectionsProps) {
+export default function WorkspaceSections({ section, portfolio, orders, prices }: WorkspaceSectionsProps) {
   switch (section) {
     case "dashboard":
       return null;
     case "flow-analysis":
       return <FlowSections />;
     case "portfolio":
-      return <PortfolioSections portfolio={portfolio ?? null} />;
+      return <PortfolioSections portfolio={portfolio ?? null} prices={prices} />;
     case "orders":
       return <OrdersSections orders={orders ?? null} />;
     case "scanner":

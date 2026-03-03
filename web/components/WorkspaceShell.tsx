@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import type { WorkspaceSection } from "@/lib/types";
@@ -9,7 +9,7 @@ import { resolveSectionFromPath } from "@/lib/chat";
 import { usePortfolio } from "@/lib/usePortfolio";
 import { useOrders } from "@/lib/useOrders";
 import { useToast } from "@/lib/useToast";
-import { useIBStatus } from "@/lib/useIBStatus";
+import { usePrices } from "@/lib/usePrices";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import ChatPanel from "@/components/ChatPanel";
@@ -29,19 +29,25 @@ export default function WorkspaceShell({ section }: WorkspaceShellProps) {
   const activeLabel = navItems.find((item) => item.route === activeSection)?.label ?? "Dashboard";
   const { toasts, addToast, removeToast } = useToast();
 
-  const onIBTransition = useCallback(
-    (connected: boolean) => {
-      if (connected) {
-        addToast("success", "IB Gateway reconnected", 4000);
-      } else {
-        addToast("error", "IB Gateway connection lost", 6000);
-      }
-    },
-    [addToast],
+  const { data: portfolio, syncing: portfolioSyncing, error: portfolioError, lastSync: portfolioLastSync, syncNow: portfolioSyncNow } = usePortfolio();
+
+  const portfolioSymbols = useMemo(
+    () => (portfolio?.positions ?? []).map((p) => p.ticker),
+    [portfolio],
   );
 
-  const { ibConnected, wsConnected } = useIBStatus(onIBTransition);
-  const { data: portfolio, syncing: portfolioSyncing, error: portfolioError, lastSync: portfolioLastSync, syncNow: portfolioSyncNow } = usePortfolio();
+  const { prices, connected: wsConnected, ibConnected } = usePrices({
+    symbols: portfolioSymbols,
+  });
+
+  const prevIbConnectedRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (prevIbConnectedRef.current !== null && prevIbConnectedRef.current !== ibConnected) {
+      addToast(ibConnected ? "success" : "error", ibConnected ? "IB Gateway reconnected" : "IB Gateway connection lost", ibConnected ? 4000 : 6000);
+    }
+    prevIbConnectedRef.current = ibConnected;
+  }, [ibConnected, addToast]);
+
   const isOrdersPage = activeSection === "orders";
   const { data: orders, syncing: ordersSyncing, error: ordersError, lastSync: ordersLastSync, syncNow: ordersSyncNow } = useOrders(isOrdersPage);
   const syncing = isOrdersPage ? ordersSyncing : portfolioSyncing;
@@ -112,7 +118,7 @@ export default function WorkspaceShell({ section }: WorkspaceShellProps) {
           {activeSection !== "dashboard" ? <MetricCards portfolio={portfolio} /> : null}
 
           {activeSection !== "dashboard" ? (
-            <WorkspaceSections section={activeSection} portfolio={portfolio} orders={orders} />
+            <WorkspaceSections section={activeSection} portfolio={portfolio} orders={orders} prices={prices} />
           ) : null}
         </div>
       </main>

@@ -587,12 +587,30 @@ ib.on("disconnected", () => {
   scheduleReconnect();
 });
 
-ib.on("error", (error) => {
+ib.on("error", (error, data) => {
   const msg = String(error?.message ?? error);
+  const tickerId = data?.id;
+  const code = data?.code;
+  const symbol = tickerId != null ? requestIdToSymbol.get(tickerId) : null;
+
   if (/connection is OK|farm connection is OK/i.test(msg)) {
     console.log(`\x1b[32mIB status: ${msg}\x1b[0m`);
+  } else if (code === 354 || /market data is not subscribed/i.test(msg)) {
+    // IB account lacks market data subscription for this symbol
+    console.warn(`\x1b[33mIB warning: no market data subscription for ${symbol ?? `tickerId:${tickerId}`}\x1b[0m`);
+    // Clean up the failed subscription so we stop retrying
+    if (symbol) {
+      const state = symbolStates.get(symbol);
+      if (state && state.tickerId === tickerId) {
+        requestIdToSymbol.delete(tickerId);
+        state.tickerId = null;
+      }
+    }
+  } else if (/Can't find EId/i.test(msg)) {
+    // Cascading error from a rejected subscription — suppress
+    console.warn(`\x1b[33mIB warning: ${msg}\x1b[0m`);
   } else {
-    console.error(`\x1b[31mIB error: ${msg}\x1b[0m`);
+    console.error(`\x1b[31mIB error: ${msg}${symbol ? ` (${symbol})` : tickerId != null ? ` (tickerId:${tickerId})` : ""}\x1b[0m`);
   }
   broadcastStatus();
 });
