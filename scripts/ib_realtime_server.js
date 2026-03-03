@@ -588,7 +588,12 @@ ib.on("disconnected", () => {
 });
 
 ib.on("error", (error) => {
-  console.error("IB error:", error);
+  const msg = String(error?.message ?? error);
+  if (/connection is OK|farm connection is OK/i.test(msg)) {
+    console.log(`\x1b[32mIB status: ${msg}\x1b[0m`);
+  } else {
+    console.error(`\x1b[31mIB error: ${msg}\x1b[0m`);
+  }
   broadcastStatus();
 });
 
