@@ -55,6 +55,7 @@ TZ=America/New_York date +"%A %H:%M"
 | `discover` | Find new candidates from market-wide options flow |
 | `evaluate [TICKER]` | Full 7-milestone evaluation |
 | `portfolio` | **Generate HTML portfolio report and open in browser** |
+| `free-trade` | Analyze positions for free trade opportunities |
 | `journal` | View recent trade log entries |
 | `sync` | Pull live portfolio from Interactive Brokers |
 | `blotter` | Trade blotter - today's fills, P&L, spread grouping |
@@ -77,6 +78,43 @@ python3 scripts/portfolio_report.py --sync
 # Generate without opening
 python3 scripts/portfolio_report.py --no-open
 ```
+
+### Free Trade Command
+
+Analyze multi-leg positions to find opportunities to close hedge legs profitably, making the core leg "free" (zero net cost).
+
+```bash
+# Full analysis of all positions
+python3 scripts/free_trade_analyzer.py
+
+# Filter by ticker
+python3 scripts/free_trade_analyzer.py --ticker EWY
+
+# Brief summary (used by startup protocol)
+python3 scripts/free_trade_analyzer.py --summary
+
+# JSON output
+python3 scripts/free_trade_analyzer.py --json
+```
+
+**Supported Structures:**
+| Structure | Core Leg | Hedge Leg |
+|-----------|----------|-----------|
+| Risk Reversal (Bullish) | Long Call | Short Put |
+| Risk Reversal (Bearish) | Long Put | Short Call |
+| Bull Call Spread | Long Call (lower strike) | Short Call (higher) |
+| Bear Put Spread | Long Put (higher strike) | Short Put (lower) |
+
+**Output Metrics:**
+- **Effective Core Cost**: Core entry cost - Hedge P&L
+- **Progress to Free**: Percentage of core cost covered by hedge profit
+- **Breakeven Close Price**: Price to close hedge to make core free
+
+**Startup Integration:**
+- Runs automatically on Pi startup
+- Notifies if any position is ≥50% to free
+- Shows 🎉 for FREE positions, ⚡ for near-free
+
 | `blotter-history` | Historical trades via Flex Query (requires setup) |
 | `leap-scan [TICKERS]` | Scan for LEAP IV mispricing opportunities |
 | `seasonal [TICKERS]` | Seasonality assessment for one or more tickers |
@@ -626,6 +664,7 @@ See `.pi/skills/html-report/SKILL.md` for full template documentation.
 | `scripts/monitor_daemon/run.py` | **Extensible monitoring daemon** (replaces exit_order_service) |
 | `scripts/ib_fill_monitor.py` | Monitor orders for fills (standalone, use daemon instead) |
 | `scripts/portfolio_report.py` | Generate HTML portfolio report and open in browser |
+| `scripts/free_trade_analyzer.py` | Analyze positions for free trade opportunities |
 
 ## Interactive Brokers Integration
 

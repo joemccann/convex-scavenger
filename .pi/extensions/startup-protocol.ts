@@ -247,6 +247,33 @@ END ALWAYS-ON SKILLS
     }
   };
 
+  // Run free trade analyzer and return summary
+  const runFreeTradeAnalyzer = (cwd: string): string | null => {
+    const scriptPath = path.join(cwd, "scripts/free_trade_analyzer.py");
+    
+    if (!fs.existsSync(scriptPath)) {
+      return null;
+    }
+    
+    try {
+      const result = execSync(`python3 "${scriptPath}" --summary`, {
+        cwd,
+        encoding: "utf-8",
+        timeout: 10000,
+      }).trim();
+      
+      // If no opportunities, script returns "No free trade opportunities found."
+      if (result.includes("No free trade opportunities")) {
+        return null;
+      }
+      
+      return result;
+    } catch (e) {
+      // Silently fail - don't spam user
+      return null;
+    }
+  };
+
   // Check X account scan status
   const checkXScanStatus = (cwd: string): { account: string; needsScan: boolean; lastScan: string | null }[] => {
     const watchlistPath = path.join(cwd, "data/watchlist.json");
@@ -310,5 +337,11 @@ END ALWAYS-ON SKILLS
     // Check and ensure Monitor Daemon is running
     // This handles fill monitoring and exit order placement
     ensureMonitorDaemonRunning(ctx.cwd, ctx.ui);
+    
+    // Check for free trade opportunities
+    const freeTradeSummary = runFreeTradeAnalyzer(ctx.cwd);
+    if (freeTradeSummary) {
+      ctx.ui.notify(`💰 Free Trade: ${freeTradeSummary}`, "info");
+    }
   });
 }
