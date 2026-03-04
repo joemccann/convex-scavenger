@@ -67,6 +67,8 @@ If a script fails:
 ### Portfolio Commands
 | Action | Command |
 |--------|---------|
+| **Generate portfolio report** | `python3 scripts/portfolio_report.py` |
+| Portfolio report (sync first) | `python3 scripts/portfolio_report.py --sync` |
 | Sync IB portfolio | `python3 scripts/ib_sync.py --sync` |
 | Run reconciliation | `python3 scripts/ib_reconcile.py` |
 | View today's fills | `python3 scripts/blotter.py` |

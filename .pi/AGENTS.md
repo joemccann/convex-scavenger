@@ -54,10 +54,29 @@ TZ=America/New_York date +"%A %H:%M"
 | `scan` | Scan watchlist for dark pool flow signals |
 | `discover` | Find new candidates from market-wide options flow |
 | `evaluate [TICKER]` | Full 7-milestone evaluation |
-| `portfolio` | Current positions, exposure, capacity |
+| `portfolio` | **Generate HTML portfolio report and open in browser** |
 | `journal` | View recent trade log entries |
 | `sync` | Pull live portfolio from Interactive Brokers |
 | `blotter` | Trade blotter - today's fills, P&L, spread grouping |
+
+### Portfolio Command Details
+
+When user runs `portfolio`, ALWAYS:
+1. Sync latest data from IB (if connected)
+2. Generate HTML report via `python3 scripts/portfolio_report.py`
+3. Report opens automatically in browser
+4. Output location: `reports/portfolio-{date}.html`
+
+```bash
+# Generate and open report
+python3 scripts/portfolio_report.py
+
+# Sync from IB first, then generate
+python3 scripts/portfolio_report.py --sync
+
+# Generate without opening
+python3 scripts/portfolio_report.py --no-open
+```
 | `blotter-history` | Historical trades via Flex Query (requires setup) |
 | `leap-scan [TICKERS]` | Scan for LEAP IV mispricing opportunities |
 | `seasonal [TICKERS]` | Seasonality assessment for one or more tickers |
@@ -523,6 +542,7 @@ See `.pi/skills/html-report/SKILL.md` for full template documentation.
 | `scripts/fetch_x_watchlist.py` | Fetch X account tweets and extract ticker sentiment |
 | `scripts/exit_order_service.py` | Place pending exit orders when IB accepts them |
 | `scripts/ib_fill_monitor.py` | Monitor orders for fills |
+| `scripts/portfolio_report.py` | Generate HTML portfolio report and open in browser |
 
 ## Interactive Brokers Integration
 
