@@ -153,6 +153,51 @@ END ALWAYS-ON SKILLS
     proc.unref();
   };
 
+  // Run Exit Order Service asynchronously (non-blocking)
+  const runExitOrderService = (cwd: string, ui: any) => {
+    const scriptPath = path.join(cwd, "scripts/exit_order_service.py");
+    
+    if (!fs.existsSync(scriptPath)) {
+      return;
+    }
+    
+    // Spawn Python process in background
+    const proc = spawn("python3", [scriptPath], {
+      cwd,
+      detached: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    
+    let output = "";
+    let errorOutput = "";
+    
+    proc.stdout?.on("data", (data) => {
+      output += data.toString();
+    });
+    
+    proc.stderr?.on("data", (data) => {
+      errorOutput += data.toString();
+    });
+    
+    proc.on("close", (code) => {
+      if (code === 0) {
+        // Check if any orders were placed
+        if (output.includes("Target order placed")) {
+          ui.notify("📈 Exit order placed!", "info");
+        } else if (output.includes("pending exit order")) {
+          // Pending orders exist but couldn't place yet - silent
+        }
+      } else if (errorOutput.includes("Failed to connect") || errorOutput.includes("Connection refused")) {
+        // IB not connected - silent fail
+      } else if (errorOutput && !errorOutput.includes("Market closed")) {
+        ui.notify(`Exit order service: ${errorOutput.slice(0, 80)}`, "warning");
+      }
+    });
+    
+    // Unref so it doesn't keep the process alive
+    proc.unref();
+  };
+
   // Check X account scan status
   const checkXScanStatus = (cwd: string): { account: string; needsScan: boolean; lastScan: string | null }[] => {
     const watchlistPath = path.join(cwd, "data/watchlist.json");
@@ -212,5 +257,9 @@ END ALWAYS-ON SKILLS
     
     // Run IB reconciliation asynchronously (non-blocking)
     runIBReconciliation(ctx.cwd, ctx.ui);
+    
+    // Run Exit Order Service asynchronously (non-blocking)
+    // This checks if any pending target orders can now be placed
+    runExitOrderService(ctx.cwd, ctx.ui);
   });
 }

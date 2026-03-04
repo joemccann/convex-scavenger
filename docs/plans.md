@@ -133,6 +133,12 @@ python3 scripts/fetch_options.py [TICKER]
 **Validation**: Structure must have R:R ≥ 2:1
 **Stop Condition**: If R:R < 2:1 → restructure or ABORT
 
+**⭐ REQUIRED: Generate Trade Specification Report**
+After structure is designed, ALWAYS generate HTML report:
+- Template: `.pi/skills/html-report/trade-specification-template.html`
+- Output: `reports/{ticker}-evaluation-{date}.html`
+- Reference: `reports/goog-evaluation-2026-03-04.html`
+
 ---
 
 ## Milestone 6: Kelly Sizing

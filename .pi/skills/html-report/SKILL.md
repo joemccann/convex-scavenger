@@ -469,6 +469,108 @@ See: `reports/ewy-pnl-reconciliation-2026-03-03.html`
 
 ---
 
+## Trade Specification Template ⭐ PRIMARY
+
+**For ANY trade recommendation, ALWAYS use this template.**
+
+**Template:** `.pi/skills/html-report/trade-specification-template.html`
+
+### When to Use
+
+- **ALWAYS** when recommending a trade after evaluation
+- **ALWAYS** when presenting a trade for execution confirmation
+- Ticker evaluation results (whether TRADE or NO_TRADE)
+- Full milestone-based evaluation output
+
+### Template Structure
+
+The trade specification template includes ALL sections needed for a complete evaluation:
+
+1. **Header** — Ticker, company, price, gate status
+2. **Summary Metrics** — 6 key metrics (signal score, buy ratio, flow strength, convexity, position size, max gain)
+3. **Milestone Summary** — All 7 milestones with pass/fail status
+4. **Dark Pool Flow Section** — Daily breakdown + aggregate analysis
+5. **Options Flow Section** — Chain bias, institutional flow, combined signal
+6. **Context Section** — Seasonality + analyst ratings
+7. **Structure & Kelly** — Position structure and Kelly sizing
+8. **Trade Specification** — Exact order details ready for execution
+9. **Thesis & Risk Factors** — Callouts with reasoning
+10. **Three Gates Summary** — Final gate check table
+
+### Template Variables
+
+Replace these placeholders with actual values:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{{TICKER}}` | Stock symbol | GOOG |
+| `{{COMPANY_NAME}}` | Full company name | Alphabet Inc. (Class C) |
+| `{{SECTOR}}` | Industry sector | Communication Services |
+| `{{CURRENT_PRICE}}` | Current stock price | 302.38 |
+| `{{DATE}}` | Evaluation date | 2026-03-04 |
+| `{{TIMESTAMP}}` | Full timestamp | 2026-03-04 06:43 PST |
+| `{{STATUS_TEXT}}` | Gate status | ALL GATES PASSED |
+| `{{STATUS_CLASS}}` | CSS class | positive / negative / warning |
+| `{{SIGNAL_SCORE}}` | Combined signal score | 129.7 |
+| `{{BUY_RATIO}}` | Dark pool buy ratio % | 94.87 |
+| `{{FLOW_STRENGTH}}` | Flow strength 0-100 | 89.7 |
+| `{{RR_RATIO}}` | Risk:reward ratio | 3.0 |
+| `{{POSITION_SIZE}}` | Total position cost | 27,544 |
+| `{{POSITION_PCT}}` | % of bankroll | 2.46 |
+| `{{MAX_GAIN}}` | Maximum profit | 82,456 |
+| `{{NUM_CONTRACTS}}` | Number of contracts | 44 |
+| `{{DTE}}` | Days to expiration | 43 |
+| `{{NET_DEBIT}}` | Net debit per spread | 6.26 |
+| `{{THESIS}}` | Trade thesis | Extraordinary institutional... |
+
+### Milestone Variables
+
+For each milestone (M1, M1B, M1C, M2, M3, M4, M5, M6):
+
+| Variable Pattern | Values |
+|------------------|--------|
+| `{{MX_CLASS}}` | `complete` or `failed` or empty |
+| `{{MX_DESCRIPTION}}` | Description text |
+| `{{MX_GATE_CLASS}}` | `gate-pass` or `gate-fail` |
+| `{{MX_RESULT}}` | `✓ PASS` or `✗ FAIL` or result text |
+
+### Gate Summary Variables
+
+| Variable | Description |
+|----------|-------------|
+| `{{GATE1_ACTUAL}}` | e.g., "3.0:1" |
+| `{{GATE1_PILL}}` | `pill-positive` or `pill-negative` |
+| `{{GATE1_STATUS}}` | `PASS` or `FAIL` |
+| `{{GATE2_ACTUAL}}` | e.g., "89.7, 5 days" |
+| `{{GATE3_ACTUAL}}` | e.g., "2.46%" |
+
+### NO_TRADE Reports
+
+When evaluation fails a gate, still generate the report but:
+
+1. Set `{{STATUS_TEXT}}` to failing gate (e.g., "EDGE FAILED")
+2. Set `{{STATUS_CLASS}}` to `negative`
+3. Mark failed milestone with `failed` class
+4. Omit Structure & Kelly sections (not reached)
+5. Omit Trade Specification section
+6. Include callout explaining why trade was rejected
+
+### Output Location
+
+```
+reports/{ticker}-evaluation-{date}.html
+
+Examples:
+  reports/goog-evaluation-2026-03-04.html
+  reports/amd-evaluation-2026-03-04.html
+```
+
+### Reference Implementation
+
+See: `reports/goog-evaluation-2026-03-04.html`
+
+---
+
 ## Generation Checklist
 
 ### General Reports

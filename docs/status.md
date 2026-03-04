@@ -1,29 +1,27 @@
 # Status & Decision Log
 
 ## Last Updated
-2026-03-03T15:33:00-08:00
+2026-03-04T07:10:00-08:00
 
 ## Recent Commits
-- 2026-03-03 15:10:00 -0800 — Added IB reconciliation startup script (async)
-- 2026-03-03 14:56:00 -0800 — Added AAOI stock trade to trade log (closed +$379.77)
-- 2026-03-03 14:02:29 -0800 — `4d4691d` Added trade blotter service and pi patch script
-- 2026-03-03 11:38:00 -0800 — `9e0c2a3` Refactor html-report skill with reusable template
-- 2026-03-03 09:55:46 -0800 — `4349a25` Implement fetch_options.py with UW chain + flow analysis
+- 2026-03-04 07:30:00 -0800 — Created exit_order_service.py and launchd integration
+- 2026-03-04 07:20:00 -0800 — Created trade-specification-template.html
+- 2026-03-04 07:10:00 -0800 — Placed GOOG stop loss order #6 (trigger $3.00)
+- 2026-03-04 07:05:00 -0800 — Added GOOG bull call spread to trade log (Trade #8)
+- 2026-03-04 07:00:00 -0800 — Created ib_fill_monitor.py and ib-order-execution skill
 
 ## Current Portfolio State
-- **Net Liquidation**: $1,079,302
-- **Deployed**: $1,685,077 (156% — on margin)
-- **Open Positions**: 21 (was 22, AAOI stock closed)
-- **Defined Risk**: 10 positions
-- **Undefined Risk**: 11 positions (8 stocks + 3 risk reversals)
-- **Realized P&L Today**: +$18,031.17
+- **Net Liquidation**: $1,145,952
+- **Deployed**: $1,712,649 (149% — on margin)
+- **Open Positions**: 23
+- **Defined Risk**: 11 positions
+- **Undefined Risk**: 12 positions (8 stocks + 3 risk reversals + 1 combo)
+- **New Today**: GOOG Bull Call Spread $315/$340
 
-## Today's Realized P&L (2026-03-03)
-| Trade | Structure | P&L | Return |
-|-------|-----------|-----|--------|
-| EWY | Bear Put Spread $148/$140 | +$17,651.40 | +106.8% |
-| AAOI | Long Stock (750 shares) | +$379.77 | +0.58% |
-| **Total** | | **+$18,031.17** | |
+## Today's Trades (2026-03-04)
+| Trade | Structure | Cost | Status |
+|-------|-----------|------|--------|
+| GOOG | Bull Call Spread $315/$340 | $27,572 | ✓ FILLED @ $6.26 |
 
 ## Positions Requiring Attention
 
@@ -52,13 +50,14 @@
 ## Trade Log Summary
 | ID | Date | Ticker | Structure | Status | P&L |
 |----|------|--------|-----------|--------|-----|
-| 1 | 03-02 | ALAB | Long Call LEAP | OPEN | -11.5% |
-| 2 | 03-02 | WULF | Long Call LEAP | OPEN | -18.3% |
+| 1 | 03-02 | ALAB | Long Call LEAP | OPEN | -8.5% |
+| 2 | 03-02 | WULF | Long Call LEAP | OPEN | -5.4% |
 | 3 | 02-25 | EWY | Bear Put Spread | **CLOSED** | +$17,651 |
 | 4 | 03-03 | AAOI | Risk Reversal | OPEN | -24% |
-| 5 | 03-03 | AMD | Long Call LEAP | OPEN | +0.1% |
+| 5 | 03-03 | AMD | Long Call LEAP | OPEN | +7.5% |
 | 6 | 03-03 | EWY | Risk Reversal | OPEN | -$1,077 |
 | 7 | 02-27 | AAOI | Long Stock | **CLOSED** | +$380 |
+| **8** | **03-04** | **GOOG** | **Bull Call Spread $315/$340** | **OPEN** | **-1.9%** |
 
 ---
 
@@ -79,16 +78,37 @@
 - **Thesis**: ✅ INTACT — Flow still accumulation, hold
 
 ### AMD — Long Call LEAP (Position #5)
-- **Entry**: 03-03 | **Current**: +0.1%
+- **Entry**: 03-03 | **Current**: +7.5%
 - **Edge**: IV mispricing (HV20 85.9% vs LEAP IV ~60%)
 - **Flow at Entry**: ACCUMULATION (Feb 27 peak 91.8% buy)
 - **Flow Now**: NEUTRAL (Mar 2 reverted to 45% buy)
 - **Options Flow**: LEAN_BEARISH (P/C 1.49x)
 - **Thesis**: ⚠️ WEAKENING — Accumulation cycle appears complete. Position size 7.4% violates 2.5% cap. Monitor closely for further deterioration.
 
+### GOOG — Bull Call Spread $315/$340 (Trade #8) ✨ NEW
+- **Entry**: 03-04 @ $6.26 net debit | **Current**: $6.15 (-1.9%)
+- **Structure**: 44 contracts, Apr 17 expiry (43 DTE)
+- **Edge**: EXTRAORDINARY dark pool accumulation
+  - 94.87% buy ratio (5-day sustained)
+  - 89.7 flow strength (threshold: 50)
+  - $6.67B in dark pool premium
+  - Feb 27 surge: 98.8% buy, $3.52B single day
+- **Options Flow**: BULLISH (P/C 0.30, HIGH confidence)
+- **Context**: Seasonality FAVORABLE (64% March), Analysts 86.6% Buy, $359 PT
+- **Kelly**: 2.46% of bankroll (within 2.5% cap)
+- **R:R**: 3.0:1 (max gain $82,456 / max risk $27,544)
+- **Thesis**: ✅ STRONG — First fully-compliant trade from standard evaluation. All three gates passed. Highest signal score on watchlist (129.7).
+
 ---
 
 ## Recent Evaluations
+
+### GOOG - 2026-03-04 ✅ EXECUTED
+- **Decision**: TRADE
+- **Structure**: Bull Call Spread $315/$340 (44 contracts)
+- **Fill**: $6.26 net debit ($27,544 total)
+- **Gates**: All three passed (Convexity 3.0:1, Edge 89.7 strength, Risk 2.46%)
+- **Thesis**: Extraordinary institutional accumulation confirmed by bullish options flow
 
 ### AMD - 2026-03-03 (LEAP IV Scan Follow-up)
 - **Decision**: NO_TRADE
@@ -138,7 +158,7 @@ The Pi startup extension (`.pi/extensions/startup-protocol.ts`) automatically:
 ### Data Files
 | File | Purpose |
 |------|---------|
-| `data/trade_log.json` | Executed trades (7 entries) |
+| `data/trade_log.json` | Executed trades (8 entries) |
 | `data/portfolio.json` | Open positions from IB |
 | `data/reconciliation.json` | IB sync discrepancies |
 | `data/watchlist.json` | Tickers under surveillance |
@@ -148,8 +168,29 @@ The Pi startup extension (`.pi/extensions/startup-protocol.ts`) automatically:
 |--------|---------|
 | `ib_reconcile.py` | Startup reconciliation (async) |
 | `ib_sync.py` | Manual portfolio sync |
+| `ib_order.py` | Place single-leg option orders |
+| `ib_fill_monitor.py` | Monitor orders for fills |
+| `exit_order_service.py` | Place pending exit orders (NEW) |
 | `blotter.py` | Today's fills and P&L |
 | `trade_blotter/flex_query.py` | Historical trades (365 days) |
+
+### Skills
+| Skill | Purpose |
+|-------|---------|
+| `ib-order-execution` | Order placement and fill monitoring |
+| `html-report` | Trade specification + P&L templates |
+
+### Services
+| Service | Status | Description |
+|---------|--------|-------------|
+| Exit Order Service | 🟢 Installing | Places pending target orders when IB accepts |
+| IB Reconciliation | 🟢 Active | Runs at Pi startup |
+
+### Templates
+| Template | Purpose |
+|----------|---------|
+| `trade-specification-template.html` | Full evaluation report (NEW) |
+| `pnl-template.html` | P&L reconciliation report |
 
 ---
 
@@ -164,6 +205,14 @@ The Pi startup extension (`.pi/extensions/startup-protocol.ts`) automatically:
 - [x] Set up Flex Query for historical trades
 - [x] Create P&L report template
 - [x] Add startup reconciliation
+- [x] Create ib_fill_monitor.py script
+- [x] Create ib-order-execution skill
+- [x] Execute first fully-compliant trade (GOOG)
+- [x] Create trade-specification-template.html
+- [x] Place GOOG stop loss order
+- [x] Create exit_order_service.py
+- [x] Install exit order service (launchd)
 - [ ] Close undefined risk positions before Friday expiry
-- [ ] Review PLTR for profit-taking (24 DTE, +116%)
+- [ ] Review PLTR for profit-taking (23 DTE, +175%)
 - [ ] Review IGV/SOFI for stop-loss exit
+- [ ] GOOG target order — place when spread reaches ~$9.23

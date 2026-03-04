@@ -1,3 +1,63 @@
+# Convex Scavenger
+
+An AI-powered options trading agent built on [PI](https://github.com/mariozechner/pi-coding-agent) that hunts for asymmetric bets using institutional dark pool flow data. It enforces a strict three-gate discipline — convexity, edge, risk management — on every trade decision.
+
+## What It Does
+
+The Convex Scavenger operates as an autonomous trading assistant for a sub-$1M individual account. It detects institutional positioning through dark pool and OTC flow signals, constructs convex options structures around those signals, and sizes positions using fractional Kelly criterion.
+
+**It does not generate trade ideas from narratives or technical analysis.** Every trade must pass three gates in order:
+
+1. **Convexity** — Potential gain must be >=2x potential loss. Only defined-risk positions (long options, vertical spreads).
+2. **Edge** — A specific, data-backed dark pool/OTC flow signal that hasn't yet moved price.
+3. **Risk Management** — Fractional Kelly sizing with a hard cap of 2.5% of bankroll per position.
+
+If any gate fails, no trade is taken.
+
+## Project Structure
+
+```
+convex-scavenger/
+├── .pi/                          # PI agent configuration
+│   ├── SYSTEM.md                 # Core agent identity and trading rules (system prompt)
+│   ├── AGENTS.md                 # Project workflow, commands, file references
+│   ├── extensions/
+│   │   ├── trading-tools.ts      # Kelly calculator tool
+│   │   └── startup-protocol.ts   # Auto-loads docs/* into context
+│   ├── prompts/
+│   │   ├── evaluate.md           # /evaluate [TICKER] — full trade analysis
+│   │   ├── journal.md            # /journal — log decisions to trade_log.json
+│   │   ├── portfolio.md          # /portfolio — position and exposure report
+│   │   └── scan.md               # /scan — daily dark pool signal sweep
+│   └── skills/
+│       └── options-analysis/
+│           └── SKILL.md          # Options chain analysis capability
+├── data/
+│   ├── portfolio.json            # Open positions, bankroll, exposure
+│   ├── trade_log.json            # Append-only decision journal
+│   ├── watchlist.json            # Tickers under surveillance
+│   └── ticker_cache.json         # Local cache of ticker → company name mappings
+├── docs/
+│   ├── prompt.md                 # Spec, constraints, deliverables
+│   ├── plans.md                  # Milestone workflow with validation steps
+│   ├── implement.md              # Execution runbook
+│   └── status.md                 # Current state and decision audit log
+├── scripts/
+│   ├── discover.py               # Market-wide flow scanner for new candidates
+│   ├── fetch_flow.py             # Dark pool + options flow from Unusual Whales
+│   ├── fetch_ticker.py           # Ticker validation via dark pool activity
+│   ├── fetch_options.py          # Options chain data (stub — bring your own source)
+│   ├── kelly.py                  # Kelly criterion calculator
+│   └── scanner.py                # Batch scan watchlist for flow signals
+└── README.md
+```
+
+## Prerequisites
+
+- [PI coding agent](https://github.com/mariozechner/pi-coding-agent) installed and configured
+- Python 3.10+
+- An [Unusual Whales](https://unusualwhales.com) API key for dark pool / flow data
+
 # Convex Scavenger — Project Instructions
 
 ## ⚠️ Data Fetching Priority (ALWAYS follow this order)

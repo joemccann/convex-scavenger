@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TICKER}} Evaluation | {{DATE}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #050505;
+      --bg-panel: #0A0A0A;
+      --bg-hover: #141414;
+      --border-dim: #1C1C1C;
+      --border-focus: #333333;
+      --text-primary: #F0F0F0;
+      --text-muted: #666666;
+      --accent-bg: #FFFFFF;
+      --accent-text: #000000;
+      --positive: #00FF88;
+      --negative: #FF4444;
+      --warning: #FFAA00;
+    }
+    
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg-base: #F5F5F5;
+        --bg-panel: #FFFFFF;
+        --bg-hover: #F0F0F0;
+        --border-dim: #D9D9D9;
+        --border-focus: #A3A3A3;
+        --text-primary: #0A0A0A;
+        --text-muted: #6B6B6B;
+        --accent-bg: #000000;
+        --accent-text: #FFFFFF;
+        --positive: #00AA55;
+        --negative: #DD2222;
+        --warning: #CC8800;
+      }
+    }
+
+    [data-theme="light"] {
+      --bg-base: #F5F5F5;
+      --bg-panel: #FFFFFF;
+      --bg-hover: #F0F0F0;
+      --border-dim: #D9D9D9;
+      --border-focus: #A3A3A3;
+      --text-primary: #0A0A0A;
+      --text-muted: #6B6B6B;
+      --accent-bg: #000000;
+      --accent-text: #FFFFFF;
+      --positive: #00AA55;
+      --negative: #DD2222;
+      --warning: #CC8800;
+    }
+    
+    [data-theme="dark"] {
+      --bg-base: #050505;
+      --bg-panel: #0A0A0A;
+      --bg-hover: #141414;
+      --border-dim: #1C1C1C;
+      --border-focus: #333333;
+      --text-primary: #F0F0F0;
+      --text-muted: #666666;
+      --accent-bg: #FFFFFF;
+      --accent-text: #000000;
+      --positive: #00FF88;
+      --negative: #FF4444;
+      --warning: #FFAA00;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      background: var(--bg-base);
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      border-bottom: 1px solid var(--border-dim);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .title {
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .timestamp {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-dim);
+      margin-bottom: 16px;
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-dim);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .panel-accent {
+      border: 2px solid var(--positive);
+    }
+
+    .panel-warning {
+      border: 2px solid var(--warning);
+    }
+
+    .panel-negative {
+      border: 2px solid var(--negative);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+      margin-bottom: 24px;
+    }
+
+    .metric {
+      background: var(--bg-panel);
+      padding: 16px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-value.large { font-size: 32px; }
+    .metric-value.small { font-size: 18px; }
+
+    .metric-change {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-dim);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-dim);
+      position: sticky;
+      top: 0;
+      background: var(--bg-panel);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    tr:hover {
+      background: var(--bg-hover);
+    }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .text-muted { color: var(--text-muted); }
+    .text-positive { color: var(--positive); }
+    .text-negative { color: var(--negative); }
+    .text-warning { color: var(--warning); }
+    .text-small { font-size: 11px; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid var(--border-dim);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .pill-accent {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-color: var(--accent-bg);
+    }
+
+    .pill-positive {
+      background: var(--positive);
+      color: #000;
+      border-color: var(--positive);
+    }
+
+    .pill-negative {
+      background: var(--negative);
+      color: #FFF;
+      border-color: var(--negative);
+    }
+
+    .pill-warning {
+      background: var(--warning);
+      color: #000;
+      border-color: var(--warning);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent-bg);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.positive { background: var(--positive); }
+    .status-dot.negative { background: var(--negative); }
+    .status-dot.warning { background: var(--warning); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .theme-toggle {
+      background: transparent;
+      border: 1px solid var(--border-dim);
+      color: var(--text-primary);
+      padding: 4px 12px;
+      font-family: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 150ms ease-in-out;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-focus);
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-dim);
+      margin: 32px 0;
+    }
+
+    .section-header {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .callout {
+      background: var(--bg-hover);
+      border-left: 3px solid var(--accent-bg);
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .callout-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .callout.positive { border-left-color: var(--positive); }
+    .callout.negative { border-left-color: var(--negative); }
+    .callout.warning { border-left-color: var(--warning); }
+
+    .footer {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-dim);
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .milestone {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .milestone-num {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--border-focus);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .milestone-num.complete {
+      background: var(--positive);
+      border-color: var(--positive);
+      color: #000;
+    }
+
+    .milestone-num.failed {
+      background: var(--negative);
+      border-color: var(--negative);
+      color: #FFF;
+    }
+
+    .gate-pass {
+      color: var(--positive);
+      font-weight: 600;
+    }
+
+    .gate-fail {
+      color: var(--negative);
+      font-weight: 600;
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      .theme-toggle { display: none; }
+      .panel { border-color: #ccc; }
+      .header { border-bottom-color: #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 
+    ============================================================
+    HEADER SECTION
+    Status options: ALL GATES PASSED, EDGE FAILED, CONVEXITY FAILED, NO TRADE
+    ============================================================
+    -->
+    <header class="header">
+      <div>
+        <h1 class="title">{{TICKER}} — Full Evaluation</h1>
+        <p class="subtitle">{{COMPANY_NAME}} · {{SECTOR}} · ${{CURRENT_PRICE}}</p>
+      </div>
+      <div class="header-actions">
+        <span class="status">
+          <!-- Use positive/negative/warning class based on outcome -->
+          <span class="status-dot {{STATUS_CLASS}}"></span>
+          {{STATUS_TEXT}}
+        </span>
+        <span class="timestamp">Generated: {{TIMESTAMP}}</span>
+        <button class="theme-toggle" onclick="toggleTheme()">◐ THEME</button>
+      </div>
+    </header>
+
+    <!-- 
+    ============================================================
+    SUMMARY METRICS (6 key metrics)
+    Only show if trade recommended
+    ============================================================
+    -->
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Signal Score</div>
+        <div class="metric-value {{SIGNAL_SCORE_CLASS}}">{{SIGNAL_SCORE}}</div>
+        <div class="metric-change">{{SIGNAL_SCORE_NOTE}}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Buy Ratio</div>
+        <div class="metric-value {{BUY_RATIO_CLASS}}">{{BUY_RATIO}}%</div>
+        <div class="metric-change">{{BUY_RATIO_NOTE}}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Flow Strength</div>
+        <div class="metric-value">{{FLOW_STRENGTH}}</div>
+        <div class="metric-change">Threshold: 50</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Convexity</div>
+        <div class="metric-value {{CONVEXITY_CLASS}}">{{RR_RATIO}}:1</div>
+        <div class="metric-change">Min required: 2:1</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Position Size</div>
+        <div class="metric-value">${{POSITION_SIZE}}</div>
+        <div class="metric-change">{{POSITION_PCT}}% of bankroll</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Max Gain</div>
+        <div class="metric-value text-positive">${{MAX_GAIN}}</div>
+        <div class="metric-change">{{MAX_GAIN_CONDITION}}</div>
+      </div>
+    </div>
+
+    <!-- 
+    ============================================================
+    MILESTONE SUMMARY
+    Use panel-accent for PASS, panel-negative for FAIL
+    ============================================================
+    -->
+    <div class="panel {{MILESTONE_PANEL_CLASS}}">
+      <div class="panel-header">
+        Evaluation Milestones
+        <span class="pill {{MILESTONE_PILL_CLASS}}">{{MILESTONES_COMPLETED}}</span>
+      </div>
+      <div class="panel-body">
+        <!-- Milestone 1: Ticker Validation -->
+        <div class="milestone">
+          <div class="milestone-num {{M1_CLASS}}">1</div>
+          <div><strong>Ticker Validation</strong> — {{M1_DESCRIPTION}}</div>
+          <span class="{{M1_GATE_CLASS}}">{{M1_RESULT}}</span>
+        </div>
+        <!-- Milestone 1B: Seasonality -->
+        <div class="milestone">
+          <div class="milestone-num {{M1B_CLASS}}">1B</div>
+          <div><strong>Seasonality</strong> — {{M1B_DESCRIPTION}}</div>
+          <span class="{{M1B_GATE_CLASS}}">{{M1B_RESULT}}</span>
+        </div>
+        <!-- Milestone 1C: Analyst Ratings -->
+        <div class="milestone">
+          <div class="milestone-num {{M1C_CLASS}}">1C</div>
+          <div><strong>Analyst Ratings</strong> — {{M1C_DESCRIPTION}}</div>
+          <span class="{{M1C_GATE_CLASS}}">{{M1C_RESULT}}</span>
+        </div>
+        <!-- Milestone 2: Dark Pool Flow -->
+        <div class="milestone">
+          <div class="milestone-num {{M2_CLASS}}">2</div>
+          <div><strong>Dark Pool Flow</strong> — {{M2_DESCRIPTION}}</div>
+          <span class="{{M2_GATE_CLASS}}">{{M2_RESULT}}</span>
+        </div>
+        <!-- Milestone 3: Options Flow -->
+        <div class="milestone">
+          <div class="milestone-num {{M3_CLASS}}">3</div>
+          <div><strong>Options Flow</strong> — {{M3_DESCRIPTION}}</div>
+          <span class="{{M3_GATE_CLASS}}">{{M3_RESULT}}</span>
+        </div>
+        <!-- Milestone 4: Edge Determination -->
+        <div class="milestone">
+          <div class="milestone-num {{M4_CLASS}}">4</div>
+          <div><strong>Edge Determination</strong> — {{M4_DESCRIPTION}}</div>
+          <span class="{{M4_GATE_CLASS}}">{{M4_RESULT}}</span>
+        </div>
+        <!-- Milestone 5: Structure (only if edge passed) -->
+        <div class="milestone">
+          <div class="milestone-num {{M5_CLASS}}">5</div>
+          <div><strong>Structure</strong> — {{M5_DESCRIPTION}}</div>
+          <span class="{{M5_GATE_CLASS}}">{{M5_RESULT}}</span>
+        </div>
+        <!-- Milestone 6: Kelly Sizing (only if structure passed) -->
+        <div class="milestone">
+          <div class="milestone-num {{M6_CLASS}}">6</div>
+          <div><strong>Kelly Sizing</strong> — {{M6_DESCRIPTION}}</div>
+          <span class="{{M6_GATE_CLASS}}">{{M6_RESULT}}</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 
+    ============================================================
+    DARK POOL FLOW SECTION
+    ============================================================
+    -->
+    <div class="section-header">Milestone 2: Dark Pool Flow Analysis</div>
+    
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">Daily Flow Breakdown</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="text-right">Buy Ratio</th>
+              <th class="text-right">Strength</th>
+              <th class="text-right">Premium</th>
+              <th>Direction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Repeat for each day (5 days typical) -->
+            <!-- {{DAILY_FLOW_ROWS}} -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">Aggregate Flow</div>
+        <div class="panel-body">
+          <table>
+            <tbody>
+              <tr>
+                <td>Total Volume</td>
+                <td class="text-right">{{TOTAL_VOLUME}}</td>
+              </tr>
+              <tr>
+                <td>Total Premium</td>
+                <td class="text-right"><strong>{{TOTAL_PREMIUM}}</strong></td>
+              </tr>
+              <tr>
+                <td>Buy Volume</td>
+                <td class="text-right text-positive">{{BUY_VOLUME}}</td>
+              </tr>
+              <tr>
+                <td>Sell Volume</td>
+                <td class="text-right text-negative">{{SELL_VOLUME}}</td>
+              </tr>
+              <tr>
+                <td>Buy Ratio</td>
+                <td class="text-right {{AGG_BUY_RATIO_CLASS}}"><strong>{{AGG_BUY_RATIO}}%</strong></td>
+              </tr>
+              <tr>
+                <td>Flow Strength</td>
+                <td class="text-right {{AGG_STRENGTH_CLASS}}"><strong>{{AGG_FLOW_STRENGTH}}</strong></td>
+              </tr>
+              <tr>
+                <td>Num Prints</td>
+                <td class="text-right">{{NUM_PRINTS}}</td>
+              </tr>
+              <tr>
+                <td>Sustained Days</td>
+                <td class="text-right"><strong>{{SUSTAINED_DAYS}} days</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key observation callout (if notable) -->
+    <div class="callout {{FLOW_CALLOUT_CLASS}}">
+      <div class="callout-title">Key Observation</div>
+      <p>{{FLOW_KEY_OBSERVATION}}</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 
+    ============================================================
+    OPTIONS FLOW SECTION
+    ============================================================
+    -->
+    <div class="section-header">Milestone 3: Options Flow Analysis</div>
+    
+    <div class="grid-3">
+      <div class="panel">
+        <div class="panel-header">Chain Bias</div>
+        <div class="panel-body">
+          <table>
+            <tbody>
+              <tr>
+                <td>Call Premium</td>
+                <td class="text-right text-positive">{{CALL_PREMIUM}}</td>
+              </tr>
+              <tr>
+                <td>Put Premium</td>
+                <td class="text-right">{{PUT_PREMIUM}}</td>
+              </tr>
+              <tr>
+                <td>P/C Ratio</td>
+                <td class="text-right {{PC_RATIO_CLASS}}"><strong>{{PC_RATIO}}</strong></td>
+              </tr>
+              <tr>
+                <td>Call Volume</td>
+                <td class="text-right">{{CALL_VOLUME}}</td>
+              </tr>
+              <tr>
+                <td>Put Volume</td>
+                <td class="text-right">{{PUT_VOLUME}}</td>
+              </tr>
+              <tr>
+                <td>Chain Bias</td>
+                <td class="text-right"><span class="pill {{CHAIN_BIAS_PILL}}">{{CHAIN_BIAS}}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">Institutional Flow</div>
+        <div class="panel-body">
+          <table>
+            <tbody>
+              <tr>
+                <td>Flow Alerts</td>
+                <td class="text-right">{{FLOW_ALERTS_COUNT}}</td>
+              </tr>
+              <tr>
+                <td>Call Premium</td>
+                <td class="text-right text-positive">{{INST_CALL_PREMIUM}}</td>
+              </tr>
+              <tr>
+                <td>Put Premium</td>
+                <td class="text-right">{{INST_PUT_PREMIUM}}</td>
+              </tr>
+              <tr>
+                <td>Sweep Premium</td>
+                <td class="text-right text-warning">{{SWEEP_PREMIUM}}</td>
+              </tr>
+              <tr>
+                <td>Flow Strength</td>
+                <td class="text-right">{{INST_FLOW_STRENGTH}}</td>
+              </tr>
+              <tr>
+                <td>Flow Bias</td>
+                <td class="text-right"><span class="pill {{FLOW_BIAS_PILL}}">{{FLOW_BIAS}}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">Combined Signal</div>
+        <div class="panel-body">
+          <table>
+            <tbody>
+              <tr>
+                <td>Chain Bias</td>
+                <td class="text-right"><span class="pill {{CHAIN_BIAS_PILL}}">{{CHAIN_BIAS}}</span></td>
+              </tr>
+              <tr>
+                <td>Flow Bias</td>
+                <td class="text-right"><span class="pill {{FLOW_BIAS_PILL}}">{{FLOW_BIAS}}</span></td>
+              </tr>
+              <tr>
+                <td>Combined</td>
+                <td class="text-right"><span class="pill {{COMBINED_BIAS_PILL}}">{{COMBINED_BIAS}}</span></td>
+              </tr>
+              <tr>
+                <td>Confidence</td>
+                <td class="text-right"><strong>{{COMBINED_CONFIDENCE}}</strong></td>
+              </tr>
+              <tr>
+                <td>Confluence</td>
+                <td class="text-right {{CONFLUENCE_CLASS}}">{{CONFLUENCE_STATUS}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-dim);">
+            <p class="text-small text-muted">{{CONFLUENCE_NOTE}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 
+    ============================================================
+    CONTEXT: SEASONALITY & ANALYSTS
+    ============================================================
+    -->
+    <div class="section-header">Context: Seasonality & Analyst Ratings</div>
+    
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">Seasonality ({{SEASONALITY_YEARS}}-Year Data)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th class="text-right">Avg Return</th>
+              <th class="text-right">Win Rate</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Current month row highlighted -->
+            <tr class="highlight">
+              <td><strong>{{CURRENT_MONTH}} (Current)</strong></td>
+              <td class="text-right {{CURRENT_MONTH_RETURN_CLASS}}">{{CURRENT_MONTH_RETURN}}</td>
+              <td class="text-right">{{CURRENT_MONTH_WIN_RATE}}%</td>
+              <td><span class="pill {{CURRENT_MONTH_PILL}}">{{CURRENT_MONTH_RATING}}</span></td>
+            </tr>
+            <!-- Next months -->
+            <!-- {{NEXT_MONTHS_ROWS}} -->
+          </tbody>
+        </table>
+        <div class="panel-body">
+          <p class="text-small text-muted">{{SEASONALITY_NOTE}}</p>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">Analyst Consensus ({{ANALYST_COUNT}} Analysts)</div>
+        <table>
+          <tbody>
+            <tr>
+              <td>Recommendation</td>
+              <td class="text-right"><span class="pill {{ANALYST_REC_PILL}}">{{ANALYST_RECOMMENDATION}}</span></td>
+            </tr>
+            <tr>
+              <td>Buy %</td>
+              <td class="text-right text-positive">{{ANALYST_BUY_PCT}}%</td>
+            </tr>
+            <tr>
+              <td>Hold %</td>
+              <td class="text-right">{{ANALYST_HOLD_PCT}}%</td>
+            </tr>
+            <tr>
+              <td>Sell %</td>
+              <td class="text-right text-muted">{{ANALYST_SELL_PCT}}%</td>
+            </tr>
+            <tr>
+              <td>Price Target</td>
+              <td class="text-right"><strong>${{ANALYST_PRICE_TARGET}}</strong></td>
+            </tr>
+            <tr>
+              <td>Upside</td>
+              <td class="text-right {{ANALYST_UPSIDE_CLASS}}">{{ANALYST_UPSIDE}}%</td>
+            </tr>
+            <tr>
+              <td>Recent Changes</td>
+              <td class="text-right">{{ANALYST_RECENT_CHANGES}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 
+    ============================================================
+    STRUCTURE & KELLY SIZING
+    Only show if edge passed
+    ============================================================
+    -->
+    <div class="section-header">Milestones 5-6: Structure & Kelly Sizing</div>
+    
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">Recommended Structure: {{STRUCTURE_TYPE}}</div>
+        <table>
+          <tbody>
+            <!-- For spreads, show both legs -->
+            <tr>
+              <td><span class="text-positive">● BUY</span></td>
+              <td>{{LONG_LEG_DESCRIPTION}}</td>
+              <td class="text-right">@ ${{LONG_LEG_PRICE}}</td>
+            </tr>
+            <!-- Short leg (if spread) -->
+            <tr>
+              <td><span class="text-negative">● SELL</span></td>
+              <td>{{SHORT_LEG_DESCRIPTION}}</td>
+              <td class="text-right">@ ${{SHORT_LEG_PRICE}}</td>
+            </tr>
+            <tr>
+              <td colspan="2"><strong>Net Debit</strong></td>
+              <td class="text-right"><strong>${{NET_DEBIT}}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="panel-body">
+          <table>
+            <tbody>
+              <tr>
+                <td>DTE</td>
+                <td class="text-right">{{DTE}} days</td>
+              </tr>
+              <tr>
+                <td>Breakeven</td>
+                <td class="text-right">${{BREAKEVEN}}</td>
+              </tr>
+              <tr>
+                <td>Max Risk</td>
+                <td class="text-right text-negative">${{MAX_RISK_PER_CONTRACT}} per contract</td>
+              </tr>
+              <tr>
+                <td>Max Gain</td>
+                <td class="text-right text-positive">${{MAX_GAIN_PER_CONTRACT}} per contract</td>
+              </tr>
+              <tr>
+                <td>R:R Ratio</td>
+                <td class="text-right text-positive"><strong>{{RR_RATIO}} : 1</strong></td>
+              </tr>
+              <tr>
+                <td>Risk Type</td>
+                <td class="text-right"><span class="pill pill-positive">DEFINED</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">Kelly Calculation</div>
+        <table>
+          <tbody>
+            <tr>
+              <td>P(max profit)</td>
+              <td class="text-right">{{P_MAX_PROFIT}}%</td>
+            </tr>
+            <tr>
+              <td>Odds</td>
+              <td class="text-right">{{KELLY_ODDS}} : 1</td>
+            </tr>
+            <tr>
+              <td>Bankroll</td>
+              <td class="text-right">${{BANKROLL}}</td>
+            </tr>
+            <tr>
+              <td>Full Kelly</td>
+              <td class="text-right">{{FULL_KELLY}}%</td>
+            </tr>
+            <tr>
+              <td>Fractional (0.25x)</td>
+              <td class="text-right">{{FRACTIONAL_KELLY}}%</td>
+            </tr>
+            <tr>
+              <td><strong>Hard Cap</strong></td>
+              <td class="text-right"><strong>2.5%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="panel-body" style="border-top: 1px solid var(--border-dim); margin-top: 0;">
+          <table>
+            <tbody>
+              <tr>
+                <td><strong>Position Size</strong></td>
+                <td class="text-right"><strong>${{POSITION_SIZE}}</strong></td>
+              </tr>
+              <tr>
+                <td>Contracts</td>
+                <td class="text-right">{{NUM_CONTRACTS}}</td>
+              </tr>
+              <tr>
+                <td>% of Bankroll</td>
+                <td class="text-right text-positive">{{POSITION_PCT}}% ✓</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 
+    ============================================================
+    TRADE SPECIFICATION (Final order details)
+    ============================================================
+    -->
+    <div class="section-header">Trade Specification</div>
+    
+    <div class="panel panel-accent">
+      <div class="panel-header">
+        {{TICKER}} {{STRUCTURE_SUMMARY}}
+        <span class="pill pill-positive">READY TO EXECUTE</span>
+      </div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <div>
+            <p><strong>Action:</strong> BUY TO OPEN</p>
+            <p style="margin-top: 8px;"><strong>Legs:</strong></p>
+            <ul style="margin-left: 20px; margin-top: 4px;">
+              <li>BUY {{NUM_CONTRACTS}}x {{LONG_LEG_FULL}} @ ${{LONG_LEG_PRICE}} (limit)</li>
+              <!-- Short leg if spread -->
+              <li>SELL {{NUM_CONTRACTS}}x {{SHORT_LEG_FULL}} @ ${{SHORT_LEG_PRICE}} (limit)</li>
+            </ul>
+            <p style="margin-top: 12px;"><strong>Net Debit:</strong> ${{NET_DEBIT}} per spread (${{DEBIT_PER_CONTRACT}} per contract)</p>
+            <p><strong>Total Cost:</strong> ${{TOTAL_COST}}</p>
+          </div>
+          <div>
+            <p><strong>Risk Management:</strong></p>
+            <ul style="margin-left: 20px; margin-top: 4px;">
+              <li>Max Risk: ${{TOTAL_COST}} ({{POSITION_PCT}}% of bankroll)</li>
+              <li>Max Gain: ${{TOTAL_MAX_GAIN}} (if {{MAX_GAIN_CONDITION}})</li>
+              <li>Target Exit: ${{TARGET_PRICE}} per spread ({{TARGET_RETURN}})</li>
+              <li>Stop Loss: ${{STOP_PRICE}} per spread ({{STOP_RETURN}})</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thesis callout -->
+    <div class="callout positive">
+      <div class="callout-title">Thesis</div>
+      <p>{{THESIS}}</p>
+    </div>
+
+    <!-- Risk factors callout -->
+    <div class="callout warning">
+      <div class="callout-title">Risk Factors</div>
+      <ul style="margin-left: 16px;">
+        <!-- {{RISK_FACTORS_LIST}} -->
+      </ul>
+    </div>
+
+    <!-- 
+    ============================================================
+    THREE GATES SUMMARY
+    ============================================================
+    -->
+    <div class="panel">
+      <div class="panel-header">Three Gates Summary</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Gate</th>
+            <th>Criterion</th>
+            <th>Required</th>
+            <th>Actual</th>
+            <th class="text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Convexity</strong></td>
+            <td>Risk:Reward Ratio</td>
+            <td class="text-right">≥ 2:1</td>
+            <td class="text-right {{GATE1_VALUE_CLASS}}">{{GATE1_ACTUAL}}</td>
+            <td class="text-center"><span class="pill {{GATE1_PILL}}">{{GATE1_STATUS}}</span></td>
+          </tr>
+          <tr>
+            <td><strong>2. Edge</strong></td>
+            <td>Institutional Flow Detection</td>
+            <td class="text-right">&gt;50 strength, 3+ days</td>
+            <td class="text-right {{GATE2_VALUE_CLASS}}">{{GATE2_ACTUAL}}</td>
+            <td class="text-center"><span class="pill {{GATE2_PILL}}">{{GATE2_STATUS}}</span></td>
+          </tr>
+          <tr>
+            <td><strong>3. Risk Mgmt</strong></td>
+            <td>Kelly-Sized Position</td>
+            <td class="text-right">≤ 2.5%</td>
+            <td class="text-right {{GATE3_VALUE_CLASS}}">{{GATE3_ACTUAL}}</td>
+            <td class="text-center"><span class="pill {{GATE3_PILL}}">{{GATE3_STATUS}}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <p>Convex Scavenger · Generated {{TIMESTAMP}} · Data: IB, Unusual Whales, EquityClock</p>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      
+      if (currentTheme) {
+        html.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        html.setAttribute('data-theme', prefersDark ? 'light' : 'dark');
+      }
+      updateToggleIcon();
+    }
+    
+    function updateToggleIcon() {
+      const btn = document.querySelector('.theme-toggle');
+      if (!btn) return;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        (!document.documentElement.getAttribute('data-theme') && 
+         window.matchMedia('(prefers-color-scheme: dark)').matches);
+      btn.textContent = isDark ? '☀ LIGHT' : '◐ DARK';
+    }
+    
+    document.addEventListener('DOMContentLoaded', updateToggleIcon);
+  </script>
+</body>
+</html>
