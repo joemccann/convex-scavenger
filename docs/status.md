@@ -147,9 +147,12 @@
 ### Startup Protocol
 The Pi startup extension (`.pi/extensions/startup-protocol.ts`) automatically runs checks with **full visibility**:
 
-**Output Format (batched into single notification):**
+**Output Format (two-phase notification):**
 ```
-🚀 Startup: Running 4 checks...
+🚀 Startup: Running 4 checks...     <- IMMEDIATE on startup
+```
+Then when async tasks complete:
+```
 [1/4] ✓ Loaded: Spec, Plans, Runbook, Status, Context Engineering
 [2/4] ✓ IB trades in sync
 [3/4] ✓ Monitor daemon running
@@ -158,9 +161,9 @@ The Pi startup extension (`.pi/extensions/startup-protocol.ts`) automatically ru
 ```
 
 **Notification Strategy:**
-- All messages are collected during startup
-- When all processes complete, a **single batched notification** is sent
-- This avoids TUI notification coalescence that would show only the last message
+- **Immediate**: Show check count as soon as Pi starts
+- **Deferred**: Progress messages collected during async execution
+- **Final**: Single batched notification with all results when complete
 
 **Processes tracked:**
 1. **docs** — Load project docs + always-on skills
@@ -227,6 +230,7 @@ The Pi startup extension (`.pi/extensions/startup-protocol.ts`) automatically ru
 2. ~~`fetch_options.py` placeholder data~~ **FIXED** — Uses UW chain + flow
 3. ~~Options no real-time prices~~ **FIXED** — IB realtime server supports options
 4. Flex Query sometimes times out on IB server side (retry usually works)
+5. ~~`ib_order_manage.py modify` Error 103~~ **FIXED** — Reconnects as original clientId before placeOrder
 
 ## Follow-ups
 - [x] Implement trade blotter service

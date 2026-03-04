@@ -87,8 +87,15 @@ def cancel_order(ib: IB, order_id: int, perm_id: int):
                orderId=trade.order.orderId, finalStatus=final_status)
 
 
-def modify_order(ib: IB, order_id: int, perm_id: int, new_price: float):
-    """Modify limit price of an open order."""
+def modify_order(ib: IB, order_id: int, perm_id: int, new_price: float,
+                 host: str, port: int):
+    """Modify limit price of an open order.
+
+    IB's placeOrder is scoped by (clientId, orderId) — a modify from a
+    different clientId than the one that placed the order silently fails
+    with Error 103 (Duplicate order id).  We detect the original clientId
+    from trade.order.clientId and reconnect as that client before modifying.
+    """
     trade = find_trade(ib, order_id, perm_id)
     if trade is None:
         output("error", f"Trade not found (orderId={order_id}, permId={perm_id})")
@@ -104,15 +111,39 @@ def modify_order(ib: IB, order_id: int, perm_id: int, new_price: float):
     if new_price <= 0:
         output("error", "New price must be > 0")
 
+    # Reconnect as the original placer if needed (fixes Error 103)
+    original_client_id = trade.order.clientId
+    if ib.client.clientId != original_client_id:
+        ib.disconnect()
+        ib.connect(host, port, clientId=original_client_id)
+        trade = find_trade(ib, order_id, perm_id)
+        if trade is None:
+            output("error", "Trade not found after reconnect as original clientId")
+
+    # Capture IB error events during the modify attempt
+    error_msgs = []
+    def on_error(reqId, errorCode, errorString, advancedOrderRejectJson=""):
+        if reqId == trade.order.orderId or reqId == -1:
+            error_msgs.append((errorCode, errorString))
+
+    ib.errorEvent += on_error
+
     old_price = trade.order.lmtPrice
     trade.order.lmtPrice = new_price
     ib.placeOrder(trade.contract, trade.order)
 
-    # Wait for acknowledgement
+    # Wait for acknowledgement or fatal error
     for _ in range(10):
         ib.sleep(0.5)
         if trade.orderStatus.status in ("Submitted", "PreSubmitted"):
             break
+        # Check for fatal errors (103=duplicate id, 201=rejected, 202=cancelled)
+        fatal = [e for e in error_msgs if e[0] in (103, 201, 202)]
+        if fatal:
+            ib.errorEvent -= on_error
+            output("error", f"IB rejected modify: {fatal[0][1]}")
+
+    ib.errorEvent -= on_error
 
     final_status = trade.orderStatus.status
     output("ok", f"Order modified: ${old_price} → ${new_price}",
@@ -152,7 +183,8 @@ def main():
         if args.action == "cancel":
             cancel_order(ib, args.order_id, args.perm_id)
         elif args.action == "modify":
-            modify_order(ib, args.order_id, args.perm_id, args.new_price)
+            modify_order(ib, args.order_id, args.perm_id, args.new_price,
+                         args.host, args.port)
     finally:
         ib.disconnect()
 

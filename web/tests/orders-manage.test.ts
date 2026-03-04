@@ -425,3 +425,45 @@ describe("IB clientId collision prevention", () => {
     );
   });
 });
+
+// =============================================================================
+// Cross-client modify fix — reconnect as original clientId (Error 103 fix)
+// =============================================================================
+
+describe("Cross-client modify fix (Error 103)", () => {
+  let scriptContent: string;
+
+  before(async () => {
+    const filePath = path.resolve(__dirname, "../../scripts/ib_order_manage.py");
+    scriptContent = await readFile(filePath, "utf8");
+  });
+
+  it("modify_order accepts host and port parameters", () => {
+    // The function signature must include host and port so it can reconnect
+    const sigMatch = scriptContent.match(/def modify_order\(([^)]+)\)/);
+    assert.ok(sigMatch, "modify_order function should exist");
+    const params = sigMatch[1];
+    assert.ok(params.includes("host"), "modify_order must accept host parameter");
+    assert.ok(params.includes("port"), "modify_order must accept port parameter");
+  });
+
+  it("modify_order reconnects as original clientId", () => {
+    // Must read trade.order.clientId and reconnect if different
+    assert.ok(
+      scriptContent.includes("trade.order.clientId") || scriptContent.includes("original_client_id"),
+      "modify_order must read the original clientId from the trade",
+    );
+    assert.ok(
+      scriptContent.includes("ib.disconnect()") && scriptContent.includes("ib.connect("),
+      "modify_order must disconnect and reconnect as the original clientId",
+    );
+  });
+
+  it("modify_order detects IB error events", () => {
+    // Must register an errorEvent listener to catch Error 103/201/202
+    assert.ok(
+      scriptContent.includes("errorEvent"),
+      "modify_order must listen for IB errorEvent to detect rejections",
+    );
+  });
+});
