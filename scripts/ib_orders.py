@@ -21,18 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-try:
-    from ib_insync import IB
-except ImportError:
-    print("ERROR: ib_insync not installed")
-    print("Install with: pip install ib_insync")
-    sys.exit(1)
-
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 DEFAULT_PORT = DEFAULT_GATEWAY_PORT
 DEFAULT_CLIENT_ID = CLIENT_IDS["ib_orders"]
@@ -43,13 +32,13 @@ ORDERS_PATH = Path(__file__).parent.parent / "data" / "orders.json"
 IB_SENTINEL = 1.7976931348623157e308
 
 
-def connect_ib(host: str, port: int, client_id: int) -> IB:
-    """Connect to TWS/IB Gateway"""
-    ib = IB()
+def connect_ib(host: str, port: int, client_id: int) -> IBClient:
+    """Connect to TWS/IB Gateway, return an IBClient."""
+    client = IBClient()
     try:
-        ib.connect(host, port, clientId=client_id)
+        client.connect(host=host, port=port, client_id=client_id)
         print(f"Connected to IB on {host}:{port}")
-        return ib
+        return client
     except Exception as e:
         print(f"Connection failed: {e}")
         sys.exit(1)
@@ -104,11 +93,9 @@ def safe_float(value) -> Optional[float]:
         return None
 
 
-def fetch_open_orders(ib: IB) -> list:
+def fetch_open_orders(client: IBClient) -> list:
     """Fetch open orders from all clients"""
-    ib.reqAllOpenOrders()
-    ib.sleep(1)
-    trades = ib.openTrades()
+    trades = client.get_open_orders()
     orders = []
 
     for trade in trades:
@@ -136,9 +123,9 @@ def fetch_open_orders(ib: IB) -> list:
     return orders
 
 
-def fetch_executed_orders(ib: IB) -> list:
+def fetch_executed_orders(client: IBClient) -> list:
     """Fetch executed fills via fills()"""
-    fills = ib.fills()
+    fills = client.get_fills()
     executed = []
 
     for fill in fills:
@@ -229,14 +216,14 @@ def main():
 
     args = parser.parse_args()
 
-    ib = connect_ib(args.host, args.port, args.client_id)
+    client = connect_ib(args.host, args.port, args.client_id)
 
     try:
         print("Fetching open orders...")
-        open_orders = fetch_open_orders(ib)
+        open_orders = fetch_open_orders(client)
 
         print("Fetching executed fills...")
-        executed_orders = fetch_executed_orders(ib)
+        executed_orders = fetch_executed_orders(client)
 
         display_orders(open_orders, executed_orders)
 
@@ -247,7 +234,7 @@ def main():
             print("\nRun with --sync to save to orders.json")
 
     finally:
-        ib.disconnect()
+        client.disconnect()
         print("Disconnected from IB")
 
 

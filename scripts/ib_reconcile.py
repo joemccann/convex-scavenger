@@ -25,11 +25,8 @@ from typing import Optional
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
+
 
 def log(msg: str, level: str = "info"):
     """Print log message with timestamp."""
@@ -37,13 +34,13 @@ def log(msg: str, level: str = "info"):
     prefix = {"info": "ℹ", "warn": "⚠", "error": "✗", "success": "✓"}.get(level, "•")
     print(f"[{timestamp}] {prefix} {msg}")
 
-def connect_ib(port: int = DEFAULT_GATEWAY_PORT, client_id: int = CLIENT_IDS["ib_reconcile"]) -> Optional[object]:
+
+def connect_ib(port: int = DEFAULT_GATEWAY_PORT, client_id: int = CLIENT_IDS["ib_reconcile"]) -> Optional[IBClient]:
     """Connect to IB Gateway/TWS."""
     try:
-        from ib_insync import IB
-        ib = IB()
-        ib.connect(DEFAULT_HOST, port, clientId=client_id)
-        return ib
+        client = IBClient()
+        client.connect(host=DEFAULT_HOST, port=port, client_id=client_id)
+        return client
     except Exception as e:
         log(f"IB connection failed: {e}", "error")
         return None
@@ -71,12 +68,10 @@ def get_trade_log_trades(trade_log: dict) -> set:
         trades.add((ticker, date, structure))
     return trades
 
-def fetch_ib_executions(ib, lookback_days: int = 7) -> list:
+def fetch_ib_executions(client: IBClient, lookback_days: int = 7) -> list:
     """Fetch executions from IB for the last N days."""
-    from ib_insync import ExecutionFilter
-    
     executions = []
-    fills = ib.fills()
+    fills = client.get_fills()
     
     for fill in fills:
         e = fill.execution
@@ -100,10 +95,10 @@ def fetch_ib_executions(ib, lookback_days: int = 7) -> list:
     
     return executions
 
-def fetch_ib_positions(ib) -> list:
+def fetch_ib_positions(client: IBClient) -> list:
     """Fetch current positions from IB."""
     positions = []
-    for p in ib.positions():
+    for p in client.get_positions():
         positions.append({
             "symbol": p.contract.symbol,
             "sec_type": p.contract.secType,
@@ -256,23 +251,23 @@ def main():
     reconcile_path = project_root / "data" / "reconciliation.json"
     
     # Connect to IB
-    ib = connect_ib()
-    if not ib:
+    client = connect_ib()
+    if not client:
         log("Cannot connect to IB Gateway - skipping reconciliation", "warn")
         return
-    
+
     try:
         # Load local data
         trade_log = load_json(str(trade_log_path))
         portfolio = load_json(str(portfolio_path))
-        
+
         # Fetch IB data
         log("Fetching executions from IB...")
-        executions = fetch_ib_executions(ib)
+        executions = fetch_ib_executions(client)
         log(f"Found {len(executions)} executions")
-        
+
         log("Fetching positions from IB...")
-        positions = fetch_ib_positions(ib)
+        positions = fetch_ib_positions(client)
         log(f"Found {len(positions)} positions")
         
         # Find discrepancies
@@ -303,7 +298,7 @@ def main():
             log("✓ Trade log and portfolio are in sync", "success")
         
     finally:
-        ib.disconnect()
+        client.disconnect()
         log("Disconnected from IB")
 
 if __name__ == "__main__":

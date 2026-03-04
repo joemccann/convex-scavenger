@@ -15,20 +15,10 @@ import json
 import sys
 from pathlib import Path
 
-try:
-    from ib_insync import IB
-except ImportError:
-    print(json.dumps({"status": "error", "message": "ib_insync not installed"}))
-    sys.exit(1)
-
-# Add parent so utils is importable when run from project root
+# Add parent so clients is importable when run from project root
 sys.path.insert(0, str(Path(__file__).parent))
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 DEFAULT_PORT = DEFAULT_GATEWAY_PORT
 DEFAULT_CLIENT_ID = CLIENT_IDS["ib_order_manage"]
@@ -40,11 +30,9 @@ def output(status: str, message: str, **extra):
     sys.exit(0 if status == "ok" else 1)
 
 
-def find_trade(ib: IB, order_id: int, perm_id: int):
+def find_trade(client: IBClient, order_id: int, perm_id: int):
     """Find an open trade by permId (preferred) or orderId."""
-    ib.reqAllOpenOrders()
-    ib.sleep(1)
-    trades = ib.openTrades()
+    trades = client.get_open_orders()
 
     # Prefer permId (globally unique across IB sessions)
     if perm_id > 0:
@@ -61,9 +49,9 @@ def find_trade(ib: IB, order_id: int, perm_id: int):
     return None
 
 
-def cancel_order(ib: IB, order_id: int, perm_id: int):
+def cancel_order(client: IBClient, order_id: int, perm_id: int):
     """Cancel an open order."""
-    trade = find_trade(ib, order_id, perm_id)
+    trade = find_trade(client, order_id, perm_id)
     if trade is None:
         output("error", f"Trade not found (orderId={order_id}, permId={perm_id})")
 
@@ -71,10 +59,10 @@ def cancel_order(ib: IB, order_id: int, perm_id: int):
     if status in ("Filled", "Cancelled", "ApiCancelled"):
         output("error", f"Order already {status} — cannot cancel")
 
-    ib.cancelOrder(trade.order)
+    client.cancel_order(trade.order)
     # Wait for status change
     for _ in range(10):
-        ib.sleep(0.5)
+        client.sleep(0.5)
         if trade.orderStatus.status in ("Cancelled", "ApiCancelled"):
             break
 
@@ -87,16 +75,16 @@ def cancel_order(ib: IB, order_id: int, perm_id: int):
                orderId=trade.order.orderId, finalStatus=final_status)
 
 
-def modify_order(ib: IB, order_id: int, perm_id: int, new_price: float,
+def modify_order(client: IBClient, order_id: int, perm_id: int, new_price: float,
                  host: str, port: int):
     """Modify limit price of an open order.
 
-    IB's placeOrder is scoped by (clientId, orderId) — a modify from a
+    IB's placeOrder is scoped by (clientId, orderId) -- a modify from a
     different clientId than the one that placed the order silently fails
     with Error 103 (Duplicate order id).  We detect the original clientId
     from trade.order.clientId and reconnect as that client before modifying.
     """
-    trade = find_trade(ib, order_id, perm_id)
+    trade = find_trade(client, order_id, perm_id)
     if trade is None:
         output("error", f"Trade not found (orderId={order_id}, permId={perm_id})")
 
@@ -113,10 +101,10 @@ def modify_order(ib: IB, order_id: int, perm_id: int, new_price: float,
 
     # Reconnect as the original placer if needed (fixes Error 103)
     original_client_id = trade.order.clientId
-    if ib.client.clientId != original_client_id:
-        ib.disconnect()
-        ib.connect(host, port, clientId=original_client_id)
-        trade = find_trade(ib, order_id, perm_id)
+    if client.ib.client.clientId != original_client_id:
+        client.disconnect()
+        client.connect(host=host, port=port, client_id=original_client_id)
+        trade = find_trade(client, order_id, perm_id)
         if trade is None:
             output("error", "Trade not found after reconnect as original clientId")
 
@@ -126,24 +114,24 @@ def modify_order(ib: IB, order_id: int, perm_id: int, new_price: float,
         if reqId == trade.order.orderId or reqId == -1:
             error_msgs.append((errorCode, errorString))
 
-    ib.errorEvent += on_error
+    client.ib.errorEvent += on_error
 
     old_price = trade.order.lmtPrice
     trade.order.lmtPrice = new_price
-    ib.placeOrder(trade.contract, trade.order)
+    client.place_order(trade.contract, trade.order)
 
     # Wait for acknowledgement or fatal error
     for _ in range(10):
-        ib.sleep(0.5)
+        client.sleep(0.5)
         if trade.orderStatus.status in ("Submitted", "PreSubmitted"):
             break
         # Check for fatal errors (103=duplicate id, 201=rejected, 202=cancelled)
         fatal = [e for e in error_msgs if e[0] in (103, 201, 202)]
         if fatal:
-            ib.errorEvent -= on_error
+            client.ib.errorEvent -= on_error
             output("error", f"IB rejected modify: {fatal[0][1]}")
 
-    ib.errorEvent -= on_error
+    client.ib.errorEvent -= on_error
 
     final_status = trade.orderStatus.status
     output("ok", f"Order modified: ${old_price} → ${new_price}",
@@ -173,20 +161,20 @@ def main():
     if args.order_id == 0 and args.perm_id == 0:
         output("error", "Must provide --order-id or --perm-id")
 
-    ib = IB()
+    client = IBClient()
     try:
-        ib.connect(args.host, args.port, clientId=DEFAULT_CLIENT_ID)
+        client.connect(host=args.host, port=args.port, client_id=DEFAULT_CLIENT_ID)
     except Exception as e:
         output("error", f"IB connection failed: {e}")
 
     try:
         if args.action == "cancel":
-            cancel_order(ib, args.order_id, args.perm_id)
+            cancel_order(client, args.order_id, args.perm_id)
         elif args.action == "modify":
-            modify_order(ib, args.order_id, args.perm_id, args.new_price,
+            modify_order(client, args.order_id, args.perm_id, args.new_price,
                          args.host, args.port)
     finally:
-        ib.disconnect()
+        client.disconnect()
 
 
 if __name__ == "__main__":

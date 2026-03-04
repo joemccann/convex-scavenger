@@ -35,7 +35,8 @@ MAX_RETRIES = 2
 RETRY_DELAY = 3  # seconds between retries
 CACHE_TTL_HOURS = 4  # Use cached data if less than this old
 
-from utils.ib_connection import (
+from clients.ib_client import (
+    IBClient,
     CLIENT_IDS,
     DEFAULT_HOST as IB_HOST,
     DEFAULT_GATEWAY_PORT as IB_PORT,
@@ -115,35 +116,34 @@ def get_cached_rating(ticker: str) -> Optional[dict]:
 # =============================================================================
 
 def connect_ib(port: int = IB_PORT) -> Tuple[any, bool]:
-    """Try to connect to IB. Returns (ib_instance, success)."""
+    """Try to connect to IB. Returns (client_instance, success)."""
     try:
-        from ib_insync import IB, Stock
-        ib = IB()
-        ib.connect(IB_HOST, port, clientId=IB_CLIENT_ID, timeout=5)
-        return ib, True
+        client = IBClient()
+        client.connect(host=IB_HOST, port=port, client_id=IB_CLIENT_ID, timeout=5)
+        return client, True
     except ImportError:
         return None, False
     except Exception as e:
         return None, False
 
 
-def fetch_from_ib(ib, ticker: str) -> Optional[dict]:
+def fetch_from_ib(client: IBClient, ticker: str) -> Optional[dict]:
     """
     Fetch analyst ratings from Interactive Brokers using RESC fundamental data.
     Returns parsed ratings dict or None if unavailable.
-    
-    Note: Requires IB fundamentals data subscription. Error 10358 means 
+
+    Note: Requires IB fundamentals data subscription. Error 10358 means
     "Fundamentals data is not allowed" - subscription not active.
     """
     try:
         from ib_insync import Stock
-        
+
         contract = Stock(ticker, 'SMART', 'USD')
-        ib.qualifyContracts(contract)
-        
+        client.qualify_contracts(contract)
+
         # Request analyst estimates (RESC = Reuters Estimates)
         # This may fail with error 10358 if fundamentals subscription not active
-        xml_data = ib.reqFundamentalData(contract, 'RESC')
+        xml_data = client.ib.reqFundamentalData(contract, 'RESC')
         
         if not xml_data:
             return None
@@ -413,26 +413,26 @@ def fetch_from_yahoo(ticker: str) -> dict:
 # Main Fetch Function with Priority
 # =============================================================================
 
-def fetch_analyst_ratings(ticker: str, use_cache: bool = True, force_source: str = None, ib=None) -> dict:
+def fetch_analyst_ratings(ticker: str, use_cache: bool = True, force_source: str = None, client=None) -> dict:
     """
     Fetch analyst ratings with data source priority:
     1. Interactive Brokers (if connected)
     2. Yahoo Finance (fallback)
     """
     ticker = ticker.upper()
-    
+
     # Check cache first
     if use_cache and not force_source:
         cached = get_cached_rating(ticker)
         if cached and not cached.get("error"):
             return cached
-    
+
     # Try IB first (unless forced to Yahoo)
-    if force_source != "yahoo" and ib is not None:
-        result = fetch_from_ib(ib, ticker)
+    if force_source != "yahoo" and client is not None:
+        result = fetch_from_ib(client, ticker)
         if result and not result.get("error"):
             return result
-    
+
     # Fallback to Yahoo Finance
     return fetch_from_yahoo(ticker)
 
@@ -669,50 +669,50 @@ def main():
         sys.exit(1)
     
     # Try to connect to IB
-    ib = None
+    client = None
     ib_connected = False
     ib_port = args.port
-    
+
     if args.source != "yahoo":
         print(f"Attempting IB connection on port {ib_port}...", file=sys.stderr, end=" ")
-        ib, ib_connected = connect_ib(port=ib_port)
+        client, ib_connected = connect_ib(port=ib_port)
         if ib_connected:
             print("Connected ✓", file=sys.stderr)
         else:
             print("Not available, using Yahoo Finance", file=sys.stderr)
     else:
         print("Using Yahoo Finance (forced)", file=sys.stderr)
-    
+
     # Fetch ratings
     results = []
     ratings_dict = {}
-    
+
     print(f"Fetching analyst ratings for {len(tickers)} tickers...", file=sys.stderr)
-    
+
     for i, ticker in enumerate(sorted(tickers)):
         print(f"  {ticker}...", file=sys.stderr, end=" ", flush=True)
-        
+
         data = fetch_analyst_ratings(
-            ticker, 
+            ticker,
             use_cache=not args.no_cache,
             force_source=args.source,
-            ib=ib
+            client=client,
         )
         results.append(data)
         ratings_dict[ticker] = data
-        
+
         source = data.get("source", "?")
         cached = " (cached)" if data.get("from_cache") else ""
         print(f"{source}{cached}", file=sys.stderr)
-        
+
         # Rate limiting for Yahoo
         if not ib_connected and i < len(tickers) - 1:
             time.sleep(REQUEST_DELAY)
-    
+
     # Disconnect IB
-    if ib and ib_connected:
+    if client and ib_connected:
         try:
-            ib.disconnect()
+            client.disconnect()
         except Exception:
             pass
 

@@ -13,9 +13,16 @@ from typing import List, Optional, Dict
 import requests
 import time
 
-from ib_insync import IB, Fill
+from ib_insync import Fill
 
 from models import Execution, Trade, TradeBlotter, Side, SecurityType
+
+# Add scripts dir so clients package is importable
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from clients.ib_client import IBClient
 
 
 class ExecutionFetcher(ABC):
@@ -30,27 +37,26 @@ class ExecutionFetcher(ABC):
 class IBFetcher(ExecutionFetcher):
     """
     Fetches executions from Interactive Brokers via API.
-    
+
     Supports:
     - Today's fills (real-time)
     - Completed orders
     """
-    
+
     def __init__(self, host: str = "127.0.0.1", port: int = 4001, client_id: int = 90):
         self.host = host
         self.port = port
         self.client_id = client_id
-        self.ib = IB()
-    
+        self.client = IBClient()
+
     def _connect(self):
         """Connect to IB Gateway/TWS."""
-        if not self.ib.isConnected():
-            self.ib.connect(self.host, self.port, clientId=self.client_id, timeout=15)
-    
+        if not self.client.is_connected():
+            self.client.connect(host=self.host, port=self.port, client_id=self.client_id)
+
     def _disconnect(self):
         """Disconnect from IB."""
-        if self.ib.isConnected():
-            self.ib.disconnect()
+        self.client.disconnect()
     
     def _parse_fill(self, fill: Fill) -> Execution:
         """Convert IB Fill object to Execution."""
@@ -106,7 +112,7 @@ class IBFetcher(ExecutionFetcher):
         """Fetch today's fills from IB."""
         self._connect()
         try:
-            fills = self.ib.fills()
+            fills = self.client.get_fills()
             executions = []
             
             for fill in fills:

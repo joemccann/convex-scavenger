@@ -27,17 +27,13 @@ from typing import Dict, List, Optional, Any
 import pytz
 
 try:
-    from ib_insync import IB, Option, ComboLeg, Contract, LimitOrder, util
+    from ib_insync import Option, ComboLeg, Contract, LimitOrder, util
 except ImportError:
     print("ERROR: ib_insync not installed")
     print("Install with: pip install ib_insync")
     sys.exit(1)
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 # Configuration
 DEFAULT_PORT = DEFAULT_GATEWAY_PORT
@@ -206,7 +202,7 @@ def extract_expiry(order: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def get_spread_price(ib: IB, ticker: str, legs: List[Dict]) -> Optional[float]:
+def get_spread_price(client: IBClient, ticker: str, legs: List[Dict]) -> Optional[float]:
     """Get current mid price for a spread"""
     if not legs or len(legs) < 2:
         return None
@@ -239,25 +235,25 @@ def get_spread_price(ib: IB, ticker: str, legs: List[Dict]) -> Optional[float]:
             ticker, expiry, short_leg["strike"], 'C', 'SMART', currency='USD'
         )
         
-        qualified = ib.qualifyContracts(long_call, short_call)
+        qualified = client.qualify_contracts(long_call, short_call)
         if len(qualified) != 2:
             return None
-        
+
         long_call, short_call = qualified
-        
+
         # Get market data
-        long_ticker = ib.reqMktData(long_call, '', False, False)
-        short_ticker = ib.reqMktData(short_call, '', False, False)
-        ib.sleep(2)
-        
+        long_ticker = client.get_quote(long_call)
+        short_ticker = client.get_quote(short_call)
+        client.sleep(2)
+
         # Calculate mid prices
         long_bid = long_ticker.bid if long_ticker.bid and not util.isNan(long_ticker.bid) else 0
         long_ask = long_ticker.ask if long_ticker.ask and not util.isNan(long_ticker.ask) else 0
         short_bid = short_ticker.bid if short_ticker.bid and not util.isNan(short_ticker.bid) else 0
         short_ask = short_ticker.ask if short_ticker.ask and not util.isNan(short_ticker.ask) else 0
-        
-        ib.cancelMktData(long_call)
-        ib.cancelMktData(short_call)
+
+        client.cancel_market_data(long_call)
+        client.cancel_market_data(short_call)
         
         if not all([long_bid, long_ask, short_bid, short_ask]):
             return None
@@ -286,7 +282,7 @@ def can_place_order(current_price: float, target_price: float) -> bool:
 
 
 def place_target_order(
-    ib: IB,
+    client: IBClient,
     ticker: str,
     legs: List[Dict],
     contracts: int,
@@ -323,8 +319,8 @@ def place_target_order(
         # Qualify contracts
         long_call = Option(ticker, expiry, long_leg["strike"], 'C', 'SMART', currency='USD')
         short_call = Option(ticker, expiry, short_leg["strike"], 'C', 'SMART', currency='USD')
-        ib.qualifyContracts(long_call, short_call)
-        
+        client.qualify_contracts(long_call, short_call)
+
         # Create combo for closing (SELL the spread)
         combo = Contract()
         combo.symbol = ticker
@@ -361,8 +357,8 @@ def place_target_order(
             return -1
         
         # Place order
-        trade = ib.placeOrder(combo, order)
-        ib.sleep(3)
+        trade = client.place_order(combo, order)
+        client.sleep(3)
         
         if trade.orderStatus.status in ['Submitted', 'PreSubmitted']:
             log(f"✓ Target order placed: #{trade.order.orderId} @ ${target_price:.2f}")
@@ -406,15 +402,15 @@ def check_and_place_orders(dry_run: bool = False) -> Dict[str, Any]:
     result["pending_orders"] = pending
     
     # Connect to IB
-    ib = IB()
+    client = IBClient()
     try:
-        ib.connect(DEFAULT_HOST, DEFAULT_PORT, clientId=DEFAULT_CLIENT_ID)
+        client.connect(host=DEFAULT_HOST, port=DEFAULT_PORT, client_id=DEFAULT_CLIENT_ID)
         log("Connected to IB Gateway")
     except Exception as e:
         log(f"Failed to connect to IB: {e}", "ERROR")
         result["errors"].append(str(e))
         return result
-    
+
     try:
         for order_info in pending:
             ticker = order_info["ticker"]
@@ -422,11 +418,11 @@ def check_and_place_orders(dry_run: bool = False) -> Dict[str, Any]:
             contracts = order_info["contracts"]
             legs = order_info["legs"]
             trade_id = order_info["trade_id"]
-            
+
             log(f"\nChecking {ticker}...")
-            
+
             # Get current spread price
-            current_price = get_spread_price(ib, ticker, legs)
+            current_price = get_spread_price(client, ticker, legs)
             if current_price is None:
                 log(f"Could not get current price for {ticker}", "WARNING")
                 continue
@@ -438,7 +434,7 @@ def check_and_place_orders(dry_run: bool = False) -> Dict[str, Any]:
                 log(f"  ✓ Within IB limit threshold - attempting to place order")
                 
                 order_id = place_target_order(
-                    ib, ticker, legs, contracts, target_price, dry_run,
+                    client, ticker, legs, contracts, target_price, dry_run,
                     order_data=order_info
                 )
                 
@@ -460,9 +456,9 @@ def check_and_place_orders(dry_run: bool = False) -> Dict[str, Any]:
                 log(f"  → IB will accept when spread reaches ~${threshold_price:.2f}")
     
     finally:
-        ib.disconnect()
+        client.disconnect()
         log("Disconnected from IB")
-    
+
     return result
 
 

@@ -54,11 +54,7 @@ except ImportError:
     HAS_WS = False
     print("Warning: websockets not installed. Run: pip install websockets", file=sys.stderr)
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+from clients.ib_client import CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 # Configure logging
 logging.basicConfig(

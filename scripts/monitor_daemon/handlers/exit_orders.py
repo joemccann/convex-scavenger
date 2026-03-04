@@ -15,7 +15,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+from ib_insync import Option, LimitOrder
+
 from .base import BaseHandler
+from clients.ib_client import IBClient
 
 logger = logging.getLogger(__name__)
 
@@ -122,12 +125,10 @@ class ExitOrdersHandler(BaseHandler):
     def execute(self) -> Dict[str, Any]:
         """
         Check pending orders and place those within threshold.
-        
+
         Returns:
             Dict with orders checked, placed, and skipped
         """
-        from ib_insync import IB, Option, LimitOrder
-        
         result = {
             "orders_checked": 0,
             "orders_placed": 0,
@@ -136,27 +137,27 @@ class ExitOrdersHandler(BaseHandler):
             "skipped": [],
             "timestamp": datetime.now().isoformat()
         }
-        
+
         pending = self._load_pending_orders()
-        
+
         if not pending:
             logger.debug("No pending exit orders")
             return result
-        
+
         result["orders_checked"] = len(pending)
-        
-        ib = IB()
-        
+
+        client = IBClient()
+
         try:
-            ib.connect('127.0.0.1', self.ib_port, clientId=self.client_id)
+            client.connect(host='127.0.0.1', port=self.ib_port, client_id=self.client_id)
             logger.debug("Connected to IB")
-            
+
             for order_info in pending:
                 ticker = order_info["ticker"]
                 target_price = order_info["target_price"]
                 contracts = order_info.get("contracts", 1)
                 spec = order_info.get("contract_spec", {})
-                
+
                 # Build contract
                 if spec:
                     contract = Option(
@@ -167,8 +168,8 @@ class ExitOrdersHandler(BaseHandler):
                         exchange="SMART",
                         currency="USD"
                     )
-                    
-                    qualified = ib.qualifyContracts(contract)
+
+                    qualified = client.qualify_contracts(contract)
                     if not qualified:
                         logger.warning(f"Could not qualify contract for {ticker}")
                         result["orders_skipped"] += 1
@@ -177,19 +178,19 @@ class ExitOrdersHandler(BaseHandler):
                             "reason": "contract_qualification_failed"
                         })
                         continue
-                    
+
                     contract = qualified[0]
-                    
+
                     # Get current price
-                    ticker_data = ib.reqMktData(contract, '', False, False)
-                    ib.sleep(2)
-                    
+                    ticker_data = client.get_quote(contract)
+                    client.sleep(2)
+
                     bid = ticker_data.bid if ticker_data.bid and ticker_data.bid > 0 else 0
                     ask = ticker_data.ask if ticker_data.ask and ticker_data.ask > 0 else 0
                     mid = (bid + ask) / 2 if bid and ask else 0
-                    
-                    ib.cancelMktData(contract)
-                    
+
+                    client.cancel_market_data(contract)
+
                     if mid <= 0:
                         logger.warning(f"No market data for {contract.localSymbol}")
                         result["orders_skipped"] += 1
@@ -199,7 +200,7 @@ class ExitOrdersHandler(BaseHandler):
                             "reason": "no_market_data"
                         })
                         continue
-                    
+
                     # Check if within threshold
                     if self._can_place_order(mid, target_price):
                         # Place the order
@@ -209,17 +210,17 @@ class ExitOrdersHandler(BaseHandler):
                             lmtPrice=target_price,
                             tif="GTC"
                         )
-                        
-                        trade = ib.placeOrder(contract, limit_order)
-                        ib.sleep(1)
-                        
+
+                        trade = client.place_order(contract, limit_order)
+                        client.sleep(1)
+
                         order_id = trade.order.orderId
-                        
+
                         logger.info(
                             f"Placed exit order: SELL {contracts}x {contract.localSymbol} "
                             f"@ ${target_price:.2f} (Order #{order_id})"
                         )
-                        
+
                         result["orders_placed"] += 1
                         result["placed"].append({
                             "ticker": ticker,
@@ -228,7 +229,7 @@ class ExitOrdersHandler(BaseHandler):
                             "price": target_price,
                             "current_mid": mid
                         })
-                        
+
                         # Update trade log
                         self._update_trade_log(
                             order_info["trade_id"],
@@ -256,12 +257,12 @@ class ExitOrdersHandler(BaseHandler):
                         "ticker": ticker,
                         "reason": "no_contract_spec"
                     })
-                    
+
         except Exception as e:
             logger.error(f"Exit orders error: {e}")
             result["error"] = str(e)
         finally:
-            ib.disconnect()
+            client.disconnect()
             logger.debug("Disconnected from IB")
         
         return result

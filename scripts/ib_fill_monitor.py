@@ -31,17 +31,13 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 try:
-    from ib_insync import IB, Option, util
+    from ib_insync import Option, util
 except ImportError:
     print("ERROR: ib_insync not installed")
     print("Install with: pip install ib_insync")
     sys.exit(1)
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 DEFAULT_PORT = DEFAULT_GATEWAY_PORT
 DEFAULT_CLIENT_ID = CLIENT_IDS["ib_fill_monitor"]
@@ -51,34 +47,32 @@ DEFAULT_TIMEOUT = 300  # 5 minutes default
 
 class FillMonitor:
     def __init__(self, host: str, port: int, client_id: int):
-        self.ib = IB()
+        self.client = IBClient()
         self.host = host
         self.port = port
         self.client_id = client_id
         self.leg_tickers = {}  # conId -> ticker for spread legs
-        
+
     def connect(self) -> bool:
         try:
-            self.ib.connect(self.host, self.port, clientId=self.client_id)
+            self.client.connect(host=self.host, port=self.port, client_id=self.client_id)
             return True
         except Exception as e:
             print(f"✗ Connection failed: {e}")
             return False
-    
+
     def disconnect(self):
         # Cancel any market data subscriptions
         for ticker in self.leg_tickers.values():
             try:
-                self.ib.cancelMktData(ticker.contract)
+                self.client.cancel_market_data(ticker.contract)
             except Exception:
                 pass
-        self.ib.disconnect()
-    
+        self.client.disconnect()
+
     def get_open_orders(self, symbol: Optional[str] = None, order_id: Optional[int] = None) -> List:
         """Get open orders, optionally filtered by symbol or order ID"""
-        self.ib.reqAllOpenOrders()
-        self.ib.sleep(1)
-        trades = self.ib.openTrades()
+        trades = self.client.get_open_orders()
         
         if order_id is not None:
             trades = [t for t in trades if t.order.orderId == order_id]
@@ -89,7 +83,7 @@ class FillMonitor:
     
     def get_fills(self, symbol: Optional[str] = None) -> List:
         """Get execution fills, optionally filtered by symbol"""
-        fills = self.ib.fills()
+        fills = self.client.get_fills()
         if symbol:
             fills = [f for f in fills if f.contract.symbol == symbol.upper()]
         return fills
@@ -109,12 +103,12 @@ class FillMonitor:
             
             # Create option contract from conId
             # We need to request contract details to get full contract
-            contracts = self.ib.reqContractDetails(
+            contracts = self.client.get_contract_details(
                 Option(conId=leg.conId, exchange='SMART')
             )
             if contracts:
                 contract = contracts[0].contract
-                ticker = self.ib.reqMktData(contract, '', False, False)
+                ticker = self.client.get_quote(contract)
                 self.leg_tickers[leg.conId] = ticker
     
     def get_spread_mid(self, trade) -> Optional[float]:
@@ -219,7 +213,7 @@ class FillMonitor:
             for trade in trades:
                 self.setup_spread_market_data(trade)
             
-            self.ib.sleep(2)  # Allow market data to populate
+            self.client.sleep(2)  # Allow market data to populate
             
             if not output_json:
                 print(f"📡 Monitoring {len(trades)} order(s)")
@@ -236,12 +230,11 @@ class FillMonitor:
             max_checks = timeout // interval
             
             while checks < max_checks:
-                self.ib.sleep(interval)
+                self.client.sleep(interval)
                 checks += 1
-                
-                # Refresh orders
-                self.ib.reqAllOpenOrders()
-                self.ib.sleep(0.5)
+
+                # Refresh orders — get_open_orders() already calls reqAllOpenOrders
+                self.client.sleep(0.5)
                 
                 current_trades = self.get_open_orders()
                 current_ids = {t.order.orderId for t in current_trades}

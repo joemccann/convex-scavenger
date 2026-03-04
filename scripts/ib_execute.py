@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 try:
-    from ib_insync import IB, Stock, Option, LimitOrder, util
+    from ib_insync import Stock, Option, LimitOrder, util
 except ImportError:
     print("ERROR: ib_insync not installed")
     print("Install with: pip install ib_insync")
@@ -50,11 +50,10 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-)
+# Also add scripts dir so clients package is importable
+sys.path.insert(0, str(Path(__file__).parent))
+
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 DEFAULT_PORT = DEFAULT_GATEWAY_PORT
 DEFAULT_CLIENT_ID = CLIENT_IDS.get("ib_execute", 25)
@@ -66,34 +65,34 @@ TRADE_LOG_PATH = PROJECT_ROOT / "data" / "trade_log.json"
 
 class OrderExecutor:
     """Unified order executor with monitoring and logging"""
-    
+
     def __init__(self, host: str, port: int, client_id: int):
-        self.ib = IB()
+        self.client = IBClient()
         self.host = host
         self.port = port
         self.client_id = client_id
-        
+
     def connect(self) -> bool:
         try:
-            self.ib.connect(self.host, self.port, clientId=self.client_id)
+            self.client.connect(host=self.host, port=self.port, client_id=self.client_id)
             print(f"✓ Connected to IB on {self.host}:{self.port}")
             return True
         except Exception as e:
             print(f"✗ Connection failed: {e}")
             return False
-    
+
     def disconnect(self):
-        self.ib.disconnect()
+        self.client.disconnect()
         print("✓ Disconnected from IB")
-    
+
     def get_stock_contract(self, symbol: str) -> Stock:
         """Create and qualify a stock contract"""
         contract = Stock(symbol, 'SMART', 'USD')
-        qualified = self.ib.qualifyContracts(contract)
+        qualified = self.client.qualify_contracts(contract)
         if not qualified:
             raise ValueError(f"Could not qualify stock: {symbol}")
         return qualified[0]
-    
+
     def get_option_contract(self, symbol: str, expiry: str, strike: float, right: str) -> Option:
         """Create and qualify an option contract"""
         contract = Option(
@@ -104,28 +103,28 @@ class OrderExecutor:
             exchange='SMART',
             currency='USD'
         )
-        qualified = self.ib.qualifyContracts(contract)
+        qualified = self.client.qualify_contracts(contract)
         if not qualified:
             raise ValueError(f"Could not qualify option: {symbol} {expiry} ${strike} {right}")
         return qualified[0]
-    
+
     def get_market_data(self, contract) -> Dict[str, float]:
         """Get current bid/ask/mid for contract"""
-        ticker = self.ib.reqMktData(contract, '', False, False)
-        
+        ticker = self.client.get_quote(contract)
+
         # Wait for data
         for _ in range(50):
-            self.ib.sleep(0.1)
+            self.client.sleep(0.1)
             if ticker.bid and ticker.ask and not util.isNan(ticker.bid) and not util.isNan(ticker.ask):
                 break
-        
+
         bid = ticker.bid if ticker.bid and not util.isNan(ticker.bid) else 0
         ask = ticker.ask if ticker.ask and not util.isNan(ticker.ask) else 0
         mid = (bid + ask) / 2 if bid and ask else 0
         last = ticker.last if ticker.last and not util.isNan(ticker.last) else mid
-        
-        self.ib.cancelMktData(contract)
-        
+
+        self.client.cancel_market_data(contract)
+
         return {
             'bid': round(bid, 2),
             'ask': round(ask, 2),
@@ -133,11 +132,11 @@ class OrderExecutor:
             'last': round(last, 2),
             'spread': round(ask - bid, 2) if bid and ask else 0,
         }
-    
+
     def place_order(self, contract, side: str, qty: int, limit_price: float) -> Optional[Any]:
         """Place a limit order and return trade object"""
         action = 'BUY' if side.upper() == 'BUY' else 'SELL'
-        
+
         order = LimitOrder(
             action=action,
             totalQuantity=qty,
@@ -145,45 +144,45 @@ class OrderExecutor:
             tif='DAY',
             outsideRth=False
         )
-        
+
         print(f"\n📤 Submitting order...")
-        trade = self.ib.placeOrder(contract, order)
-        self.ib.sleep(1)
-        
+        trade = self.client.place_order(contract, order)
+        self.client.sleep(1)
+
         print(f"✓ Order submitted - ID: {trade.order.orderId}")
         return trade
-    
+
     def monitor_order(self, trade, timeout: int = DEFAULT_TIMEOUT, interval: int = DEFAULT_INTERVAL) -> Dict[str, Any]:
         """
         Monitor an order for fills.
-        
+
         Returns:
             dict with status, fills, total_qty, avg_price, total_value
         """
         order_id = trade.order.orderId
         symbol = trade.contract.symbol
         target_qty = int(trade.order.totalQuantity)
-        
+
         print(f"\n📡 Monitoring order #{order_id} for fills...")
         print(f"   Symbol: {symbol}")
         print(f"   Quantity: {target_qty}")
         print(f"   Timeout: {timeout}s")
         print("=" * 50)
-        
+
         fills = []
         total_filled = 0
         start_time = datetime.now()
-        
+
         checks = 0
         max_checks = timeout // interval
-        
+
         while checks < max_checks:
-            self.ib.sleep(interval)
+            self.client.sleep(interval)
             checks += 1
-            
+
             # Get current order status
-            self.ib.reqAllOpenOrders()
-            self.ib.sleep(0.5)
+            trades = self.client.get_open_orders()
+            self.client.sleep(0.5)
             
             # Check order status from trade object
             status = trade.orderStatus
@@ -227,12 +226,12 @@ class OrderExecutor:
                 print(f"[{timestamp}] Working... {status.status}")
             
             # Check if order disappeared (filled outside our view)
-            open_orders = self.ib.openTrades()
+            open_orders = self.client.get_open_trades()
             order_still_open = any(t.order.orderId == order_id for t in open_orders)
             
             if not order_still_open:
                 # Order is no longer open - check executions
-                executions = self.ib.fills()
+                executions = self.client.get_fills()
                 order_fills = [f for f in executions if f.contract.symbol == symbol]
                 
                 if order_fills:

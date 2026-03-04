@@ -21,18 +21,13 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 try:
-    from ib_insync import IB, util
+    from ib_insync import util
 except ImportError:
     print("ERROR: ib_insync not installed")
     print("Install with: pip install ib_insync")
     sys.exit(1)
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_GATEWAY_PORT,
-    DEFAULT_TWS_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 # Default connection settings
 DEFAULT_PORT = DEFAULT_GATEWAY_PORT
@@ -41,13 +36,13 @@ DEFAULT_CLIENT_ID = CLIENT_IDS["ib_sync"]
 PORTFOLIO_PATH = Path(__file__).parent.parent / "data" / "portfolio.json"
 
 
-def connect_ib(host: str, port: int, client_id: int) -> IB:
-    """Connect to TWS/IB Gateway"""
-    ib = IB()
+def connect_ib(host: str, port: int, client_id: int) -> IBClient:
+    """Connect to TWS/IB Gateway, return an IBClient."""
+    client = IBClient()
     try:
-        ib.connect(host, port, clientId=client_id)
+        client.connect(host=host, port=port, client_id=client_id)
         print(f"✓ Connected to IB on {host}:{port}")
-        return ib
+        return client
     except Exception as e:
         print(f"✗ Connection failed: {e}")
         print("\nTroubleshooting:")
@@ -58,9 +53,9 @@ def connect_ib(host: str, port: int, client_id: int) -> IB:
         sys.exit(1)
 
 
-def get_account_summary(ib: IB) -> dict:
+def get_account_summary(client: IBClient) -> dict:
     """Fetch account summary (cash, net liquidation, etc.)"""
-    account_values = ib.accountSummary()
+    account_values = client.get_account_summary()
     
     summary = {}
     for av in account_values:
@@ -106,14 +101,24 @@ def detect_structure_type(legs: list) -> Tuple[str, str]:
     long_legs = [l for l in opt_legs if l['position'] > 0]
     short_legs = [l for l in opt_legs if l['position'] < 0]
     
-    # Risk Reversal: Short Put + Long Call (same expiry)
+    # Synthetic or Risk Reversal: Short Put + Long Call (or vice versa)
+    # Same strike = Synthetic Long/Short (behaves like stock)
+    # Different strikes = Risk Reversal (directional bet with hedge)
     if len(puts) == 1 and len(calls) == 1:
+        same_strike = puts[0].get('strike') == calls[0].get('strike')
+        
         if puts[0]['position'] < 0 and calls[0]['position'] > 0:
+            # Long Call + Short Put
+            if same_strike:
+                return "Synthetic Long", "undefined"
             return "Risk Reversal", "undefined"
         if puts[0]['position'] > 0 and calls[0]['position'] < 0:
+            # Long Put + Short Call
+            if same_strike:
+                return "Synthetic Short", "undefined"
             return "Reverse Risk Reversal", "undefined"
         if puts[0]['position'] > 0 and calls[0]['position'] > 0:
-            return "Strangle" if puts[0].get('strike') != calls[0].get('strike') else "Straddle", "defined"
+            return "Strangle" if not same_strike else "Straddle", "defined"
     
     # Vertical Spreads: Same type, different strikes, opposite directions
     if len(calls) == 2 and len(puts) == 0:
@@ -152,6 +157,10 @@ def format_structure_description(structure_type: str, legs: list) -> str:
     if "Spread" in structure_type:
         strikes = [l.get('strike') for l in opt_legs]
         return f"{structure_type} ${min(strikes)}/${max(strikes)}"
+    
+    if "Synthetic" in structure_type:
+        strike = next((l.get('strike') for l in opt_legs if l.get('right') in ('C', 'P')), '?')
+        return f"{structure_type} ${strike}"
     
     if "Risk Reversal" in structure_type:
         put_strike = next((l.get('strike') for l in opt_legs if l.get('right') == 'P'), '?')
@@ -313,9 +322,9 @@ def _resolve_market_price(market_price: Optional[float], bid: Optional[float], a
     return None, False
 
 
-def fetch_positions(ib: IB) -> list:
+def fetch_positions(client: IBClient) -> list:
     """Fetch all positions from IB"""
-    positions = ib.positions()
+    positions = client.get_positions()
     
     formatted = []
     for pos in positions:
@@ -347,20 +356,20 @@ def fetch_positions(ib: IB) -> list:
     return formatted
 
 
-def fetch_market_prices(ib: IB, positions: list) -> list:
+def fetch_market_prices(client: IBClient, positions: list) -> list:
     """Fetch current market prices for positions (batched for speed)"""
     # Qualify all contracts at once
     contracts = [pos['contract'] for pos in positions]
-    ib.qualifyContracts(*contracts)
+    client.qualify_contracts(*contracts)
 
     # Request all market data simultaneously
     tickers = []
     for pos in positions:
-        ticker = ib.reqMktData(pos['contract'], '', False, False)
+        ticker = client.get_quote(pos['contract'])
         tickers.append(ticker)
 
     # Single sleep for all data to arrive
-    ib.sleep(3)
+    client.sleep(3)
 
     # Read results and cancel
     for pos, ticker in zip(positions, tickers):
@@ -378,7 +387,7 @@ def fetch_market_prices(ib: IB, positions: list) -> list:
             pos['marketPrice'] = None
             pos['marketValue'] = None
             pos['marketPriceIsCalculated'] = False
-        ib.cancelMktData(pos['contract'])
+        client.cancel_market_data(pos['contract'])
         del pos['contract']  # Remove non-serializable contract object
 
     return positions
@@ -511,37 +520,37 @@ def main():
     args = parser.parse_args()
     
     # Connect
-    ib = connect_ib(args.host, args.port, args.client_id)
-    
+    client = connect_ib(args.host, args.port, args.client_id)
+
     try:
         # Fetch data
         print("Fetching account summary...")
-        account = get_account_summary(ib)
-        
+        account = get_account_summary(client)
+
         print("Fetching positions...")
-        positions = fetch_positions(ib)
-        
+        positions = fetch_positions(client)
+
         if not args.no_prices and positions:
             print("Fetching market prices...")
-            positions = fetch_market_prices(ib, positions)
+            positions = fetch_market_prices(client, positions)
         else:
             # Remove contract objects if not fetching prices
             for pos in positions:
                 if 'contract' in pos:
                     del pos['contract']
-        
+
         # Collapse multi-leg structures
         print("Analyzing position structures...")
         collapsed = collapse_positions(positions)
-        
+
         # Display with collapsed view
         display_portfolio(account, positions, collapsed)
-        
+
         # Summary stats
         defined = len([p for p in collapsed if p['risk_profile'] == 'defined'])
         undefined = len([p for p in collapsed if p['risk_profile'] != 'defined'])
         print(f"\n📋 SUMMARY: {len(collapsed)} positions ({defined} defined risk, {undefined} undefined)")
-        
+
         # Sync if requested
         if args.sync:
             portfolio = convert_to_portfolio_format(account, collapsed)
@@ -549,9 +558,9 @@ def main():
             print("\n⚠️  Note: kelly_optimal, target, and stop fields need manual evaluation")
         else:
             print("\nRun with --sync to save to portfolio.json")
-    
+
     finally:
-        ib.disconnect()
+        client.disconnect()
         print("✓ Disconnected from IB")
 
 

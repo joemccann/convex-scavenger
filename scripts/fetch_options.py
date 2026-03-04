@@ -19,14 +19,16 @@ from typing import Optional, Dict, Any, List, Tuple
 
 import requests
 
+from clients.uw_client import UWClient, UWAPIError
+
 # Configuration
 UW_TOKEN = os.environ.get("UW_TOKEN")
-UW_BASE = "https://api.unusualwhales.com"
 IB_PORTS = [4001, 7496, 7497, 4002]  # Gateway Live, TWS Live, TWS Paper, Gateway Paper
 
 # Try to import ib_insync
 try:
-    from ib_insync import IB, Stock, util
+    from ib_insync import Stock, util
+    from clients.ib_client import IBClient
     IB_AVAILABLE = True
 except ImportError:
     IB_AVAILABLE = False
@@ -63,20 +65,20 @@ def fetch_ib_options(ticker: str, port: int = 4001) -> Optional[Dict]:
         return None
     
     try:
-        ib = IB()
-        ib.connect('127.0.0.1', available_port, clientId=98, readonly=True)
-        
+        client = IBClient()
+        client.connect(host='127.0.0.1', port=available_port, client_id=98)
+
         stock = Stock(ticker, 'SMART', 'USD')
-        ib.qualifyContracts(stock)
-        
+        client.qualify_contracts(stock)
+
         # Get current price
-        ticker_data = ib.reqMktData(stock, '', False, False)
-        ib.sleep(1)
+        ticker_data = client.get_quote(stock)
+        client.sleep(1)
         spot_price = ticker_data.last if ticker_data.last else ticker_data.close
-        
+
         # Get options chains info
-        chains = ib.reqSecDefOptParams(stock.symbol, '', stock.secType, stock.conId)
-        
+        chains = client.ib.reqSecDefOptParams(stock.symbol, '', stock.secType, stock.conId)
+
         result = {
             "source": "ib",
             "port": available_port,
@@ -85,37 +87,35 @@ def fetch_ib_options(ticker: str, port: int = 4001) -> Optional[Dict]:
             "expirations": [],
             "strikes": []
         }
-        
+
         if chains:
             chain = chains[0]
             result["expirations"] = sorted(chain.expirations)[:10]  # Next 10 expirations
             result["strikes"] = sorted([s for s in chain.strikes if abs(s - spot_price) < spot_price * 0.3])
-        
-        ib.disconnect()
+
+        client.disconnect()
         return result
-        
+
     except Exception as e:
         return {"source": "ib", "error": str(e)}
 
 
-def fetch_uw_chain(ticker: str) -> Optional[Dict]:
+def fetch_uw_chain(ticker: str, _client: UWClient = None) -> Optional[Dict]:
     """Fetch options chain activity from Unusual Whales."""
     if not UW_TOKEN:
         return None
 
-    headers = {"Authorization": f"Bearer {UW_TOKEN}"}
-
     try:
-        resp = requests.get(
-            f"{UW_BASE}/api/stock/{ticker}/option-contracts",
-            headers=headers,
-            timeout=10
-        )
+        def _fetch(client):
+            return client.get_option_contracts(ticker)
 
-        if resp.status_code != 200:
-            return {"error": f"UW API returned {resp.status_code}"}
+        if _client is not None:
+            raw = _fetch(_client)
+        else:
+            with UWClient() as client:
+                raw = _fetch(client)
 
-        data = resp.json().get("data", [])
+        data = raw.get("data", [])
         
         if not data:
             return {"error": "No options chain data"}
@@ -225,25 +225,22 @@ def fetch_uw_chain(ticker: str) -> Optional[Dict]:
         return {"error": str(e)}
 
 
-def fetch_uw_flow(ticker: str, days: int = 7) -> Optional[Dict]:
+def fetch_uw_flow(ticker: str, days: int = 7, _client: UWClient = None) -> Optional[Dict]:
     """Fetch options flow alerts from Unusual Whales."""
     if not UW_TOKEN:
         return None
 
-    headers = {"Authorization": f"Bearer {UW_TOKEN}"}
-
     try:
-        resp = requests.get(
-            f"{UW_BASE}/api/option-trades/flow-alerts",
-            params={"ticker_symbol": ticker, "limit": 100},
-            headers=headers,
-            timeout=10
-        )
+        def _fetch(client):
+            return client.get_flow_alerts(ticker=ticker, limit=100)
 
-        if resp.status_code != 200:
-            return {"error": f"UW API returned {resp.status_code}"}
+        if _client is not None:
+            raw = _fetch(_client)
+        else:
+            with UWClient() as client:
+                raw = _fetch(client)
 
-        data = resp.json().get("data", [])
+        data = raw.get("data", [])
         
         if not data:
             return {"total_alerts": 0, "bias": "NO_DATA"}
@@ -437,17 +434,18 @@ def fetch_options(ticker: str, dte_min: int = 20, dte_max: int = 45,
     # 2. Try UW for chain + flow (preferred for volume/premium data)
     if source in (None, "uw") and UW_TOKEN:
         result["sources_tried"].append("uw")
-        
-        # Always try UW for chain - it has volume/premium data that IB doesn't provide
-        uw_chain = fetch_uw_chain(ticker)
-        if uw_chain and "error" not in uw_chain:
-            chain_data = uw_chain
-            # Merge in IB spot price if available
-            if ib_info and "spot_price" in ib_info:
-                chain_data["spot_price"] = ib_info["spot_price"]
-        
-        # Always get flow from UW (only source for this data)
-        flow_data = fetch_uw_flow(ticker)
+
+        with UWClient() as uw_client:
+            # Always try UW for chain - it has volume/premium data that IB doesn't provide
+            uw_chain = fetch_uw_chain(ticker, _client=uw_client)
+            if uw_chain and "error" not in uw_chain:
+                chain_data = uw_chain
+                # Merge in IB spot price if available
+                if ib_info and "spot_price" in ib_info:
+                    chain_data["spot_price"] = ib_info["spot_price"]
+
+            # Always get flow from UW (only source for this data)
+            flow_data = fetch_uw_flow(ticker, _client=uw_client)
     
     # If forcing IB only, use IB data
     if source == "ib" and ib_info and not chain_data:

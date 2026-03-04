@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 from .base import BaseHandler
+from clients.ib_client import IBClient
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +53,10 @@ class FillMonitorHandler(BaseHandler):
     def execute(self) -> Dict[str, Any]:
         """
         Check all open orders for fills.
-        
+
         Returns:
             Dict with orders, fills, and changes detected
         """
-        from ib_insync import IB
-        
         result = {
             "orders": [],
             "fills": [],
@@ -67,18 +66,15 @@ class FillMonitorHandler(BaseHandler):
             "complete_fills": 0,
             "timestamp": datetime.now().isoformat()
         }
-        
-        ib = IB()
-        
+
+        client = IBClient()
+
         try:
-            ib.connect('127.0.0.1', self.ib_port, clientId=self.client_id)
+            client.connect(host='127.0.0.1', port=self.ib_port, client_id=self.client_id)
             logger.debug("Connected to IB")
-            
+
             # Fetch all open orders
-            ib.reqAllOpenOrders()
-            ib.sleep(1)
-            
-            trades = ib.openTrades()
+            trades = client.get_open_orders()
             current_order_ids = set()
             
             for trade in trades:
@@ -172,7 +168,7 @@ class FillMonitorHandler(BaseHandler):
             logger.error(f"Fill monitor error: {e}")
             result["error"] = str(e)
         finally:
-            ib.disconnect()
+            client.disconnect()
             logger.debug("Disconnected from IB")
         
         return result

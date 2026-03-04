@@ -34,11 +34,13 @@ from typing import Optional, List, Dict
 from dataclasses import dataclass, field, asdict
 
 try:
-    from ib_insync import IB, Stock, Option, util
+    from ib_insync import Stock, Option, util
 except ImportError as e:
     print(f"ERROR: Missing dependency: {e}")
     print("Install with: pip install ib_insync")
     sys.exit(1)
+
+from clients.ib_client import IBClient, DEFAULT_HOST, DEFAULT_GATEWAY_PORT
 
 
 # Preset ticker groups
@@ -120,8 +122,7 @@ PRESETS = {
 }
 
 # Connection defaults
-DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 4001
+DEFAULT_PORT = DEFAULT_GATEWAY_PORT
 DEFAULT_CLIENT_ID = 10  # Different from main sync script
 
 # Analysis parameters
@@ -185,13 +186,13 @@ class ScanResult:
     best_opportunity: Optional[OptionData] = None
 
 
-def connect_ib(host: str, port: int, client_id: int) -> IB:
-    """Connect to TWS/IB Gateway"""
-    ib = IB()
+def connect_ib(host: str, port: int, client_id: int) -> IBClient:
+    """Connect to TWS/IB Gateway, return an IBClient."""
+    client = IBClient()
     try:
-        ib.connect(host, port, clientId=client_id)
+        client.connect(host=host, port=port, client_id=client_id)
         print(f"✓ Connected to IB on {host}:{port}")
-        return ib
+        return client
     except Exception as e:
         print(f"✗ Connection failed: {e}")
         sys.exit(1)
@@ -229,27 +230,25 @@ def calculate_historical_volatility(prices: list, period: int) -> float:
     return round(annual_vol, 2)
 
 
-def fetch_historical_data(ib: IB, ticker: str, days: int = 800) -> list:
+def fetch_historical_data(client: IBClient, ticker: str, days: int = 800) -> list:
     """Fetch historical daily closes for HV calculation"""
     contract = Stock(ticker, "SMART", "USD")
-    ib.qualifyContracts(contract)
-    
+    client.qualify_contracts(contract)
+
     # IB requires durations > 365 days to use year format
     if days > 365:
         years = max(1, days // 252)  # Trading days per year
         duration_str = f"{years} Y"
     else:
         duration_str = f"{days} D"
-    
+
     # Request historical data
-    bars = ib.reqHistoricalData(
+    bars = client.get_historical_data(
         contract,
-        endDateTime="",
-        durationStr=duration_str,
-        barSizeSetting="1 day",
-        whatToShow="TRADES",
-        useRTH=True,
-        formatDate=1
+        duration=duration_str,
+        bar_size="1 day",
+        what_to_show="TRADES",
+        use_rth=True,
     )
     
     if not bars:
@@ -259,11 +258,11 @@ def fetch_historical_data(ib: IB, ticker: str, days: int = 800) -> list:
     return [bar.close for bar in bars]
 
 
-def fetch_volatility_data(ib: IB, ticker: str, sector: str) -> Optional[VolatilityData]:
+def fetch_volatility_data(client: IBClient, ticker: str, sector: str) -> Optional[VolatilityData]:
     """Calculate multi-timeframe HV for an ETF"""
     print(f"  Fetching historical data for {ticker}...")
-    
-    prices = fetch_historical_data(ib, ticker, days=800)
+
+    prices = fetch_historical_data(client, ticker, days=800)
     
     if len(prices) < 60:
         print(f"  ⚠ Insufficient data for {ticker} ({len(prices)} days)")
@@ -287,13 +286,13 @@ def fetch_volatility_data(ib: IB, ticker: str, sector: str) -> Optional[Volatili
     )
 
 
-def get_leap_expirations(ib: IB, ticker: str, target_years: list) -> list:
+def get_leap_expirations(client: IBClient, ticker: str, target_years: list) -> list:
     """Get available LEAP expiration dates for target years"""
     contract = Stock(ticker, "SMART", "USD")
-    ib.qualifyContracts(contract)
-    
-    # Request option chain parameters
-    chains = ib.reqSecDefOptParams(ticker, "", "STK", contract.conId)
+    client.qualify_contracts(contract)
+
+    # Request option chain parameters (need conId for accurate results)
+    chains = client.ib.reqSecDefOptParams(ticker, "", "STK", contract.conId)
     
     if not chains:
         return []
@@ -341,7 +340,7 @@ def find_strikes_by_delta(options: list, target_deltas: list, current_price: flo
     return result
 
 
-def fetch_option_chain(ib: IB, ticker: str, expiry: str, current_price: float) -> list:
+def fetch_option_chain(client: IBClient, ticker: str, expiry: str, current_price: float) -> list:
     """Fetch call options for a specific expiration with greeks"""
     
     # Define strike range (roughly 70% to 150% of current price for LEAPs)
@@ -373,23 +372,23 @@ def fetch_option_chain(ib: IB, ticker: str, expiry: str, current_price: float) -
     qualified = []
     for contract in contracts:
         try:
-            ib.qualifyContracts(contract)
+            client.qualify_contracts(contract)
             if contract.conId:
                 qualified.append(contract)
         except Exception:
             pass
-    
+
     if not qualified:
         return []
-    
+
     # Request market data for all options
     tickers = []
     for contract in qualified:
-        ticker_data = ib.reqMktData(contract, "106", False, False)  # 106 = greeks
+        ticker_data = client.get_quote(contract, generic_ticks="106")  # 106 = greeks
         tickers.append((contract, ticker_data))
-    
+
     # Wait for data
-    ib.sleep(3)
+    client.sleep(3)
     
     options = []
     for contract, ticker_data in tickers:
@@ -410,7 +409,7 @@ def fetch_option_chain(ib: IB, ticker: str, expiry: str, current_price: float) -
         
         # Skip if no meaningful data
         if iv == 0 or delta == 0:
-            ib.cancelMktData(contract)
+            client.cancel_market_data(contract)
             continue
         
         options.append({
@@ -427,7 +426,7 @@ def fetch_option_chain(ib: IB, ticker: str, expiry: str, current_price: float) -
             'volume': 0
         })
         
-        ib.cancelMktData(contract)
+        client.cancel_market_data(contract)
     
     return options
 
@@ -476,7 +475,7 @@ def analyze_mispricing(option: dict, vol_data: VolatilityData, min_gap: float) -
     )
 
 
-def scan_etf(ib: IB, ticker: str, sector: str, target_years: list, 
+def scan_etf(client: IBClient, ticker: str, sector: str, target_years: list,
              target_deltas: list, min_gap: float) -> Optional[ScanResult]:
     """Complete scan of one ETF for LEAP IV mispricing"""
     
@@ -485,7 +484,7 @@ def scan_etf(ib: IB, ticker: str, sector: str, target_years: list,
     print(f"{'='*50}")
     
     # 1. Get volatility data
-    vol_data = fetch_volatility_data(ib, ticker, sector)
+    vol_data = fetch_volatility_data(client, ticker, sector)
     if not vol_data:
         return None
     
@@ -496,7 +495,7 @@ def scan_etf(ib: IB, ticker: str, sector: str, target_years: list,
     print(f"  Current Price: ${vol_data.current_price:.2f}")
     
     # 2. Get LEAP expirations
-    expirations = get_leap_expirations(ib, ticker, target_years)
+    expirations = get_leap_expirations(client, ticker, target_years)
     if not expirations:
         print(f"  ⚠ No LEAP expirations found for {target_years}")
         return ScanResult(volatility=vol_data)
@@ -509,7 +508,7 @@ def scan_etf(ib: IB, ticker: str, sector: str, target_years: list,
     for expiry in expirations:
         print(f"\n  Fetching {expiry} chain...")
         
-        chain = fetch_option_chain(ib, ticker, expiry, vol_data.current_price)
+        chain = fetch_option_chain(client, ticker, expiry, vol_data.current_price)
         if not chain:
             print(f"    ⚠ No options data for {expiry}")
             continue
@@ -1094,7 +1093,7 @@ Available presets: sectors, mag7, semis, financials, energy, china, emerging
         sys.exit(1)
     
     # Connect to IB
-    ib = connect_ib(args.host, args.port, args.client_id)
+    client = connect_ib(args.host, args.port, args.client_id)
     
     target_years = args.years
     target_deltas = args.deltas
@@ -1115,7 +1114,7 @@ Available presets: sectors, mag7, semis, financials, energy, china, emerging
         for ticker, sector in tickers_to_scan.items():
             try:
                 result = scan_etf(
-                    ib, ticker, sector,
+                    client, ticker, sector,
                     target_years, target_deltas, args.min_gap
                 )
                 if result:
@@ -1187,7 +1186,7 @@ Available presets: sectors, mag7, semis, financials, energy, china, emerging
                 print(f"✓ JSON saved to {json_path}")
         
     finally:
-        ib.disconnect()
+        client.disconnect()
         print("✓ Disconnected from IB")
 
 

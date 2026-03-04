@@ -18,36 +18,32 @@ import sys
 from datetime import datetime
 
 try:
-    from ib_insync import IB, Option, LimitOrder, util
+    from ib_insync import Option, LimitOrder, util
 except ImportError:
     print("ERROR: ib_insync not installed")
     print("Install with: pip install ib_insync")
     sys.exit(1)
 
-from utils.ib_connection import (
-    CLIENT_IDS,
-    DEFAULT_HOST,
-    DEFAULT_TWS_PORT,
-)
+from clients.ib_client import IBClient, CLIENT_IDS, DEFAULT_HOST, DEFAULT_TWS_PORT
 
 DEFAULT_PORT = DEFAULT_TWS_PORT  # TWS paper trading
 DEFAULT_CLIENT_ID = CLIENT_IDS["ib_order"]
 
 
-def connect_ib(host: str, port: int, client_id: int) -> IB:
-    """Connect to TWS/IB Gateway"""
-    ib = IB()
+def connect_ib(host: str, port: int, client_id: int) -> IBClient:
+    """Connect to TWS/IB Gateway, return an IBClient."""
+    client = IBClient()
     try:
-        ib.connect(host, port, clientId=client_id)
+        client.connect(host=host, port=port, client_id=client_id)
         print(f"✓ Connected to IB on {host}:{port}")
-        return ib
+        return client
     except Exception as e:
         print(f"✗ Connection failed: {e}")
         print("\nMake sure TWS/Gateway is running with API enabled")
         sys.exit(1)
 
 
-def get_option_contract(ib: IB, symbol: str, expiry: str, strike: float, right: str) -> Option:
+def get_option_contract(client: IBClient, symbol: str, expiry: str, strike: float, right: str) -> Option:
     """Create and qualify an option contract"""
     contract = Option(
         symbol=symbol,
@@ -57,25 +53,25 @@ def get_option_contract(ib: IB, symbol: str, expiry: str, strike: float, right: 
         exchange='SMART',
         currency='USD'
     )
-    
-    qualified = ib.qualifyContracts(contract)
+
+    qualified = client.qualify_contracts(contract)
     if not qualified:
         print(f"✗ Could not qualify contract: {symbol} {expiry} ${strike} {right}")
         sys.exit(1)
-    
+
     return qualified[0]
 
 
-def get_market_data(ib: IB, contract) -> dict:
+def get_market_data(client: IBClient, contract) -> dict:
     """Get current bid/ask/mid for contract"""
-    ticker = ib.reqMktData(contract, '', False, False)
-    
+    ticker = client.get_quote(contract)
+
     # Wait for data (up to 5 seconds)
     for _ in range(50):
-        ib.sleep(0.1)
+        client.sleep(0.1)
         if ticker.bid and ticker.ask and not util.isNan(ticker.bid) and not util.isNan(ticker.ask):
             break
-    
+
     bid = ticker.bid if ticker.bid and not util.isNan(ticker.bid) else 0
     ask = ticker.ask if ticker.ask and not util.isNan(ticker.ask) else 0
     mid = (bid + ask) / 2 if bid and ask else 0
@@ -89,9 +85,9 @@ def get_market_data(ib: IB, contract) -> dict:
     else:
         last = 0
         last_is_calculated = False
-    
-    ib.cancelMktData(contract)
-    
+
+    client.cancel_market_data(contract)
+
     return {
         'bid': bid,
         'ask': ask,
@@ -103,10 +99,10 @@ def get_market_data(ib: IB, contract) -> dict:
     }
 
 
-def place_order(ib: IB, contract, side: str, qty: int, limit_price: float, dry_run: bool = False):
+def place_order(client: IBClient, contract, side: str, qty: int, limit_price: float, dry_run: bool = False):
     """Place a limit order"""
     action = 'BUY' if side.upper() == 'BUY' else 'SELL'
-    
+
     order = LimitOrder(
         action=action,
         totalQuantity=qty,
@@ -114,20 +110,20 @@ def place_order(ib: IB, contract, side: str, qty: int, limit_price: float, dry_r
         tif='GTC',  # Good til cancelled
         outsideRth=False  # Regular trading hours only
     )
-    
+
     if dry_run:
         print(f"\n🔍 DRY RUN - Order NOT submitted")
         print(f"   Would place: {action} {qty}x {contract.localSymbol}")
         print(f"   Limit Price: ${limit_price:.2f}")
         print(f"   Total Cost: ${limit_price * qty * 100:,.2f}")
         return None
-    
+
     print(f"\n📤 Submitting order...")
-    trade = ib.placeOrder(contract, order)
-    
+    trade = client.place_order(contract, order)
+
     # Wait for order status
-    ib.sleep(2)
-    
+    client.sleep(2)
+
     return trade
 
 
@@ -148,17 +144,17 @@ def main():
     args = parser.parse_args()
     
     # Connect
-    ib = connect_ib(args.host, args.port, args.client_id)
-    
+    client = connect_ib(args.host, args.port, args.client_id)
+
     try:
         # Get contract
         print(f"\n📋 Contract: {args.symbol} {args.expiry} ${args.strike} {'Call' if args.right == 'C' else 'Put'}")
-        contract = get_option_contract(ib, args.symbol, args.expiry, args.strike, args.right)
+        contract = get_option_contract(client, args.symbol, args.expiry, args.strike, args.right)
         print(f"✓ Qualified: {contract.localSymbol}")
-        
+
         # Get market data
         print(f"\n💹 Fetching market data...")
-        mkt = get_market_data(ib, contract)
+        mkt = get_market_data(client, contract)
         print(f"   Bid: ${mkt['bid']:.2f}")
         print(f"   Ask: ${mkt['ask']:.2f}")
         print(f"   Mid: ${mkt['mid']:.2f}")
@@ -199,21 +195,21 @@ def main():
                 sys.exit(0)
         
         # Place order
-        trade = place_order(ib, contract, args.side, args.qty, limit_price, args.dry_run)
-        
+        trade = place_order(client, contract, args.side, args.qty, limit_price, args.dry_run)
+
         if trade:
             print(f"\n✓ Order submitted!")
             print(f"   Order ID: {trade.order.orderId}")
             print(f"   Status: {trade.orderStatus.status}")
-            
+
             if trade.orderStatus.status == 'Filled':
                 print(f"   Fill Price: ${trade.orderStatus.avgFillPrice:.2f}")
                 print(f"   Filled Qty: {trade.orderStatus.filled}")
             else:
                 print(f"   ⏳ Order is working. Check TWS for status.")
-    
+
     finally:
-        ib.disconnect()
+        client.disconnect()
         print("\n✓ Disconnected from IB")
 
 
