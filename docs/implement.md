@@ -81,6 +81,9 @@ If a script fails:
 ### Evaluation Commands
 | Action | Command |
 |--------|---------|
+| **⭐ Full evaluation** | `python3 scripts/evaluate.py [TICKER]` |
+| Full evaluation (JSON) | `python3 scripts/evaluate.py [TICKER] --json` |
+| Full evaluation (custom bankroll) | `python3 scripts/evaluate.py [TICKER] --bankroll 1200000` |
 | Validate ticker | `python3 scripts/fetch_ticker.py [TICKER]` |
 | Fetch dark pool flow | `python3 scripts/fetch_flow.py [TICKER]` |
 | Fetch options data | `python3 scripts/fetch_options.py [TICKER]` |

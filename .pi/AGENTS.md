@@ -90,6 +90,7 @@ When market is closed, free trade analysis explicitly shows it's using closing p
 
 | Command | Action |
 |---------|--------|
+| `evaluate [TICKER]` | **Run full 7-milestone evaluation** (`python3 scripts/evaluate.py TICKER`) |
 | `scan` | Scan watchlist for dark pool flow signals |
 | `discover` | Find new candidates from market-wide options flow |
 | `evaluate [TICKER]` | Full 7-milestone evaluation |
@@ -824,6 +825,7 @@ See `docs/strategy-garch-convergence.md` for full report generation spec.
 
 | Script | Purpose |
 |--------|---------|
+| `scripts/evaluate.py` | **⭐ Unified evaluation — runs all 7 milestones in parallel (ALWAYS USE THIS)** |
 | `scripts/fetch_ticker.py` | Validate ticker via dark pool activity |
 | `scripts/fetch_flow.py` | Fetch dark pool + options flow data |
 | `scripts/fetch_options.py` | Options chain + institutional flow analysis (IB → UW → Yahoo last resort) |
