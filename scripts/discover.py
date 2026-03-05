@@ -61,7 +61,7 @@ def get_existing_tickers() -> set:
     if WATCHLIST.exists():
         with open(WATCHLIST) as f:
             data = json.load(f)
-            tickers.update(t["ticker"] for t in data.get("tickers", []))
+            tickers.update(t.get("ticker") or t.get("symbol", "") for t in data.get("tickers", []) if isinstance(t, dict))
     if PORTFOLIO.exists():
         with open(PORTFOLIO) as f:
             data = json.load(f)
