@@ -1,0 +1,48 @@
+{
+  "name": "sp500-asset-management-custody-banks",
+  "description": "S&P 500 Asset Management & Custody Banks (Financials)",
+  "tickers": [
+    "AMP",
+    "APO",
+    "ARES",
+    "BLK",
+    "BX",
+    "BK",
+    "BEN",
+    "IVZ",
+    "KKR",
+    "NTRS",
+    "STT",
+    "TROW"
+  ],
+  "pairs": [
+    [
+      "BLK",
+      "STT"
+    ],
+    [
+      "BX",
+      "KKR"
+    ],
+    [
+      "APO",
+      "ARES"
+    ],
+    [
+      "BK",
+      "NTRS"
+    ],
+    [
+      "AMP",
+      "TROW"
+    ],
+    [
+      "BEN",
+      "IVZ"
+    ]
+  ],
+  "sector": "Financials",
+  "sub_industry": "Asset Management & Custody Banks",
+  "vol_driver": "Interest rates, credit spreads, loan growth",
+  "source": "S&P 500 GICS classification"
+}

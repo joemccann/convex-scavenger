@@ -1,0 +1,106 @@
+{
+  "name": "r2k-utilities",
+  "description": "Russell 2000 Utilities (31 companies)",
+  "tickers": [
+    "OKLO",
+    "ORA",
+    "POR",
+    "TXNM",
+    "BIPC",
+    "SWX",
+    "BKH",
+    "NJR",
+    "SR",
+    "OGS",
+    "NWE",
+    "OTTR",
+    "AVA",
+    "CPK",
+    "MGEE",
+    "AWR",
+    "HE",
+    "CWT",
+    "NWN",
+    "HTO",
+    "MSEX",
+    "UTL",
+    "HNRG",
+    "CWCO",
+    "YORW",
+    "CDZI",
+    "GNE",
+    "PCYO",
+    "RGCO",
+    "MNTK",
+    "GWRS"
+  ],
+  "pairs": [
+    [
+      "OKLO",
+      "ORA"
+    ],
+    [
+      "POR",
+      "TXNM"
+    ],
+    [
+      "BIPC",
+      "SWX"
+    ],
+    [
+      "BKH",
+      "NJR"
+    ],
+    [
+      "SR",
+      "OGS"
+    ],
+    [
+      "NWE",
+      "OTTR"
+    ],
+    [
+      "AVA",
+      "CPK"
+    ],
+    [
+      "MGEE",
+      "AWR"
+    ],
+    [
+      "HE",
+      "CWT"
+    ],
+    [
+      "NWN",
+      "HTO"
+    ],
+    [
+      "MSEX",
+      "UTL"
+    ],
+    [
+      "HNRG",
+      "CWCO"
+    ],
+    [
+      "YORW",
+      "CDZI"
+    ],
+    [
+      "GNE",
+      "PCYO"
+    ],
+    [
+      "RGCO",
+      "MNTK"
+    ],
+    [
+      "GWRS",
+      "OKLO"
+    ]
+  ],
+  "sector": "Utilities",
+  "vol_driver": "Russell 2000 Utilities \u2014 small-cap sector fundamentals",
+  "source": "iShares Russell 2000 ETF (IWM) holdings"
+}

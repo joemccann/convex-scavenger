@@ -69,6 +69,7 @@ When market is closed, free trade analysis explicitly shows it's using closing p
 | `journal` | View recent trade log entries |
 | `sync` | Pull live portfolio from Interactive Brokers |
 | `blotter` | Trade blotter - today's fills, P&L, spread grouping |
+| `strategies` | List available trading strategies (reads `data/strategies.json`) |
 
 ### Portfolio Command Details
 
@@ -503,6 +504,7 @@ A single extensible daemon that handles all background monitoring tasks.
 |---------|----------|---------|
 | `fill_monitor` | 60s | Detect order fills, send notifications |
 | `exit_orders` | 300s | Place pending exit orders when IB accepts them |
+| `preset_rebalance` | Weekly | Check SP500/NDX100/R2K for constituent changes, update presets |
 
 ### Commands
 
@@ -737,6 +739,60 @@ Capital at Risk:
 
 See `.pi/skills/html-report/SKILL.md` for full template documentation.
 
+## GARCH Convergence Reports ⭐ REQUIRED
+
+**When generating GARCH Convergence scan reports, ALWAYS use the standard HTML template.**
+
+```bash
+# Template location
+.pi/skills/html-report/template.html
+
+# Output location
+reports/garch-convergence-{preset}-{DATE}.html
+```
+
+**Generation pattern:**
+```python
+# 1. Read template
+with open('.pi/skills/html-report/template.html', 'r') as f:
+    template = f.read()
+
+# 2. Build body using template CSS classes
+body = """<header class="header">...</header>
+<div class="metrics">...</div>
+<div class="panel">...</div>"""
+
+# 3. Insert into template
+html = template.replace('{{TITLE}}', f'GARCH Convergence — {preset} | {date}')
+html = html.replace('{{BODY}}', body)
+
+# 4. Write to reports/
+with open(f'reports/garch-convergence-{preset}-{date}.html', 'w') as f:
+    f.write(html)
+```
+
+**Required sections:**
+1. Header with preset name, ticker count, timestamp, theme toggle button
+2. Summary metrics (4): Tickers scanned, With LEAPs, Laggers found, Actionable pairs
+3. IV/HV Analysis table with all tickers
+4. Pair Analysis panels for potential convergence pairs
+5. Watchlist with laggers and short vega candidates
+6. Footer with data sources
+
+**Key CSS classes:**
+| Element | Class |
+|---------|-------|
+| Highlighted row (lagger) | `tr.highlight` |
+| Pass indicator | `.text-positive` |
+| Fail indicator | `.text-negative` |
+| Warning | `.text-warning` |
+| Status badge | `.pill`, `.pill-positive`, `.pill-warning`, `.pill-negative` |
+| Alert box | `.callout`, `.callout.positive`, `.callout.warning` |
+
+**Reference:** `reports/garch-convergence-row-2026-03-04.html`
+
+See `docs/strategy-garch-convergence.md` for full report generation spec.
+
 ## Scripts
 
 | Script | Purpose |
@@ -759,6 +815,7 @@ See `.pi/skills/html-report/SKILL.md` for full template documentation.
 | `scripts/test_ib_realtime.py` | Tests for IB real-time connectivity |
 | `scripts/leap_iv_scanner.py` | LEAP IV mispricing scanner (IB connection required) |
 | `scripts/leap_scanner_uw.py` | LEAP IV scanner using UW + Yahoo Finance (no IB needed) |
+| `scripts/utils/presets.py` | **Preset loader** — `load_preset()`, `list_presets()` for 150 ticker presets |
 | `scripts/fetch_x_watchlist.py` | Fetch X account tweets and extract ticker sentiment |
 | `scripts/monitor_daemon/run.py` | **Extensible monitoring daemon** (replaces exit_order_service) |
 | `scripts/ib_fill_monitor.py` | Monitor orders for fills (standalone, use daemon instead) |
@@ -1133,6 +1190,8 @@ python3 scripts/leap_iv_scanner.py AAPL --portfolio
 
 **Available Presets:**
 
+Built-in presets (hardcoded in script):
+
 | Preset | Description | Count |
 |--------|-------------|-------|
 | `sectors` | S&P 500 sector ETFs (XLK, XLE, XLF, etc.) | 11 |
@@ -1148,6 +1207,97 @@ python3 scripts/leap_iv_scanner.py AAPL --portfolio
 | `metals` | Precious metals, base metals, miners, uranium | 23 |
 | `energy` | Oil, natural gas, refiners, MLPs, clean energy | 24 |
 
+File presets (`data/presets/`): Strategy-agnostic — work with `leap-scan`, `garch-convergence`, etc.
+
+**150 total preset files** across 3 indices covering **2,446 unique tickers**.
+
+| Index | Master | Tickers | Pairs | Sub-Presets | Overlap |
+|-------|--------|---------|-------|-------------|---------|
+| **S&P 500** | `sp500` | 503 | 286 | 99 sub-industry + 11 sector | — |
+| **NASDAQ 100** | `ndx100` | 101 | 53 | 21 thematic groups | 87 w/ SP500 |
+| **Russell 2000** | `r2k` | 1,929 | 969 | 11 sector + 5 tier | 0 w/ SP500 |
+
+**S&P 500 Presets (111 files)**
+
+| Preset | Description | Tickers | Pairs |
+|--------|-------------|---------|-------|
+| `sp500` | Full S&P 500 (all sub-industries) | 503 | 286 |
+| `sp500-semiconductors` | NVDA↔AMD, AVGO↔QCOM, MU↔INTC, etc. | 14 | 7 |
+| `sp500-application-software` | CRM↔ORCL, ADBE↔INTU, CDNS↔SNPS, etc. | 14 | 7 |
+| `sp500-diversified-banks` | JPM↔BAC, C↔WFC, PNC↔USB | 7 | 4 |
+| `sp500-biotechnology` | AMGN↔GILD, REGN↔VRTX, ABBV↔BMY | 8 | 5 |
+| `sp500-aerospace-defense` | LMT↔RTX, BA↔GE, NOC↔GD | 12 | 6 |
+| `sp500-oil-gas-exploration-production` | COP↔EOG, DVN↔FANG, OXY↔APA | 10 | 5 |
+| ... | (93 more sub-industry presets) | | |
+| `sp500-sector-information-technology` | All IT sub-industries | 71 | 38 |
+| `sp500-sector-financials` | All Financial sub-industries | 76 | 40 |
+| ... | (9 more sector rollups) | | |
+
+**NASDAQ 100 Presets (22 files)**
+
+| Preset | Description | Tickers | Pairs |
+|--------|-------------|---------|-------|
+| `ndx100` | Full NASDAQ 100 (all groups) | 101 | 53 |
+| `ndx100-semiconductors` | NVDA↔AMD, AVGO↔QCOM, MU↔INTC, MRVL↔ARM | 13 | 7 |
+| `ndx100-semi-equipment` | ASML↔LRCX, AMAT↔KLAC | 4 | 2 |
+| `ndx100-mega-cap-tech-platforms` | AAPL↔MSFT, GOOGL↔META, AMZN↔NFLX | 7 | 3 |
+| `ndx100-enterprise-software` | CDNS↔SNPS, ADBE↔INTU, WDAY↔ADSK | 9 | 3 |
+| `ndx100-cybersecurity` | CRWD↔PANW, FTNT↔ZS | 4 | 2 |
+| `ndx100-cloud-data` | DDOG↔PLTR, TEAM↔SHOP | 5 | 3 |
+| `ndx100-biotech` | AMGN↔GILD, REGN↔VRTX, ALNY↔INSM | 6 | 3 |
+| `ndx100-digital-commerce` | AMZN↔MELI, PDD↔DASH | 6 | 3 |
+| `ndx100-streaming-gaming` | NFLX↔WBD, EA↔TTWO | 4 | 2 |
+| `ndx100-travel-leisure` | BKNG↔ABNB, MAR↔SBUX | 5 | 3 |
+| `ndx100-telecom-cable` | TMUS↔CMCSA, CHTR↔CSCO | 4 | 2 |
+| `ndx100-beverages-staples` | PEP↔KDP, MNST↔CCEP, KHC↔MDLZ | 6 | 3 |
+| ... | (8 more groups) | | |
+
+**Russell 2000 Presets (17 files)**
+
+| Preset | Description | Tickers | Pairs |
+|--------|-------------|---------|-------|
+| `r2k` | Full Russell 2000 (IWM holdings) | 1,929 | 969 |
+| `r2k-financials` | Largest R2K sector | 413 | 207 |
+| `r2k-health-care` | Biotech-heavy | 395 | 198 |
+| `r2k-industrials` | Small-cap industrials | 257 | 129 |
+| `r2k-information-technology` | Small-cap tech | 210 | 105 |
+| `r2k-consumer-discretionary` | Small-cap consumer | 197 | 99 |
+| `r2k-energy` | Small-cap energy | 105 | 53 |
+| `r2k-tier-top-100` | Top 100 by weight (most liquid) | 100 | 50 |
+| `r2k-tier-top-200` | Top 200 by weight | 200 | 100 |
+| `r2k-tier-top-500` | Top 500 by weight | 500 | 250 |
+| ... | (6 more sector + tier presets) | | |
+
+```bash
+# List all 150 presets
+python3 scripts/leap_scanner_uw.py --list-presets
+
+# Use any preset with leap-scan
+python3 scripts/leap_scanner_uw.py --preset sp500-semiconductors
+python3 scripts/leap_scanner_uw.py --preset ndx100-cybersecurity
+python3 scripts/leap_scanner_uw.py --preset r2k-tier-top-100
+
+# Use any preset with garch-convergence
+garch-convergence sp500-semiconductors
+garch-convergence ndx100-biotech
+```
+
+**Preset Loader:**
+```python
+from utils.presets import load_preset, list_presets, Preset
+
+p = load_preset("sp500-semiconductors")
+p.tickers     # ["NVDA", "AMD", ...] — for any scan
+p.pairs       # [["NVDA","AMD"], ...] — for GARCH convergence
+p.vol_driver  # "Tech spending, AI/cloud capex..." — for thesis context
+
+# Master preset hierarchical access
+sp = load_preset("sp500")
+sp.group_tickers("semiconductors")  # tickers for one group
+sp.group_pairs("semiconductors")    # pairs for one group
+sp.groups.keys()                    # all 99 group names
+```
+
 **Output:** HTML report at `reports/leap-scan-uw.html`
 
 See `docs/strategies.md` for full methodology.
@@ -1161,6 +1311,10 @@ See `docs/strategies.md` for full methodology.
 | `data/trade_log.json` | Executed trades only (append-only) |
 | `data/ticker_cache.json` | Local cache of ticker → company name mappings |
 | `data/analyst_ratings_cache.json` | Cached analyst ratings data |
+| `data/presets/` | **150 strategy-agnostic ticker presets** (SP500, NDX100, R2K) |
+| `data/presets/sp500.json` | S&P 500 master (503 tickers, 286 pairs, 99 groups) |
+| `data/presets/ndx100.json` | NASDAQ 100 master (101 tickers, 53 pairs, 21 groups) |
+| `data/presets/r2k.json` | Russell 2000 master (1929 tickers, 969 pairs, 16 groups) |
 
 ## Documentation
 

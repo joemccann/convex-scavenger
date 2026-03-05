@@ -1,0 +1,82 @@
+{
+  "name": "sp500-sector-communication-services",
+  "description": "S&P 500 Communication Services sector \u2014 all sub-industries",
+  "tickers": [
+    "CHTR",
+    "CMCSA",
+    "DIS",
+    "EA",
+    "FOX",
+    "FOXA",
+    "GOOG",
+    "GOOGL",
+    "LYV",
+    "META",
+    "MTCH",
+    "NFLX",
+    "NWS",
+    "NWSA",
+    "OMC",
+    "PSKY",
+    "T",
+    "TKO",
+    "TMUS",
+    "TTD",
+    "TTWO",
+    "VZ",
+    "WBD"
+  ],
+  "pairs": [
+    [
+      "OMC",
+      "TTD"
+    ],
+    [
+      "FOXA",
+      "FOX"
+    ],
+    [
+      "WBD",
+      "FOXA"
+    ],
+    [
+      "CHTR",
+      "CMCSA"
+    ],
+    [
+      "T",
+      "VZ"
+    ],
+    [
+      "EA",
+      "TTWO"
+    ],
+    [
+      "GOOGL",
+      "META"
+    ],
+    [
+      "GOOG",
+      "MTCH"
+    ],
+    [
+      "DIS",
+      "NFLX"
+    ],
+    [
+      "LYV",
+      "TKO"
+    ],
+    [
+      "PSKY",
+      "DIS"
+    ],
+    [
+      "NWSA",
+      "NWS"
+    ]
+  ],
+  "sector": "Communication Services",
+  "vol_driver": "Ad spending, streaming, telecom capex",
+  "source": "S&P 500 GICS classification"
+}

@@ -29,7 +29,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from monitor_daemon.daemon import MonitorDaemon
-from monitor_daemon.handlers import FillMonitorHandler, ExitOrdersHandler
+from monitor_daemon.handlers import FillMonitorHandler, ExitOrdersHandler, PresetRebalanceHandler
 
 # Paths
 PROJECT_DIR = Path(__file__).parent.parent.parent
@@ -83,6 +83,8 @@ def create_daemon() -> MonitorDaemon:
         client_id=71,
         max_gap_pct=0.40
     ))
+    
+    daemon.register(PresetRebalanceHandler())
     
     # Load previous state
     daemon.load_state()
@@ -150,8 +152,9 @@ def list_handlers():
     """List available handlers."""
     print("\nAvailable Handlers:")
     print("-" * 40)
-    print("  fill_monitor    - Monitor orders for fills (60s)")
-    print("  exit_orders     - Place pending exit orders (300s)")
+    print("  fill_monitor       - Monitor orders for fills (60s)")
+    print("  exit_orders        - Place pending exit orders (300s)")
+    print("  preset_rebalance   - Index constituent updates (weekly)")
     print()
     print("Add new handlers by:")
     print("  1. Create scripts/monitor_daemon/handlers/my_handler.py")

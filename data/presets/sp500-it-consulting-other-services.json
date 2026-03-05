@@ -1,0 +1,29 @@
+{
+  "name": "sp500-it-consulting-other-services",
+  "description": "S&P 500 IT Consulting & Other Services (Information Technology)",
+  "tickers": [
+    "ACN",
+    "CTSH",
+    "EPAM",
+    "IT",
+    "IBM"
+  ],
+  "pairs": [
+    [
+      "ACN",
+      "IBM"
+    ],
+    [
+      "CTSH",
+      "EPAM"
+    ],
+    [
+      "IT",
+      "ACN"
+    ]
+  ],
+  "sector": "Information Technology",
+  "sub_industry": "IT Consulting & Other Services",
+  "vol_driver": "Tech spending, AI/cloud capex, semiconductor demand",
+  "source": "S&P 500 GICS classification"
+}

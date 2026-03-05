@@ -1,0 +1,18 @@
+{
+  "name": "sp500-distributors",
+  "description": "S&P 500 Distributors (Consumer Discretionary)",
+  "tickers": [
+    "GPC",
+    "POOL"
+  ],
+  "pairs": [
+    [
+      "GPC",
+      "POOL"
+    ]
+  ],
+  "sector": "Consumer Discretionary",
+  "sub_industry": "Distributors",
+  "vol_driver": "Consumer spending, employment, housing",
+  "source": "S&P 500 GICS classification"
+}

@@ -321,6 +321,89 @@ A dedicated `scripts/garch_convergence_scanner.py` would:
 
 ---
 
+## Report Generation
+
+**ALWAYS use the standard HTML template when generating GARCH convergence reports.**
+
+### Template Usage
+
+```bash
+# Template location
+.pi/skills/html-report/template.html
+
+# Output location
+reports/garch-convergence-{preset}-{date}.html
+```
+
+### Generation Pattern
+
+```python
+# 1. Read the template
+with open('.pi/skills/html-report/template.html', 'r') as f:
+    template = f.read()
+
+# 2. Build body content using template CSS classes
+body = """
+<header class="header">
+  <div>
+    <h1 class="title">GARCH Convergence Scan — {PRESET}</h1>
+    <p class="subtitle">{N} Tickers Scanned</p>
+  </div>
+  <div class="header-actions">
+    <span class="timestamp">Generated: {TIMESTAMP}</span>
+    <button class="theme-toggle" onclick="toggleTheme()">◐ THEME</button>
+  </div>
+</header>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-label">Tickers Scanned</div>
+    <div class="metric-value">{N}</div>
+  </div>
+  <!-- More metrics... -->
+</div>
+
+<!-- Panels, tables, callouts using template classes -->
+"""
+
+# 3. Insert body into template
+html = template.replace('{{TITLE}}', f'GARCH Convergence — {preset} | {date}')
+html = html.replace('{{BODY}}', body)
+
+# 4. Write to reports/
+with open(f'reports/garch-convergence-{preset}-{date}.html', 'w') as f:
+    f.write(html)
+```
+
+### Required Sections
+
+Every GARCH convergence report MUST include:
+
+1. **Header** — Preset name, ticker count, timestamp, theme toggle
+2. **Summary Metrics** — Tickers scanned, with LEAPs, laggers found, actionable pairs
+3. **IV/HV Analysis Table** — All tickers with HV20, HV60, IV, IV/HV60, HV-IV gap, IV Rank
+4. **Pair Analysis** — For each potential pair with signal criteria pass/fail
+5. **Watchlist** — Consolidated list of opportunities (laggers, short vega candidates)
+6. **Footer** — Data sources, strategy reference
+
+### CSS Classes Reference
+
+| Element | Class |
+|---------|-------|
+| Section title | `.section-header` |
+| Data table | `.panel` + `table` |
+| Highlighted row | `tr.highlight` |
+| Pass indicator | `.text-positive` |
+| Fail indicator | `.text-negative` |
+| Warning | `.text-warning` |
+| Badge | `.pill`, `.pill-positive`, `.pill-negative`, `.pill-warning` |
+| Callout box | `.callout`, `.callout.positive`, `.callout.warning` |
+| Metrics grid | `.metrics` + `.metric` |
+
+See `.pi/skills/html-report/SKILL.md` for full CSS reference.
+
+---
+
 ## Key Citations
 
 - Engle, R.F. (1982). "Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation." *Econometrica*, 50(4), 987-1007.

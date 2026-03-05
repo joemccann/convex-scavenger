@@ -619,18 +619,46 @@ def main():
     )
     
     parser.add_argument("tickers", nargs="*", help="Tickers to scan")
-    parser.add_argument("--preset", choices=list(PRESETS.keys()), help="Use preset ticker group")
+    parser.add_argument("--preset", help="Use preset ticker group (built-in or from data/presets/)")
     parser.add_argument("--min-gap", type=float, default=MIN_IV_GAP, help=f"Min HV-IV gap (default: {MIN_IV_GAP})")
     parser.add_argument("--output", default="reports/leap-scan-uw.html", help="Output file")
     parser.add_argument("--json", action="store_true", help="Also output JSON")
+    parser.add_argument("--list-presets", action="store_true", help="List all available presets")
     
     args = parser.parse_args()
+
+    # List presets mode
+    if args.list_presets:
+        print("\n=== BUILT-IN PRESETS ===\n")
+        for name in sorted(PRESETS.keys()):
+            print(f"  {name:20s}  {len(PRESETS[name]):>4d} tickers")
+        print("\n=== FILE PRESETS (data/presets/) ===\n")
+        try:
+            from utils.presets import list_presets
+            for name, desc, count in list_presets():
+                print(f"  {name:50s}  {count:>4d} tickers  {desc[:60]}")
+        except ImportError:
+            print("  (preset loader not available)")
+        sys.exit(0)
     
     # Determine tickers
     if args.tickers:
         tickers = [t.upper() for t in args.tickers]
     elif args.preset:
-        tickers = PRESETS[args.preset]
+        # Check built-in presets first, then file presets
+        if args.preset in PRESETS:
+            tickers = PRESETS[args.preset]
+        else:
+            try:
+                from utils.presets import load_preset
+                p = load_preset(args.preset)
+                tickers = p.tickers
+                print(f"📂 Loaded preset: {p.name} ({p.ticker_count} tickers)")
+            except (FileNotFoundError, ImportError) as e:
+                print(f"\n❌ Preset '{args.preset}' not found.")
+                print(f"   Built-in: {', '.join(sorted(PRESETS.keys()))}")
+                print(f"   Use --list-presets to see all available")
+                sys.exit(1)
     else:
         parser.print_help()
         print("\n⚠ Specify tickers or use --preset")

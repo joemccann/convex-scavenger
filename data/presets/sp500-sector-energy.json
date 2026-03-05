@@ -1,0 +1,81 @@
+{
+  "name": "sp500-sector-energy",
+  "description": "S&P 500 Energy sector \u2014 all sub-industries",
+  "tickers": [
+    "APA",
+    "BKR",
+    "COP",
+    "CTRA",
+    "CVX",
+    "DVN",
+    "EOG",
+    "EQT",
+    "EXE",
+    "FANG",
+    "HAL",
+    "KMI",
+    "MPC",
+    "OKE",
+    "OXY",
+    "PSX",
+    "SLB",
+    "TPL",
+    "TRGP",
+    "VLO",
+    "WMB",
+    "XOM"
+  ],
+  "pairs": [
+    [
+      "XOM",
+      "CVX"
+    ],
+    [
+      "SLB",
+      "HAL"
+    ],
+    [
+      "BKR",
+      "SLB"
+    ],
+    [
+      "COP",
+      "EOG"
+    ],
+    [
+      "DVN",
+      "FANG"
+    ],
+    [
+      "OXY",
+      "APA"
+    ],
+    [
+      "CTRA",
+      "EQT"
+    ],
+    [
+      "EXE",
+      "TPL"
+    ],
+    [
+      "MPC",
+      "VLO"
+    ],
+    [
+      "PSX",
+      "MPC"
+    ],
+    [
+      "KMI",
+      "OKE"
+    ],
+    [
+      "TRGP",
+      "WMB"
+    ]
+  ],
+  "sector": "Energy",
+  "vol_driver": "Oil/gas prices, OPEC, energy transition",
+  "source": "S&P 500 GICS classification"
+}

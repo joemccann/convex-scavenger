@@ -1,0 +1,47 @@
+{
+  "name": "sp500-packaged-foods-meats",
+  "description": "S&P 500 Packaged Foods & Meats (Consumer Staples)",
+  "tickers": [
+    "CPB",
+    "CAG",
+    "GIS",
+    "HSY",
+    "HRL",
+    "KHC",
+    "LW",
+    "MKC",
+    "MDLZ",
+    "SJM",
+    "TSN"
+  ],
+  "pairs": [
+    [
+      "GIS",
+      "CPB"
+    ],
+    [
+      "KHC",
+      "CAG"
+    ],
+    [
+      "HSY",
+      "MDLZ"
+    ],
+    [
+      "MKC",
+      "SJM"
+    ],
+    [
+      "HRL",
+      "TSN"
+    ],
+    [
+      "LW",
+      "GIS"
+    ]
+  ],
+  "sector": "Consumer Staples",
+  "sub_industry": "Packaged Foods & Meats",
+  "vol_driver": "Inflation, input costs, consumer defensives",
+  "source": "S&P 500 GICS classification"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "sp500-interactive-media-services",
+  "description": "S&P 500 Interactive Media & Services (Communication Services)",
+  "tickers": [
+    "GOOGL",
+    "GOOG",
+    "MTCH",
+    "META"
+  ],
+  "pairs": [
+    [
+      "GOOGL",
+      "META"
+    ],
+    [
+      "GOOG",
+      "MTCH"
+    ]
+  ],
+  "sector": "Communication Services",
+  "sub_industry": "Interactive Media & Services",
+  "vol_driver": "Ad spending, streaming, telecom capex",
+  "source": "S&P 500 GICS classification"
+}
