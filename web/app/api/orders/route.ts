@@ -1,16 +1,13 @@
-import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
-import type { OrdersData } from "@/lib/types";
+import { ibOrders } from "@tools/wrappers/ib-orders";
+import { readDataFile } from "@tools/data-reader";
+import { OrdersData } from "@tools/schemas/ib-orders";
 import { createSyncMutex } from "@/lib/syncMutex";
+import type { Static } from "@sinclair/typebox";
 
 export const runtime = "nodejs";
 
-const SYNC_TIMEOUT_MS = 30_000;
-
-const EMPTY_ORDERS: OrdersData = {
+const EMPTY_ORDERS: Static<typeof OrdersData> = {
   last_sync: "",
   open_orders: [],
   executed_orders: [],
@@ -18,63 +15,15 @@ const EMPTY_ORDERS: OrdersData = {
   executed_count: 0,
 };
 
-const resolveProjectRoot = (): string => {
-  const candidates = [
-    process.cwd(),
-    path.resolve(process.cwd(), ".."),
-    path.resolve(process.cwd(), "..", ".."),
-  ];
-
-  for (const candidate of candidates) {
-    if (existsSync(path.join(candidate, "data"))) {
-      return candidate;
-    }
-  }
-
-  return process.cwd();
+const readOrders = async (): Promise<Static<typeof OrdersData>> => {
+  const result = await readDataFile("data/orders.json", OrdersData);
+  return result.ok ? result.data : EMPTY_ORDERS;
 };
 
-const readOrders = async (): Promise<OrdersData> => {
-  const root = resolveProjectRoot();
-  const filePath = path.join(root, "data", "orders.json");
-
-  if (!existsSync(filePath)) {
-    return EMPTY_ORDERS;
-  }
-
-  const content = await readFile(filePath, "utf8");
-  return JSON.parse(content) as OrdersData;
-};
-
-const runSync = (root: string): Promise<{ ok: boolean; stderr: string }> => {
-  return new Promise((resolve) => {
-    const scriptPath = path.join("scripts", "ib_orders.py");
-    const proc = spawn("python3", [scriptPath, "--sync", "--port", "4001", "--client-id", "11"], {
-      cwd: root,
-      env: process.env,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    let stderr = "";
-    proc.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
-
-    const timer = setTimeout(() => {
-      proc.kill("SIGKILL");
-    }, SYNC_TIMEOUT_MS);
-
-    proc.on("close", (code) => {
-      clearTimeout(timer);
-      resolve({ ok: code === 0, stderr });
-    });
-
-    proc.on("error", () => {
-      clearTimeout(timer);
-      resolve({ ok: false, stderr: "Failed to spawn ib_orders.py" });
-    });
-  });
-};
+const syncMutex = createSyncMutex(async () => {
+  const result = await ibOrders({ sync: true, port: 4001, clientId: 11 });
+  return { ok: result.ok, stderr: result.ok ? "" : result.stderr };
+});
 
 export async function GET(): Promise<Response> {
   try {
@@ -85,8 +34,6 @@ export async function GET(): Promise<Response> {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-const syncMutex = createSyncMutex(() => runSync(resolveProjectRoot()));
 
 export async function POST(): Promise<Response> {
   try {

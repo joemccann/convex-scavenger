@@ -14,7 +14,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sinclair/typebox": "^0.34.48",
     "ib": "^0.2.9",
     "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
   }
 }

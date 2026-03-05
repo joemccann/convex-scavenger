@@ -33,6 +33,9 @@
       ],
       "@/app/*": [
         "./app/*"
+      ],
+      "@tools/*": [
+        "../lib/tools/*"
       ]
     },
     "plugins": [
