@@ -13,6 +13,8 @@ type OrderTabProps = {
   position: PortfolioPosition | null;
   prices: Record<string, PriceData>;
   openOrders?: OpenOrder[];
+  /** Resolved price data (option-level for single-leg options, underlying otherwise) */
+  tickerPriceData?: PriceData | null;
 };
 
 /* ─── Resolve price data for an order's contract ─── */
@@ -190,17 +192,16 @@ type OrderAction = "BUY" | "SELL";
 function NewOrderForm({
   ticker,
   position,
-  prices,
+  tickerPriceData,
   onOrderPlaced,
 }: {
   ticker: string;
   position: PortfolioPosition | null;
-  prices: Record<string, PriceData>;
+  tickerPriceData?: PriceData | null;
   onOrderPlaced?: () => void;
 }) {
-  const priceData = prices[ticker] ?? null;
-  const bid = priceData?.bid ?? null;
-  const ask = priceData?.ask ?? null;
+  const bid = tickerPriceData?.bid ?? null;
+  const ask = tickerPriceData?.ask ?? null;
   const mid = bid != null && ask != null ? (bid + ask) / 2 : null;
 
   const defaultAction: OrderAction = position != null ? "SELL" : "BUY";
@@ -347,7 +348,7 @@ function NewOrderForm({
 
 /* ─── Main OrderTab ─── */
 
-export default function OrderTab({ ticker, position, prices, openOrders = [] }: OrderTabProps) {
+export default function OrderTab({ ticker, position, prices, openOrders = [], tickerPriceData }: OrderTabProps) {
   const isCombo = position != null && position.legs.length > 1 && position.structure_type !== "Stock";
 
   if (isCombo) {
@@ -375,7 +376,7 @@ export default function OrderTab({ ticker, position, prices, openOrders = [] }: 
       {/* New order form */}
       <div className={openOrders.length > 0 ? "new-order-section" : ""}>
         {openOrders.length > 0 && <div className="existing-orders-title">New Order</div>}
-        <NewOrderForm ticker={ticker} position={position} prices={prices} />
+        <NewOrderForm ticker={ticker} position={position} tickerPriceData={tickerPriceData} />
       </div>
     </div>
   );

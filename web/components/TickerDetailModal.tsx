@@ -190,6 +190,7 @@ export default function TickerDetailModal() {
               position={position}
               prices={prices}
               openOrders={tickerOrders}
+              tickerPriceData={priceData}
             />
           )}
           {resolvedTab === "news" && (
