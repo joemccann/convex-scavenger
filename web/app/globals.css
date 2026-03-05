@@ -1386,7 +1386,7 @@ tr.leg-row td {
   border-color: var(--negative);
 }
 
-.btn-cancel:hover {
+.btn-cancel:not(:disabled):hover {
   background: rgba(239, 68, 68, 0.1);
 }
 
@@ -1537,6 +1537,10 @@ tr.leg-row td {
   font-size: 14px;
   padding: 8px 10px;
   outline: none;
+}
+
+.modify-price-input:focus {
+  box-shadow: inset 0 0 0 1px var(--border-focus);
 }
 
 .modify-price-input::-webkit-inner-spin-button,
@@ -1788,7 +1792,7 @@ tr.leg-row td {
 .order-form { display: flex; flex-direction: column; gap: 12px; }
 .order-field { display: flex; flex-direction: column; gap: 6px; }
 .order-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-.order-input { width: 100%; background: var(--bg-base); border: 1px solid var(--border-dim); color: var(--text-primary); font-family: var(--font-mono); font-size: 14px; padding: 8px 10px; outline: none; }
+.order-input { width: 100%; background: var(--bg-base); border: 1px solid var(--border-dim); color: var(--text-primary); font-family: var(--font-mono); font-size: 14px; padding: 8px 10px; outline: none; transition: border-color 200ms ease-in-out; }
 .order-input:focus { border-color: var(--border-focus); }
 .order-input::-webkit-inner-spin-button, .order-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .order-action-buttons { display: flex; gap: 6px; }
