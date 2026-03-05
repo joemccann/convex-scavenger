@@ -36,9 +36,13 @@ import ModifyOrderModal from "./ModifyOrderModal";
 function TickerLink({ ticker }: { ticker: string }) {
   const { openTicker } = useTickerDetail();
   return (
-    <strong className="ticker-link" onClick={() => openTicker(ticker)}>
+    <button
+      className="ticker-link"
+      onClick={() => openTicker(ticker)}
+      aria-label={`View details for ${ticker}`}
+    >
       {ticker}
-    </strong>
+    </button>
   );
 }
 
@@ -60,10 +64,15 @@ function SortTh<K extends string>({
   className?: string;
 }) {
   const active = activeKey === sortKey;
+  const ariaSort = active ? (direction === "asc" ? "ascending" : "descending") : undefined;
   return (
     <th
       className={`sortable-th ${className ?? ""} ${active ? "sort-active" : ""}`}
       onClick={() => onToggle(sortKey)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(sortKey); } }}
+      tabIndex={0}
+      role="columnheader"
+      aria-sort={ariaSort}
     >
       <span className="sort-label">
         {label}
@@ -408,19 +417,19 @@ function LegRow({
   return (
     <tr className={flashDirection ? `last-price-${flashDirection}` : undefined}>
       <td></td>
-      <td colSpan={3} style={{ paddingLeft: "1.5rem", opacity: 0.7, fontSize: "0.85em" }}>
+      <td colSpan={3} className="cell-indent cell-muted">
         {leg.direction} {leg.contracts}x {leg.type}{leg.strike ? ` $${leg.strike}` : ""}
       </td>
       {showUnderlying && <td></td>}
-      <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{fmtPrice(Math.abs(leg.avg_cost) / (leg.type === "Stock" ? 1 : 100))}</td>
+      <td className="right cell-muted">{fmtPrice(Math.abs(leg.avg_cost) / (leg.type === "Stock" ? 1 : 100))}</td>
       <td className="right last-price-cell">
         {marketPrice != null ? fmtPriceOrCalculated(marketPrice, isCalculated) : "—"}
         {priceDirection === "up" && <ArrowUp size={11} className="price-trend-icon price-trend-up" aria-label="price up" />}
         {priceDirection === "down" && <ArrowDown size={11} className="price-trend-icon price-trend-down" aria-label="price down" />}
       </td>
       <td></td>
-      <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{fmtPrice(Math.abs(leg.entry_cost))}</td>
-      <td className="right" style={{ opacity: 0.7, fontSize: "0.85em" }}>{rtLast != null ? fmtUsd(rtLast * leg.contracts * (leg.type === "Stock" ? 1 : 100)) : leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
+      <td className="right cell-muted">{fmtPrice(Math.abs(leg.entry_cost))}</td>
+      <td className="right cell-muted">{rtLast != null ? fmtUsd(rtLast * leg.contracts * (leg.type === "Stock" ? 1 : 100)) : leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
       <td></td>
       {showExpiry && <td></td>}
     </tr>
@@ -804,7 +813,7 @@ function DiscoverSections() {
             </span>
           </div>
         </div>
-        {error && <div className="section-body"><div className="alert-item" style={{ color: "var(--bearish)" }}>{error}</div></div>}
+        {error && <div className="section-body"><div className="alert-item bearish">{error}</div></div>}
         {candidates.length === 0 && !syncing && !error && (
           <div className="section-body"><div className="alert-item">No candidates found. Waiting for initial scan...</div></div>
         )}
@@ -839,7 +848,7 @@ function DiscoverSections() {
                     <td className="right">{c.alerts}</td>
                     <td className="right">{fmtPremium(c.total_premium)}</td>
                     <td className="right">{c.sweeps}</td>
-                    <td style={{ opacity: 0.7 }}>{c.sector || c.issue_type || "—"}</td>
+                    <td className="cell-muted">{c.sector || c.issue_type || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -887,7 +896,7 @@ function JournalSections() {
           </div>
           <span className="pill defined">{trades.length} TRADES</span>
         </div>
-        {error && <div className="section-body"><div className="alert-item" style={{ color: "var(--bearish)" }}>{error}</div></div>}
+        {error && <div className="section-body"><div className="alert-item bearish">{error}</div></div>}
         {loading && <div className="section-body"><div className="alert-item">Loading journal...</div></div>}
         {!loading && trades.length === 0 && !error && (
           <div className="section-body"><div className="alert-item">No trades in journal.</div></div>
@@ -917,7 +926,7 @@ function JournalSections() {
                   const cost = t.total_cost ?? t.entry_cost ?? null;
                   return (
                     <tr key={t.id}>
-                      <td style={{ opacity: 0.5 }}>{t.id}</td>
+                      <td className="cell-muted">{t.id}</td>
                       <td>{t.date}</td>
                       <td><TickerLink ticker={t.ticker} /></td>
                       <td>{t.structure}</td>
@@ -927,8 +936,8 @@ function JournalSections() {
                       <td className="right">{fmtUsd(t.max_risk)}</td>
                       <td className="right"><span className={pnlClass(t.realized_pnl)}>{fmtUsd(t.realized_pnl)}</span></td>
                       <td className="right">{t.return_on_risk != null ? `${(t.return_on_risk * 100).toFixed(1)}%` : "—"}</td>
-                      <td style={{ opacity: 0.7, fontSize: "0.85em" }}>{t.gates_passed?.join(", ") || t.gates_failed?.join(", ") || "—"}</td>
-                      <td style={{ opacity: 0.7, fontSize: "0.85em" }}>{t.edge_analysis?.edge_type ?? "—"}</td>
+                      <td className="cell-muted">{t.gates_passed?.join(", ") || t.gates_failed?.join(", ") || "—"}</td>
+                      <td className="cell-muted">{t.edge_analysis?.edge_type ?? "—"}</td>
                     </tr>
                   );
                 })}
@@ -1336,10 +1345,10 @@ function HistoricalTradesSection() {
         </div>
       </div>
       <div className="section-body">
-        {error && <div className="alert-item" style={{ color: "var(--bearish)", padding: "12px 16px" }}>{error}</div>}
-        {loading && <div className="alert-item" style={{ padding: "12px 16px" }}>Loading historical trades...</div>}
+        {error && <div className="alert-item section-message bearish">{error}</div>}
+        {loading && <div className="alert-item section-message">Loading historical trades...</div>}
         {!loading && !hasData && !error && (
-          <div className="alert-item" style={{ padding: "12px 16px" }}>No historical trades. Click REFRESH to fetch from IB.</div>
+          <div className="alert-item section-message">No historical trades. Click REFRESH to fetch from IB.</div>
         )}
         {!loading && pageRows.length > 0 && (
           <>

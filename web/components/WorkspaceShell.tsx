@@ -99,9 +99,10 @@ export default function WorkspaceShell({ section }: WorkspaceShellProps) {
   const prices = usePreviousClose(rawPrices);
 
   // Sync prices + portfolio into ticker-detail context (refs, no re-renders)
-  const { setPrices: setTickerPrices, setPortfolio: setTickerPortfolio } = useTickerDetail();
+  const { setPrices: setTickerPrices, setPortfolio: setTickerPortfolio, setOrders: setTickerOrders } = useTickerDetail();
   useEffect(() => { setTickerPrices(prices); }, [prices, setTickerPrices]);
   useEffect(() => { setTickerPortfolio(portfolio); }, [portfolio, setTickerPortfolio]);
+  useEffect(() => { setTickerOrders(orders); }, [orders, setTickerOrders]);
 
   const prevIbConnectedRef = useRef<boolean | null>(null);
   useEffect(() => {
@@ -165,7 +166,7 @@ export default function WorkspaceShell({ section }: WorkspaceShellProps) {
 
   return (
     <div className="app-shell" suppressHydrationWarning>
-      <Sidebar activeSection={activeSection} actionTone={actionTone} />
+      <Sidebar activeSection={activeSection} actionTone={actionTone} ibConnected={ibConnected} lastSync={lastSync} />
 
       <main className="main">
         <Header activeLabel={activeLabel} onToggleTheme={toggleTheme} theme={resolvedTheme}>

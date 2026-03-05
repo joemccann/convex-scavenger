@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ExternalLink } from "lucide-react";
 
 type NewsItem = {
   headline: string;
@@ -75,12 +76,11 @@ export default function NewsTab({ ticker, active }: NewsTabProps) {
             {item.is_major && <span className="pill defined" style={{ fontSize: "8px", padding: "1px 4px" }}>MAJOR</span>}
           </div>
           <div className="news-headline">
-            {item.url ? (
-              <a href={item.url} target="_blank" rel="noopener noreferrer" className="news-link">
-                {item.headline}
+            {item.headline}
+            {item.url && (
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="news-open-link" aria-label="Open article">
+                <ExternalLink size={12} />
               </a>
-            ) : (
-              item.headline
             )}
           </div>
         </div>

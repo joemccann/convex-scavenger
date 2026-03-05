@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import type { PriceData } from "@/lib/pricesProtocol";
-import type { PortfolioData } from "@/lib/types";
+import type { OrdersData, PortfolioData } from "@/lib/types";
 
 type TickerDetailContextValue = {
   activeTicker: string | null;
@@ -10,8 +10,10 @@ type TickerDetailContextValue = {
   closeTicker: () => void;
   getPrices: () => Record<string, PriceData>;
   getPortfolio: () => PortfolioData | null;
+  getOrders: () => OrdersData | null;
   setPrices: (p: Record<string, PriceData>) => void;
   setPortfolio: (p: PortfolioData | null) => void;
+  setOrders: (o: OrdersData | null) => void;
 };
 
 const TickerDetailContext = createContext<TickerDetailContextValue | null>(null);
@@ -20,6 +22,7 @@ export function TickerDetailProvider({ children }: { children: ReactNode }) {
   const [activeTicker, setActiveTicker] = useState<string | null>(null);
   const pricesRef = useRef<Record<string, PriceData>>({});
   const portfolioRef = useRef<PortfolioData | null>(null);
+  const ordersRef = useRef<OrdersData | null>(null);
 
   const openTicker = useCallback((ticker: string) => {
     setActiveTicker(ticker.toUpperCase());
@@ -31,6 +34,7 @@ export function TickerDetailProvider({ children }: { children: ReactNode }) {
 
   const getPrices = useCallback(() => pricesRef.current, []);
   const getPortfolio = useCallback(() => portfolioRef.current, []);
+  const getOrders = useCallback(() => ordersRef.current, []);
 
   const setPrices = useCallback((p: Record<string, PriceData>) => {
     pricesRef.current = p;
@@ -40,9 +44,13 @@ export function TickerDetailProvider({ children }: { children: ReactNode }) {
     portfolioRef.current = p;
   }, []);
 
+  const setOrders = useCallback((o: OrdersData | null) => {
+    ordersRef.current = o;
+  }, []);
+
   return (
     <TickerDetailContext.Provider
-      value={{ activeTicker, openTicker, closeTicker, getPrices, getPortfolio, setPrices, setPortfolio }}
+      value={{ activeTicker, openTicker, closeTicker, getPrices, getPortfolio, getOrders, setPrices, setPortfolio, setOrders }}
     >
       {children}
     </TickerDetailContext.Provider>
