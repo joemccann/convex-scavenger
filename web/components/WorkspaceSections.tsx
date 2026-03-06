@@ -401,6 +401,7 @@ function LegRow({
         {priceDirection === "down" && <ArrowDown size={11} className="price-trend-icon price-trend-down" aria-label="price down" />}
       </td>
       <td></td>
+      <td></td>
       <td className="right cell-muted">{fmtPrice(Math.abs(leg.entry_cost))}</td>
       <td className="right cell-muted">{rtLast != null ? fmtUsd(rtLast * leg.contracts * (leg.type === "Stock" ? 1 : 100)) : leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
       <td></td>
@@ -465,6 +466,13 @@ function PositionRow({ pos, showExpiry = true, showStrike = false, showUnderlyin
       ? (optionsRt.dailyPnl / Math.abs(optionsRt.closeValue)) * 100
       : null;
 
+  // Today's P&L in dollars
+  const todayPnl = isStock
+    ? (realtimePrice?.last != null && realtimePrice.last > 0 && realtimePrice?.close != null && realtimePrice.close > 0
+        ? (realtimePrice.last - realtimePrice.close) * pos.contracts
+        : null)
+    : optionsRt?.dailyPnl ?? null;
+
   // For single-leg options, show strike in structure column
   const isSingleLegOption = pos.legs.length === 1 && pos.structure_type !== "Stock";
   const singleLegStrike = isSingleLegOption && pos.legs[0]?.strike ? pos.legs[0].strike : null;
@@ -519,6 +527,9 @@ function PositionRow({ pos, showExpiry = true, showStrike = false, showUnderlyin
         <td className={`right ${dailyChg != null ? (dailyChg >= 0 ? "positive" : "negative") : ""}`}>
           {dailyChg != null ? `${dailyChg >= 0 ? "+" : ""}${dailyChg.toFixed(2)}%` : "—"}
         </td>
+        <td className={`right ${todayPnl != null ? (todayPnl >= 0 ? "positive" : "negative") : ""}`}>
+          {todayPnl != null ? `${todayPnl >= 0 ? "+" : ""}${fmtUsd(Math.abs(todayPnl))}` : "—"}
+        </td>
         <td className="right">{fmtUsd(entryCost)}</td>
         <td className="right">{mv != null ? fmtUsd(mv) : "—"}</td>
         <td className={`right ${pnl != null ? (pnl >= 0 ? "positive" : "negative") : ""}`}>
@@ -542,7 +553,7 @@ function PositionRow({ pos, showExpiry = true, showStrike = false, showUnderlyin
   );
 }
 
-type PositionSortKey = "ticker" | "structure" | "qty" | "direction" | "underlying" | "avg_entry" | "last_price" | "daily_chg" | "entry_cost" | "market_value" | "pnl" | "expiry";
+type PositionSortKey = "ticker" | "structure" | "qty" | "direction" | "underlying" | "avg_entry" | "last_price" | "daily_chg" | "today_pnl" | "entry_cost" | "market_value" | "pnl" | "expiry";
 
 function getOptionRtMv(pos: PortfolioPosition, prices?: Record<string, PriceData>): number | null {
   if (pos.structure_type === "Stock" || !prices) return null;
@@ -573,6 +584,25 @@ export function getOptionDailyChg(pos: PortfolioPosition, prices?: Record<string
   return (dailyPnl / Math.abs(closeValue)) * 100;
 }
 
+function getTodayPnlDollars(pos: PortfolioPosition, prices?: Record<string, PriceData>): number | null {
+  if (!prices) return null;
+  if (pos.structure_type === "Stock") {
+    const p = prices[pos.ticker];
+    if (!p || p.last == null || p.last <= 0 || p.close == null || p.close <= 0) return null;
+    return (p.last - p.close) * pos.contracts;
+  }
+  // Options/spreads
+  let pnl = 0;
+  for (const leg of pos.legs) {
+    const key = legPriceKey(pos.ticker, pos.expiry, leg);
+    const lp = key ? prices[key] : null;
+    if (!lp || lp.last == null || lp.last <= 0 || lp.close == null || lp.close <= 0) return null;
+    const sign = leg.direction === "LONG" ? 1 : -1;
+    pnl += sign * (lp.last - lp.close) * leg.contracts * 100;
+  }
+  return pnl;
+}
+
 function makePositionExtract(prices?: Record<string, PriceData>) {
   return (pos: PortfolioPosition, key: PositionSortKey): string | number | null => {
     const isStock = pos.structure_type === "Stock";
@@ -593,6 +623,7 @@ function makePositionExtract(prices?: Record<string, PriceData>) {
         return getLastPrice(pos);
       }
       case "daily_chg": return isStock ? getDailyChange(prices?.[pos.ticker]) : getOptionDailyChg(pos, prices);
+      case "today_pnl": return getTodayPnlDollars(pos, prices);
       case "entry_cost": return resolveEntryCost(pos);
       case "market_value": return mv;
       case "pnl": return mv != null ? mv - resolveEntryCost(pos) : null;
@@ -618,6 +649,7 @@ function PositionTable({ positions, showExpiry = true, showStrike = false, showU
           <SortTh<PositionSortKey> label="Avg Entry" sortKey="avg_entry" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Last Price" sortKey="last_price" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Day Chg" sortKey="daily_chg" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+          <SortTh<PositionSortKey> label="Today P&L" sortKey="today_pnl" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Entry Cost" sortKey="entry_cost" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="Market Value" sortKey="market_value" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
           <SortTh<PositionSortKey> label="P&L" sortKey="pnl" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
