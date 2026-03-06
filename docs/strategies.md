@@ -93,8 +93,15 @@ python3 scripts/fetch_options.py [TICKER]
 # Scan watchlist for flow signals
 python3 scripts/scanner.py
 
-# Discover new candidates market-wide
+# Discover new candidates market-wide (default)
 python3 scripts/discover.py
+
+# Discover from a preset
+python3 scripts/discover.py ndx100
+python3 scripts/discover.py sp500-semiconductors
+
+# Discover specific tickers
+python3 scripts/discover.py AAPL MSFT NVDA
 
 # Fetch dark pool flow (5-day)
 python3 scripts/fetch_flow.py [TICKER]

@@ -106,7 +106,9 @@ If a script fails:
 | GARCH Convergence (JSON) | `python3 scripts/garch_convergence.py --preset all --json` |
 | LEAP IV scan (UW) | `python3 scripts/leap_scanner_uw.py --preset sectors` |
 | LEAP IV scan (IB) | `python3 scripts/leap_iv_scanner.py AAPL --portfolio` |
-| Dark pool discovery | `python3 scripts/discover.py` |
+| Discovery (market-wide) | `python3 scripts/discover.py` |
+| Discovery (preset) | `python3 scripts/discover.py ndx100` |
+| Discovery (tickers) | `python3 scripts/discover.py AAPL MSFT NVDA` |
 | Watchlist scan | `python3 scripts/scanner.py` |
 
 ### Portfolio Commands

@@ -114,7 +114,7 @@ When market is closed, free trade analysis explicitly shows it's using closing p
 |---------|--------|
 | `evaluate [TICKER]` | **Run `python3 scripts/evaluate.py [TICKER]`** — full 7-milestone evaluation |
 | `scan` | Scan watchlist for dark pool flow signals |
-| `discover` | Find new candidates from market-wide options flow |
+| `discover` | Find new candidates — market-wide (default), or pass tickers/presets |
 | `portfolio` | **Generate HTML portfolio report and open in browser** |
 | `free-trade` | Analyze positions for free trade opportunities |
 | `journal` | View recent trade log entries |
@@ -155,6 +155,43 @@ python3 scripts/evaluate.py AAPL --bankroll 1200000
 - If `PENDING`: fetch live option quotes from IB, design structure, calculate Kelly, generate HTML trade spec report, present to user
 
 **NEVER manually step through milestones 1-3B.** The script handles all parallel fetching. Only intervene for M5 (structure) and M6 (Kelly) which require interactive IB quotes and operator judgment.
+
+### Discover Command Details
+
+When user runs `discover`, ALWAYS run `python3 scripts/discover.py`.
+
+**Three modes:**
+
+```bash
+# Market-wide (default) — scans all flow alerts, excludes watchlist/portfolio
+python3 scripts/discover.py
+
+# Targeted tickers — scans specific tickers with per-ticker flow + DP
+python3 scripts/discover.py AAPL MSFT NVDA
+
+# Preset — resolves preset to tickers, then runs targeted mode
+python3 scripts/discover.py ndx100
+python3 scripts/discover.py ndx100-semiconductors
+python3 scripts/discover.py sp500-biotechnology
+
+# Mix presets and tickers
+python3 scripts/discover.py ndx100-semiconductors WULF CRWV
+
+# Options
+python3 scripts/discover.py ndx100 --top 10          # Limit results
+python3 scripts/discover.py ndx100 --dp-days 5       # More DP history
+python3 scripts/discover.py ndx100 --min-premium 100000  # Custom premium filter
+```
+
+**How it works:**
+- **Market-wide** (no args): Fetches flow alerts → aggregates by ticker → validates with dark pool → scores. Excludes tickers already in watchlist/portfolio.
+- **Targeted** (tickers/presets): Fetches per-ticker flow alerts AND dark pool data for every ticker. No watchlist filtering — scans exactly what was requested.
+
+**Presets are generic ticker lists** — the same presets used by `garch-convergence` and `leap-scan` work here. Any file in `data/presets/` is a valid preset name.
+
+**Scoring is identical in both modes** (0-100 scale: DP strength, sustained direction, confluence, vol/OI, sweeps).
+
+**Discovery does NOT modify the watchlist.** Results are candidates for manual review only.
 
 ### Portfolio Command Details
 
@@ -870,7 +907,7 @@ python3 scripts/garch_convergence.py --preset all --no-open # Don't open browser
 | `scripts/verify_options_oi.py` | Verify specific options flow claims via Open Interest |
 | `scripts/fetch_analyst_ratings.py` | Fetch analyst ratings, changes, and price targets |
 | `scripts/scanner.py` | Scan watchlist, rank by signal strength |
-| `scripts/discover.py` | Market-wide flow scanner for new candidates |
+| `scripts/discover.py` | **Discovery scanner: market-wide (default), targeted tickers, or presets** |
 | `scripts/kelly.py` | Kelly criterion calculator |
 | `scripts/ib_execute.py` | **⭐ UNIFIED: Place order + monitor + log (ALWAYS USE THIS)** |
 | `scripts/ib_sync.py` | Sync live portfolio from Interactive Brokers (periodic) |
