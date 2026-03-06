@@ -672,21 +672,6 @@ function PortfolioSections({ portfolio, prices }: { portfolio: PortfolioData | n
         </div>
       )}
 
-      {equityPositions.length > 0 && (
-        <div className="section">
-          <div className="section-header">
-            <div className="section-title">
-              <Circle size={14} />
-              Equity Positions
-            </div>
-            <span className="pill neutral">{equityPositions.length} POSITIONS</span>
-          </div>
-          <div className="section-body">
-            <PositionTable positions={equityPositions} showExpiry={false} prices={prices} />
-          </div>
-        </div>
-      )}
-
       {undefinedPositions.length > 0 && (
         <div className="section">
           <div className="section-header">
@@ -698,6 +683,21 @@ function PortfolioSections({ portfolio, prices }: { portfolio: PortfolioData | n
           </div>
           <div className="section-body">
             <PositionTable positions={undefinedPositions} showUnderlying={true} prices={prices} />
+          </div>
+        </div>
+      )}
+
+      {equityPositions.length > 0 && (
+        <div className="section">
+          <div className="section-header">
+            <div className="section-title">
+              <Circle size={14} />
+              Equity Positions
+            </div>
+            <span className="pill neutral">{equityPositions.length} POSITIONS</span>
+          </div>
+          <div className="section-body">
+            <PositionTable positions={equityPositions} showExpiry={false} prices={prices} />
           </div>
         </div>
       )}
