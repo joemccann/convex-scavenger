@@ -509,6 +509,24 @@ def run_analysis(
     # CTA exposure model
     cta = cta_exposure_model(realized_vol)
 
+    # MenthorQ CTA positioning (institutional data overlay)
+    menthorq_cta = None
+    try:
+        from fetch_menthorq_cta import load_menthorq_cache, find_by_underlying
+        menthorq = load_menthorq_cache()
+        if menthorq:
+            main_table = menthorq.get("tables", {}).get("main", [])
+            spx_entry = find_by_underlying(main_table, "S&P 500")
+            menthorq_cta = {
+                "date": menthorq.get("date"),
+                "source": menthorq.get("source"),
+                "spx": spx_entry,
+                "tables": menthorq.get("tables", {}),
+            }
+            print(f"  MenthorQ CTA data loaded ({menthorq.get('date')})", file=sys.stderr)
+    except Exception as exc:
+        print(f"  MenthorQ CTA unavailable: {exc}", file=sys.stderr)
+
     # Crash trigger
     trigger = crash_trigger(
         spx_below_ma=spx_below_ma,
@@ -559,6 +577,7 @@ def run_analysis(
         "realized_vol": round(realized_vol, 2) if not math.isnan(realized_vol) else None,
         "cri": cri,
         "cta": cta,
+        "menthorq_cta": menthorq_cta,
         "crash_trigger": trigger,
         "history": history,
     }
@@ -600,6 +619,19 @@ def print_summary(result: Dict[str, Any], market_open: bool) -> None:
     print(f"    Implied exposure : {cta['exposure_pct']:.1f}%", file=sys.stderr)
     print(f"    Forced reduction : {cta['forced_reduction_pct']:.1f}%", file=sys.stderr)
     print(f"    Est. selling     : ${cta['est_selling_bn']:.1f}B", file=sys.stderr)
+
+    # MenthorQ CTA positioning
+    menthorq = result.get("menthorq_cta")
+    if menthorq and menthorq.get("spx"):
+        spx = menthorq["spx"]
+        print(f"\n  MENTHORQ CTA POSITIONING (institutional):", file=sys.stderr)
+        print(f"    SPX Position Today : {spx.get('position_today', '---')}", file=sys.stderr)
+        print(f"    SPX Position Yest  : {spx.get('position_yesterday', '---')}", file=sys.stderr)
+        print(f"    3M Percentile      : {spx.get('percentile_3m', '---')}", file=sys.stderr)
+        print(f"    3M Z-Score         : {spx.get('z_score_3m', '---')}", file=sys.stderr)
+        print(f"    Data date          : {menthorq.get('date', '---')}", file=sys.stderr)
+    else:
+        print(f"\n  MENTHORQ CTA: Data unavailable (run: python3 scripts/fetch_menthorq_cta.py)", file=sys.stderr)
 
     # Crash trigger
     trigger = result["crash_trigger"]
@@ -774,6 +806,125 @@ def generate_html_report(
         </div>
       </div>
     </div>
+  </div>
+</div>""")
+
+    # ── MenthorQ CTA Positioning ──
+    menthorq = result.get("menthorq_cta")
+    if menthorq and menthorq.get("tables"):
+        body_parts.append(f"""<div class="section-header">MenthorQ CTA Positioning <span style="font-size:10px;color:var(--text-muted);font-weight:400">(institutional data — {menthorq.get('date', '---')})</span></div>""")
+
+        # SPX highlight card
+        spx = menthorq.get("spx")
+        if spx:
+            pos_t = spx.get("position_today", 0)
+            pctl_3m = spx.get("percentile_3m", 50)
+            z3 = spx.get("z_score_3m", 0)
+            # Color code: low percentile = bearish (red), high = bullish (green)
+            pctl_cls = "text-negative" if pctl_3m < 25 else "text-positive" if pctl_3m > 75 else "text-warning"
+            z_cls = "text-negative" if z3 < -1.5 else "text-positive" if z3 > 1.5 else ""
+
+            body_parts.append(f"""
+<div class="metrics" style="margin-bottom:16px">
+  <div class="metric">
+    <div class="metric-label">SPX CTA Position</div>
+    <div class="metric-value">{pos_t:.2f}</div>
+    <div class="metric-change">Yesterday: {spx.get('position_yesterday', '---')}</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">1M Ago</div>
+    <div class="metric-value">{spx.get('position_1m_ago', '---')}</div>
+    <div class="metric-change">Position delta</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">3M Percentile</div>
+    <div class="metric-value {pctl_cls}">{pctl_3m}</div>
+    <div class="metric-change">1Y: {spx.get('percentile_1y', '---')}</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">3M Z-Score</div>
+    <div class="metric-value {z_cls}">{z3:.2f}</div>
+    <div class="metric-change">Standard deviations</div>
+  </div>
+</div>""")
+
+        # Full table for main + index assets
+        for tkey, tlabel in [("main", "CTAs Main"), ("index", "CTAs Index")]:
+            table_data = menthorq.get("tables", {}).get(tkey, [])
+            if not table_data:
+                continue
+            body_parts.append(f"""<div class="panel" style="margin-bottom:12px">
+<div class="panel-header">{tlabel}</div>
+<table>
+<thead><tr>
+  <th>Underlying</th>
+  <th class="text-right">Pos Today</th>
+  <th class="text-right">Pos Yest</th>
+  <th class="text-right">1M Ago</th>
+  <th class="text-right">Pctl 3M</th>
+  <th class="text-right">Z-Score</th>
+</tr></thead><tbody>""")
+            for entry in table_data:
+                name = entry.get("underlying", "?")
+                pt = entry.get("position_today", "---")
+                py_ = entry.get("position_yesterday", "---")
+                p1m = entry.get("position_1m_ago", "---")
+                pctl = entry.get("percentile_3m", "---")
+                zs = entry.get("z_score_3m", "---")
+                pt_str = f"{pt:.2f}" if isinstance(pt, (int, float)) else str(pt)
+                py_str = f"{py_:.2f}" if isinstance(py_, (int, float)) else str(py_)
+                p1m_str = f"{p1m:.2f}" if isinstance(p1m, (int, float)) else str(p1m)
+                pctl_str = str(pctl) if isinstance(pctl, (int, float)) else str(pctl)
+                zs_str = f"{zs:.2f}" if isinstance(zs, (int, float)) else str(zs)
+                # Highlight low percentiles
+                row_cls = ""
+                if isinstance(pctl, (int, float)) and pctl < 20:
+                    row_cls = ' class="highlight"'
+                body_parts.append(
+                    f'<tr{row_cls}><td>{name}</td>'
+                    f'<td class="text-right">{pt_str}</td>'
+                    f'<td class="text-right">{py_str}</td>'
+                    f'<td class="text-right">{p1m_str}</td>'
+                    f'<td class="text-right">{pctl_str}</td>'
+                    f'<td class="text-right">{zs_str}</td></tr>'
+                )
+            body_parts.append("</tbody></table></div>")
+
+        # Compact tables for commodity + currency
+        for tkey, tlabel in [("commodity", "CTAs Commodity"), ("currency", "CTAs Currency")]:
+            table_data = menthorq.get("tables", {}).get(tkey, [])
+            if not table_data:
+                continue
+            body_parts.append(f"""<div class="panel" style="margin-bottom:12px">
+<div class="panel-header">{tlabel}</div>
+<table>
+<thead><tr>
+  <th>Underlying</th>
+  <th class="text-right">Pos Today</th>
+  <th class="text-right">Pctl 3M</th>
+  <th class="text-right">Z-Score</th>
+</tr></thead><tbody>""")
+            for entry in table_data:
+                name = entry.get("underlying", "?")
+                pt = entry.get("position_today", "---")
+                pctl = entry.get("percentile_3m", "---")
+                zs = entry.get("z_score_3m", "---")
+                pt_str = f"{pt:.2f}" if isinstance(pt, (int, float)) else str(pt)
+                pctl_str = str(pctl) if isinstance(pctl, (int, float)) else str(pctl)
+                zs_str = f"{zs:.2f}" if isinstance(zs, (int, float)) else str(zs)
+                body_parts.append(
+                    f'<tr><td>{name}</td>'
+                    f'<td class="text-right">{pt_str}</td>'
+                    f'<td class="text-right">{pctl_str}</td>'
+                    f'<td class="text-right">{zs_str}</td></tr>'
+                )
+            body_parts.append("</tbody></table></div>")
+    else:
+        body_parts.append("""
+<div class="section-header">MenthorQ CTA Positioning</div>
+<div class="panel">
+  <div class="panel-body" style="color:var(--text-muted);font-size:11px">
+    Data unavailable. Run <code>python3 scripts/fetch_menthorq_cta.py</code> to fetch institutional CTA positioning data.
   </div>
 </div>""")
 

@@ -348,6 +348,8 @@ SIGNAL: {RO/HDR/NORMAL/UNRELIABLE}
 
 **To also generate HTML report:** `python3 scripts/vcg_scan.py` (without --json).
 
+| `menthorq-cta` | Fetch MenthorQ institutional CTA positioning data |
+| `cri-scan` | **CRI scan — Crash Risk Index with MenthorQ CTA overlay** |
 | `blotter-history` | Historical trades via Flex Query (requires setup) |
 | `leap-scan [TICKERS]` | Scan for LEAP IV mispricing opportunities |
 | `garch-convergence [TICKERS]` | **Run `python3 scripts/garch_convergence.py`** — cross-asset GARCH vol divergence scan |
@@ -1013,6 +1015,7 @@ python3 scripts/garch_convergence.py --preset all --no-open # Don't open browser
 | `scripts/ib_fill_monitor.py` | Monitor orders for fills (standalone, use daemon instead) |
 | `scripts/portfolio_report.py` | Generate HTML portfolio report and open in browser |
 | `scripts/free_trade_analyzer.py` | Analyze positions for free trade opportunities |
+| `scripts/fetch_menthorq_cta.py` | **MenthorQ CTA positioning — browser scrape + Vision extraction, daily cache** |
 | `scripts/context_constructor.py` | **⭐ Context pipeline: load persistent memory at startup, save facts/episodes** |
 
 ## ⚠️ Order Execution (CRITICAL)
@@ -1581,6 +1584,7 @@ Save a fact after any of these events:
 | `data/presets/sp500.json` | S&P 500 master (503 tickers, 286 pairs, 99 groups) |
 | `data/presets/ndx100.json` | NASDAQ 100 master (101 tickers, 53 pairs, 21 groups) |
 | `data/presets/r2k.json` | Russell 2000 master (1929 tickers, 969 pairs, 16 groups) |
+| `data/menthorq_cache/` | **MenthorQ CTA positioning cache** (daily, Vision-extracted from screenshots) |
 | `context/memory/fact/` | **Persistent facts** (trading lessons, API quirks, portfolio state) |
 | `context/memory/episodic/` | **Session summaries** (what happened each session) |
 | `context/human/` | **Human annotations** (overrides, corrections) |

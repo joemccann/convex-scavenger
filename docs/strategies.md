@@ -756,10 +756,22 @@ Uses daily returns and `np.corrcoef` on rolling windows.
 | Correlation < 0.40 | Close — diversification restored |
 | 5 trading days elapsed | Re-evaluate — CTA selling is time-bound |
 
+### MenthorQ CTA Positioning (Institutional Data Overlay)
+
+The vol-targeting model estimates CTA exposure from realized vol. MenthorQ provides **actual** institutional CTA positioning data: position sizes, percentiles, and z-scores across indices, commodities, currencies, and bonds.
+
+**Data flow**: Headless browser → screenshot CTA table images → Claude Haiku Vision → structured JSON → daily cache.
+
+**Key fields per asset**: `position_today`, `position_yesterday`, `position_1m_ago`, `percentile_1m`, `percentile_3m`, `percentile_1y`, `z_score_3m`.
+
+**Integration with CRI**: When MenthorQ data is available, the CRI report overlays actual SPX CTA positioning alongside the vol-targeting model. Low percentile + negative z-score confirms deleveraging pressure. When unavailable, falls back to vol-targeting model only.
+
+**Cache**: `data/menthorq_cache/cta_{DATE}.json` — one file per trading day.
+
 ### Scripts
 
 ```bash
-# Run CRI scan (HTML report)
+# Run CRI scan (HTML report, includes MenthorQ data if cached)
 python3 scripts/cri_scan.py
 
 # JSON output
@@ -767,6 +779,15 @@ python3 scripts/cri_scan.py --json
 
 # Don't open browser
 python3 scripts/cri_scan.py --no-open
+
+# Fetch MenthorQ CTA data (requires login, ~40s)
+python3 scripts/fetch_menthorq_cta.py
+
+# MenthorQ JSON output
+python3 scripts/fetch_menthorq_cta.py --json
+
+# MenthorQ specific date
+python3 scripts/fetch_menthorq_cta.py --date 2026-03-06
 ```
 
 ### Source Research

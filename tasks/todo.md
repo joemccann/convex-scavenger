@@ -140,3 +140,57 @@ Composite key scheme: stock prices keyed by ticker (`"AAPL"`), option prices by 
 - TypeScript compilation passes (no errors in modified files)
 - Server syntax check passes (`node --check`)
 - Backward compatible: stock subscriptions unchanged, option contracts are additive
+
+---
+
+## Session: MenthorQ CTA Integration (2026-03-07)
+
+### Checklist
+- [x] Create `scripts/fetch_menthorq_cta.py` — Playwright login, screenshot, Vision extraction, daily cache
+- [x] Integrate MenthorQ data into `scripts/cri_scan.py` — `run_analysis()`, console summary, HTML report section
+- [x] Create `scripts/tests/test_menthorq_cta.py` — 20 tests (cache, find, parsing, trading date, CRI shape)
+- [x] Update `CLAUDE.md` — command, script, cache file references
+- [x] Update `.pi/AGENTS.md` — command, script, data file references
+- [x] Update `docs/strategies.md` — MenthorQ section in Strategy 6
+- [x] Install Playwright + Chromium + httpx
+- [x] Live end-to-end verification — 37 assets, 4 tables, SPX pctl_3m=13 z=-1.56
+
+### Files Created
+- `scripts/fetch_menthorq_cta.py`
+- `scripts/tests/test_menthorq_cta.py`
+- `data/menthorq_cache/cta_2026-03-06.json`
+
+### Files Modified
+- `scripts/cri_scan.py`
+- `CLAUDE.md`
+- `.pi/AGENTS.md`
+- `docs/strategies.md`
+- `PROGRESS.md`
+
+### Review
+- 73/73 tests pass (20 new + 53 existing CRI)
+- Live fetch: 42.6s, all 4 tables extracted
+- Cache hit: instant on subsequent runs
+- CRI scanner gracefully handles missing MenthorQ data (fallback text)
+
+---
+
+## Session: Combo Order Fixes + Leg P&L (2026-03-06)
+
+### Checklist
+- [x] Fix ModifyOrderModal BAG price resolution — pass `portfolio`, compute net BID/ASK/LAST from per-leg WS prices
+- [x] Fix triplicate executed orders — replace `setInterval` with chained `setTimeout` in cancel/modify polling + dedupe safety net
+- [x] Add per-leg P&L in expanded combo rows — `sign × (|MV| − |EC|)` with color coding
+- [x] Update CLAUDE.md calculations + price resolution docs
+
+### Files Modified
+- `web/components/ModifyOrderModal.tsx`
+- `web/components/WorkspaceSections.tsx`
+- `web/components/PositionTable.tsx`
+- `web/lib/OrderActionsContext.tsx`
+- `CLAUDE.md`
+
+### Review
+- `tsc --noEmit` — no new type errors
+- Orders page: 32 entries (down from 35), no triplicate cancelled rows, combo last prices resolved
+- Portfolio page: AAOI expanded legs show per-leg P&L summing to position-level total

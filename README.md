@@ -56,6 +56,17 @@ export UW_TOKEN="your-unusual-whales-api-key"
 
 # Optional: xAI Grok — X/Twitter sentiment analysis
 export XAI_API_KEY="your-xai-api-key"
+
+# Optional: MenthorQ — institutional CTA positioning data (for CRI scanner)
+export MENTHORQ_USER="your-menthorq-email"
+export MENTHORQ_PASS="your-menthorq-password"
+```
+
+MenthorQ also requires Playwright for headless browser scraping:
+
+```bash
+pip install playwright httpx
+playwright install chromium
 ```
 
 IB Gateway/TWS connects locally on port 4001 (Gateway) or 7497 (TWS). No API key needed — just have it running.
@@ -293,9 +304,16 @@ python scripts/vcg_scan.py --backtest --days 252  # Rolling backtest
 
 Composite 0-100 score across four components (VIX, VVIX, cross-sector correlation, SPX momentum). When the crash trigger fires (SPX below 100d MA, realized vol > 25%, avg sector correlation > 0.60), CTAs are forced to deleverage — creating predictable selling cascades.
 
+Optionally overlays **MenthorQ institutional CTA positioning data** (actual position sizes, percentiles, z-scores) when available.
+
 ```bash
-python scripts/cri_scan.py              # HTML report
+python scripts/cri_scan.py              # HTML report (includes MenthorQ if cached)
 python scripts/cri_scan.py --json       # JSON to stdout
+
+# Fetch MenthorQ CTA data (headless browser + Vision, ~40s)
+python scripts/fetch_menthorq_cta.py
+python scripts/fetch_menthorq_cta.py --json
+python scripts/fetch_menthorq_cta.py --date 2026-03-06
 ```
 
 ## Scenario Analysis

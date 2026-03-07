@@ -80,6 +80,7 @@ TZ=America/New_York date +"%A %H:%M"   # Check if market open (9:30–16:00 ET, 
 | `analyst-ratings [TICKERS]` | Ratings, changes, price targets |
 | `vcg-scan` | Cross-asset volatility-credit gap divergence signal |
 | `cri-scan` | Crash Risk Index — systematic CTA deleveraging detection |
+| `menthorq-cta` | Fetch MenthorQ institutional CTA positioning data |
 
 ---
 
@@ -107,6 +108,7 @@ TZ=America/New_York date +"%A %H:%M"   # Check if market open (9:30–16:00 ET, 
 | `scripts/fetch_x_watchlist.py` | X account tweet sentiment |
 | `scripts/vcg_scan.py` | Volatility-Credit Gap divergence scanner |
 | `scripts/cri_scan.py` | Crash Risk Index — CTA deleveraging detection |
+| `scripts/fetch_menthorq_cta.py` | MenthorQ CTA positioning (browser + Vision extraction) |
 
 ---
 
@@ -120,6 +122,7 @@ TZ=America/New_York date +"%A %H:%M"   # Check if market open (9:30–16:00 ET, 
 | `data/ticker_cache.json` | Ticker → company name cache |
 | `data/reconciliation.json` | IB reconciliation results |
 | `data/seasonality_cache/{TICKER}.json` | Cached seasonality (UW + EquityClock Vision fallback) |
+| `data/menthorq_cache/cta_{DATE}.json` | Cached MenthorQ CTA positioning (daily, Vision-extracted) |
 
 ---
 
