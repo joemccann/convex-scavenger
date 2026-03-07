@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "ib": "^0.2.9",
+    "liveline": "^0.0.6",
     "lucide-react": "^0.544.0",
     "next": "^15.3.2",
     "react": "^19.0.0",

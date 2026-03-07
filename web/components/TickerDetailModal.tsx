@@ -7,6 +7,7 @@ import type { PriceData } from "@/lib/pricesProtocol";
 import { useTickerDetail } from "@/lib/TickerDetailContext";
 import { fmtPrice, legPriceKey } from "@/lib/positionUtils";
 import Modal from "./Modal";
+import PriceChart from "./PriceChart";
 import PositionTab from "./ticker-detail/PositionTab";
 import OrderTab from "./ticker-detail/OrderTab";
 import NewsTab from "./ticker-detail/NewsTab";
@@ -173,6 +174,9 @@ export default function TickerDetailModal() {
 
         {/* Price bar */}
         <PriceBar priceData={priceData} label={priceLabel} />
+
+        {/* Price chart */}
+        <PriceChart ticker={activeTicker} prices={prices} />
 
         {/* Tab bar */}
         <div className="ticker-tabs">

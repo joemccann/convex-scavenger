@@ -1916,6 +1916,9 @@ tr.leg-row td {
 .price-bar-value.positive { color: var(--positive); }
 .price-bar-value.negative { color: var(--negative); }
 
+/* Price chart */
+.price-chart-container { height: 200px; width: 100%; border-bottom: 1px solid var(--border-dim); }
+
 /* Tabs */
 .ticker-tabs { display: flex; border-bottom: 1px solid var(--border-dim); margin-bottom: 0; }
 .ticker-tab { padding: 10px 16px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 150ms ease-in-out; }
