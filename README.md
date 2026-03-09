@@ -1,6 +1,6 @@
 # Convex Scavenger
 
-An autonomous options trading platform for a sub-$1M individual account. Combines institutional dark pool flow detection, cross-asset volatility analysis, and macro risk scanning to construct convex options structures sized with fractional Kelly criterion. Includes a real-time Next.js dashboard with IB WebSocket streaming, order management, and an AI chat interface.
+An autonomous options, equities and futures trading platform for any size account. Combines institutional dark pool flow detection, cross-asset volatility analysis, and macro risk scanning to construct convex options structures sized with fractional Kelly criterion. Includes a real-time Next.js dashboard with IB WebSocket streaming, order management, and an AI chat interface.
 
 **No narrative trades. No TA trades. Flow signal or nothing.**
 
