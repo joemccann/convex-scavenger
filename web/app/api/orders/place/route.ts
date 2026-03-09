@@ -84,6 +84,20 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
+    // IB silent rejection: order was submitted but immediately cancelled/inactive.
+    // These states mean the order will never appear in open orders — treat as failure.
+    const REJECTED_STATUSES = new Set(["Cancelled", "ApiCancelled", "Inactive", "Unknown"]);
+    const initialStatus = orderResult.initialStatus as string | undefined;
+    if (initialStatus && REJECTED_STATUSES.has(initialStatus)) {
+      const reason = initialStatus === "Unknown"
+        ? `no acknowledgement (${initialStatus}) — order may not have reached IB`
+        : initialStatus;
+      return NextResponse.json(
+        { error: `Order rejected by IB: ${reason}`, detail: orderResult },
+        { status: 502 },
+      );
+    }
+
     // Refresh orders after placement
     await ibOrders({ sync: true, port: 4001, clientId: 11 });
     const ordersResult = await readDataFile("data/orders.json", OrdersData);

@@ -200,6 +200,17 @@ Return on Risk = Realized P&L / Capital at Risk
 
 ---
 
+## Bug Fix Workflow — Mandatory
+
+**Red/green TDD for every bug fix, no exceptions:**
+
+1. Write a failing test that reproduces the bug (test must be RED before any code change)
+2. Implement the minimal fix
+3. Confirm the test turns GREEN
+4. For UI bugs: add a Playwright E2E test — unit tests alone are not sufficient confirmation
+
+---
+
 ## Calculations — Correctness Rules
 
 Financial calculations in the web UI must follow these rules exactly. Bugs here mislead trading decisions.

@@ -109,6 +109,16 @@ def place_order(params: dict) -> dict:
                 return {"status": "error", "message": f"Could not qualify contract: {symbol}"}
             contract = qualified[0]
 
+        # Capture IB error events so we can detect silent rejections
+        ib_errors: list = []
+
+        def _on_error(reqId, errorCode, errorString, contract=None):
+            # Ignore informational codes
+            if errorCode not in (2104, 2106, 2108, 2158, 10358):
+                ib_errors.append((errorCode, errorString))
+
+        client._ib.errorEvent += _on_error
+
         # Build order
         order = LimitOrder(
             action=action,
@@ -123,11 +133,26 @@ def place_order(params: dict) -> dict:
 
         # Place
         trade = client.place_order(contract, order)
-        client.sleep(2)  # Wait for IB acknowledgement
+
+        # Combo orders need extra time: IB routes each leg independently and
+        # risk checks take longer — 2 s is not enough to get an ack.
+        wait_secs = 5 if order_type == "combo" else 2
+        client.sleep(wait_secs)
 
         order_id = trade.order.orderId
         perm_id = trade.order.permId
         status = trade.orderStatus.status if trade.orderStatus else "Unknown"
+
+        # Surface any IB error events caught during the wait
+        if ib_errors:
+            code, msg = ib_errors[0]
+            return {
+                "status": "error",
+                "message": f"IB error {code}: {msg}",
+                "orderId": order_id,
+                "permId": perm_id,
+                "initialStatus": status,
+            }
 
         return {
             "status": "ok",
