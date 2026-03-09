@@ -1,0 +1,92 @@
+{
+  "commands": [
+    {
+      "command": "evaluate [TICKER]",
+      "description": "Full 7-milestone trade evaluation — fetches all data in parallel, stops at first failing gate"
+    },
+    {
+      "command": "scan",
+      "description": "Scan watchlist for dark pool flow signals — ranks tickers by signal strength"
+    },
+    {
+      "command": "discover",
+      "description": "Find new candidates — market-wide (default), targeted tickers, or presets (e.g. discover ndx100)"
+    },
+    {
+      "command": "portfolio",
+      "description": "Generate HTML portfolio report with live IB data, dark pool flow, thesis checks — opens in browser"
+    },
+    {
+      "command": "free-trade",
+      "description": "Analyze multi-leg positions for free trade opportunities (close hedge leg to make core leg free)"
+    },
+    {
+      "command": "journal",
+      "description": "View recent trade log entries"
+    },
+    {
+      "command": "sync",
+      "description": "Pull live portfolio from Interactive Brokers and update portfolio.json"
+    },
+    {
+      "command": "blotter",
+      "description": "Trade blotter — today's fills, P&L, spread grouping, commission totals"
+    },
+    {
+      "command": "blotter-history",
+      "description": "Historical trades via IB Flex Query (up to 365 days)"
+    },
+    {
+      "command": "stress-test",
+      "description": "Interactive scenario stress test — asks for market scenario, models bear/base/bull P&L per position, generates HTML report with expandable detail rows"
+    },
+    {
+      "command": "risk-reversal [TICKER]",
+      "description": "IV skew risk reversal analysis — finds costless/credit directional structures, generates HTML report"
+    },
+    {
+      "command": "vcg",
+      "description": "Cross-Asset Volatility-Credit Gap scan — VIX/VVIX/HYG regression, HDR conditions, risk-off signal"
+    },
+    {
+      "command": "cri-scan",
+      "description": "Crash Risk Index — sector correlations, CTA exposure model, crash trigger conditions"
+    },
+    {
+      "command": "garch-convergence [TICKERS]",
+      "description": "GARCH vol divergence scan — finds pairs where implied vol diverges from realized vol (supports presets)"
+    },
+    {
+      "command": "leap-scan [TICKERS]",
+      "description": "LEAP IV mispricing scanner — finds long-dated options where IV is cheap vs realized vol"
+    },
+    {
+      "command": "seasonal [TICKERS]",
+      "description": "Seasonality assessment — monthly win rates and average returns from EquityClock"
+    },
+    {
+      "command": "analyst-ratings [TICKERS]",
+      "description": "Fetch analyst ratings, price targets, recent upgrades/downgrades"
+    },
+    {
+      "command": "strategies",
+      "description": "List all available trading strategies with status, edge, instruments, and commands"
+    },
+    {
+      "command": "menthorq-cta",
+      "description": "Fetch MenthorQ institutional CTA positioning data"
+    },
+    {
+      "command": "x-scan [@ACCOUNT]",
+      "description": "Fetch tweets via xAI API and extract ticker sentiment (recommended, slower)"
+    },
+    {
+      "command": "x-scan-browser [@ACCOUNT]",
+      "description": "Fetch tweets via browser scraping and extract ticker sentiment (faster, lower quality)"
+    },
+    {
+      "command": "commands",
+      "description": "Show this list of all available commands"
+    }
+  ]
+}

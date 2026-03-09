@@ -124,6 +124,25 @@ When market is closed, free trade analysis explicitly shows it's using closing p
 | `vcg` | **VCG scan — call `vcg_scan` tool (registered Pi tool).** Do NOT re-read strategy docs. |
 | `strategies` | List available trading strategies (reads `data/strategies.json`) |
 | `stress-test` | **Interactive scenario stress test — asks for market scenario, runs portfolio P&L analysis, generates HTML report** |
+| `commands` | **Read `.pi/commands.json` and display all available commands** |
+
+### Commands List (MANDATORY)
+
+**When the user types `commands`, IMMEDIATELY read `.pi/commands.json` and display all commands as a formatted table. Do NOT read any other files or perform any other action.**
+
+```bash
+# Read the commands file
+cat .pi/commands.json
+```
+
+**Output format:**
+```
+| Command | Description |
+|---------|-------------|
+| evaluate [TICKER] | Full 7-milestone trade evaluation... |
+| scan | Scan watchlist for dark pool flow signals... |
+...
+```
 
 ### ⚠️ Strategy Registry Sync (MANDATORY)
 
