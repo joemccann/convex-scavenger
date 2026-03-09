@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, Check, Shield, X, Zap } from "lucide-react";
-import CtaTables from "./CtaTables";
+import { AlertTriangle, Check, Shield, X, Zap } from "lucide-react";
+import CriHistoryChart from "./CriHistoryChart";
 import type { PriceData } from "@/lib/pricesProtocol";
 import { useRegime, type CriData } from "@/lib/useRegime";
 import { computeCri, type CriLevel, type CriResult } from "@/lib/criCalc";
@@ -62,15 +62,64 @@ function LiveBadge({ live, variant }: { live: boolean; variant?: BadgeVariant })
   );
 }
 
+/* ─── Inline Tooltip ─────────────────────────────────── */
+
+function InfoTooltip({ text }: { text: string }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <span
+      style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+    >
+      <span style={{
+        width: 13, height: 13, borderRadius: "50%",
+        border: "1px solid var(--text-muted)",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        fontSize: 8, color: "var(--text-muted)", cursor: "default",
+        lineHeight: 1, flexShrink: 0,
+      }}>?</span>
+      {visible && (
+        <span style={{
+          position: "absolute",
+          bottom: "calc(100% + 6px)",
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "#111",
+          border: "1px solid var(--border-focus)",
+          padding: "8px 10px",
+          width: 240,
+          fontSize: 11,
+          fontFamily: "var(--font-mono)",
+          color: "var(--text-primary)",
+          lineHeight: 1.5,
+          zIndex: 50,
+          pointerEvents: "none",
+          whiteSpace: "normal",
+        }}>{text}</span>
+      )}
+    </span>
+  );
+}
+
 /* ─── Component Bar ──────────────────────────────────── */
+
+const COMPONENT_TOOLTIPS: Record<string, string> = {
+  VIX: "CBOE Volatility Index — 30-day implied vol of SPX. Score rises as VIX exceeds 20 (elevated) and 30 (high). Extreme spikes indicate tail-risk hedging by institutional players.",
+  VVIX: "Vol-of-VIX — measures expected volatility of VIX itself. Score rises with absolute level and VVIX/VIX ratio >5, signalling second-order stress and unstable vol regimes.",
+  CORRELATION: "Average pairwise correlation of 11 SPDR sector ETFs. High correlation (>0.60) means all sectors moving together — a hallmark of panic-driven crash regimes.",
+  MOMENTUM: "SPX distance below 100-day MA combined with VIX 5-day rate of change. Captures both price trend stress and velocity of volatility acceleration.",
+};
 
 function ComponentBar({ label, score, live }: { label: string; score: number; live: boolean }) {
   const pct = (score / 25) * 100;
   const barColor = score < 8 ? "var(--positive)" : score > 16 ? "var(--negative)" : "var(--warning)";
+  const tooltip = COMPONENT_TOOLTIPS[label];
   return (
     <div className="regime-component-bar">
       <div className="regime-component-label">
-        {label}
+        <span style={{ flex: 1 }}>{label}</span>
+        {tooltip && <InfoTooltip text={tooltip} />}
         <LiveBadge live={live} />
       </div>
       <div className="regime-bar-track">
@@ -117,12 +166,12 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
   const [vvixLastTs, setVvixLastTs] = useState<string | null>(null);
 
   useEffect(() => {
-    if (liveVix != null) setVixLastTs(new Date().toLocaleTimeString());
-  }, [liveVix]);
+    if (marketOpen && liveVix != null) setVixLastTs(new Date().toLocaleTimeString());
+  }, [marketOpen, liveVix]);
 
   useEffect(() => {
-    if (liveVvix != null) setVvixLastTs(new Date().toLocaleTimeString());
-  }, [liveVvix]);
+    if (marketOpen && liveVvix != null) setVvixLastTs(new Date().toLocaleTimeString());
+  }, [marketOpen, liveVvix]);
 
   // ── Intraday sector correlation ─────────────────────────────────────────
   // Accumulate price snapshots for all 11 sector ETFs. Snapshots are
@@ -131,9 +180,11 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
   const snapshotCountRef = useRef(0);
 
   useEffect(() => {
-    appendSnapshot(prices);
-    snapshotCountRef.current = bufferDepth();
-  }, [prices]);
+    if (marketOpen) {
+      appendSnapshot(prices);
+      snapshotCountRef.current = bufferDepth();
+    }
+  }, [prices, marketOpen]);
 
   useEffect(() => {
     return () => { resetBuffer(); };
@@ -147,10 +198,10 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
   );
 
   const intradayCorr = useMemo(
-    () => (allSectorLive ? computeIntradaySectorCorr() : null),
+    () => (marketOpen && allSectorLive ? computeIntradaySectorCorr() : null),
     // Re-derive whenever prices change (snapshot was just appended above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [prices, allSectorLive],
+    [prices, marketOpen, allSectorLive],
   );
 
   const hasIntradayCorr = intradayCorr != null;
@@ -186,9 +237,13 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
   // 5d change is daily-only; used for the cached path.
   const activeCorrChange = data?.corr_5d_change ?? 0;
 
-  // Merge live + cached into CRI inputs
+  // Merge live + cached into CRI inputs.
+  // When market is closed, return null so `cri` falls back to data?.cri
+  // (the authoritative EOD values from cri_scan.py — do not recompute with
+  // stale WS prices that linger after close).
   const liveCri: CriResult | null = useMemo(() => {
     if (!data) return null;
+    if (!marketOpen) return null;
 
     const vix = liveVix ?? data.vix;
     const vvix = liveVvix ?? data.vvix;
@@ -211,10 +266,11 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
   const cri = liveCri ?? (data?.cri ? { ...data.cri, level: data.cri.level as CriLevel } : { score: 0, level: "LOW" as CriLevel, components: { vix: 0, vvix: 0, correlation: 0, momentum: 0 } });
   const color = levelColor(cri.level);
 
-  // Live-derived values
-  const vixVal = liveVix ?? data?.vix ?? 0;
-  const vvixVal = liveVvix ?? data?.vvix ?? 0;
-  const spyVal = liveSpy ?? data?.spy ?? 0;
+  // Display values: use live WS only while market is open.
+  // When closed, always use CRI EOD values so stale WS prices don't appear.
+  const vixVal = (marketOpen ? liveVix : null) ?? data?.vix ?? 0;
+  const vvixVal = (marketOpen ? liveVvix : null) ?? data?.vvix ?? 0;
+  const spyVal = (marketOpen ? liveSpy : null) ?? data?.spy ?? 0;
   const vvixVixRatio = vixVal > 0 ? vvixVal / vixVal : data?.vvix_vix_ratio ?? 0;
   const ma = data?.spx_100d_ma;
   const spxDistPct = ma && ma > 0 ? ((spyVal / ma) - 1) * 100 : data?.spx_distance_pct ?? 0;
@@ -322,134 +378,53 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
         </div>
       </div>
 
-      {/* ── Row 3: Component Bars ─────────────────── */}
-      <div className="section-header">
-        <Zap size={14} />
-        CRI COMPONENTS
-      </div>
-      <div className="regime-components">
-        <ComponentBar label="VIX" score={cri.components.vix} live={marketOpen && liveVix != null} />
-        <ComponentBar label="VVIX" score={cri.components.vvix} live={marketOpen && liveVvix != null} />
-        <ComponentBar label="CORRELATION" score={cri.components.correlation} live={marketOpen && hasIntradayCorr} />
-        <ComponentBar label="MOMENTUM" score={cri.components.momentum} live={marketOpen && liveSpy != null} />
-      </div>
-
-      {/* ── Row 4: Crash Trigger Panel ────────────── */}
-      <div className="section-header">
-        <AlertTriangle size={14} />
-        CRASH TRIGGER CONDITIONS
-      </div>
-      <div className="regime-triggers">
-        <div className={`regime-trigger-status ${data?.crash_trigger?.triggered ? "regime-triggered" : ""}`}>
-          {data?.crash_trigger?.triggered ? "TRIGGERED" : "INACTIVE"}
-        </div>
-        <TriggerRow
-          label="SPX < 100d MA"
-          met={spxBelowMa}
-          value={`${fmtPct(spxDistPct)} (MA: $${fmt(ma)})`}
-          live={marketOpen && liveSpy != null}
-        />
-        <TriggerRow
-          label="Realized Vol > 25%"
-          met={data?.crash_trigger?.conditions.realized_vol_gt_25 ?? false}
-          value={data?.realized_vol != null ? `${fmt(data.realized_vol)}%` : "---"}
-          live={false}
-        />
-        <TriggerRow
-          label="Avg Correlation > 0.60"
-          met={activeCorr > 0.60}
-          value={fmt(activeCorr, 4)}
-          live={hasIntradayCorr}
-        />
-      </div>
-
-      {/* ── Row 5: CTA Model + MenthorQ ───────────── */}
-      <div className="section-header">
-        <Activity size={14} />
-        CTA EXPOSURE MODEL
-      </div>
-      <div className="regime-cta-grid">
-        <div className="regime-cta-panel">
-          <div className="regime-cta-title">VOL-TARGETING MODEL</div>
-          <div className="regime-cta-rows">
-            <div className="regime-cta-row">
-              <span>Implied Exposure</span>
-              <span className={data?.cta?.exposure_pct != null && data.cta.exposure_pct < 50 ? "text-negative" : ""}>
-                {fmt(data?.cta?.exposure_pct, 1)}%
-              </span>
-            </div>
-            <div className="regime-cta-row">
-              <span>Forced Reduction</span>
-              <span className={data?.cta?.forced_reduction_pct && data.cta.forced_reduction_pct > 0 ? "text-negative" : "text-positive"}>
-                {fmt(data?.cta?.forced_reduction_pct, 1)}%
-              </span>
-            </div>
-            <div className="regime-cta-row">
-              <span>Est. CTA Selling</span>
-              <span className={data?.cta?.est_selling_bn && data.cta.est_selling_bn > 50 ? "text-negative" : ""}>
-                ${fmt(data?.cta?.est_selling_bn, 1)}B
-              </span>
-            </div>
+      {/* ── Row 3+4: Components + Crash Trigger side by side ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0" }}>
+        <div className="regime-components">
+          <div className="regime-panel-title">
+            <Zap size={12} />
+            CRI COMPONENTS
           </div>
-          {data?.cta && (
-            <div className="regime-cta-gauge">
-              <div className="regime-cta-gauge-label">EXPOSURE</div>
-              <div className="regime-bar-track">
-                <div
-                  className="regime-bar-fill"
-                  style={{
-                    width: `${Math.min(data.cta.exposure_pct, 200) / 2}%`,
-                    background: data.cta.exposure_pct >= 80 ? "var(--positive)" : "var(--negative)",
-                  }}
-                />
-              </div>
-              <div className="regime-cta-gauge-scale">
-                <span>0%</span><span>100%</span><span>200%</span>
-              </div>
-            </div>
-          )}
+          <ComponentBar label="VIX" score={cri.components.vix} live={marketOpen && liveVix != null} />
+          <ComponentBar label="VVIX" score={cri.components.vvix} live={marketOpen && liveVvix != null} />
+          <ComponentBar label="CORRELATION" score={cri.components.correlation} live={marketOpen && hasIntradayCorr} />
+          <ComponentBar label="MOMENTUM" score={cri.components.momentum} live={marketOpen && liveSpy != null} />
         </div>
-
-        <div className="regime-cta-panel regime-cta-panel-full">
-          <CtaTables />
+        <div className="regime-triggers">
+          <div className="regime-panel-title">
+            <AlertTriangle size={12} />
+            CRASH TRIGGER CONDITIONS
+          </div>
+            <div className={`regime-trigger-status ${data?.crash_trigger?.triggered ? "regime-triggered" : ""}`}>
+            {data?.crash_trigger?.triggered ? "TRIGGERED" : "INACTIVE"}
+          </div>
+            <TriggerRow
+              label="SPX < 100d MA"
+              met={spxBelowMa}
+              value={`${fmtPct(spxDistPct)} (MA: $${fmt(ma)})`}
+              live={marketOpen && liveSpy != null}
+            />
+            <TriggerRow
+              label="Realized Vol > 25%"
+              met={data?.crash_trigger?.conditions.realized_vol_gt_25 ?? false}
+              value={data?.realized_vol != null ? `${fmt(data.realized_vol)}%` : "---"}
+              live={false}
+            />
+            <TriggerRow
+              label="Avg Correlation > 0.60"
+              met={activeCorr > 0.60}
+              value={fmt(activeCorr, 4)}
+              live={hasIntradayCorr}
+            />
         </div>
       </div>
 
-      {/* ── Row 6: 10-Day History ─────────────────── */}
+      {/* ── Row 5: 10-Day History Chart ───────────── */}
+
       {data?.history && data.history.length > 0 && (
         <>
           <div className="section-header">10-DAY HISTORY</div>
-          <div className="regime-history">
-            <table>
-              <thead>
-                <tr>
-                  <th>DATE</th>
-                  <th className="text-right">VIX</th>
-                  <th className="text-right">VVIX</th>
-                  <th className="text-right">SPY</th>
-                  <th className="text-right">VS 100D MA</th>
-                  <th className="text-right">VIX 5D ROC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.history.map((h, i) => {
-                  const isLast = i === data.history.length - 1;
-                  return (
-                    <tr key={h.date} className={isLast ? "regime-history-current" : ""}>
-                      <td>{h.date}</td>
-                      <td className="text-right">{h.vix.toFixed(2)}</td>
-                      <td className="text-right">{h.vvix.toFixed(2)}</td>
-                      <td className="text-right">${h.spy.toFixed(2)}</td>
-                      <td className={`text-right ${h.spx_vs_ma_pct < -5 ? "text-negative" : h.spx_vs_ma_pct < 0 ? "text-warning" : ""}`}>
-                        {fmtPct(h.spx_vs_ma_pct)}
-                      </td>
-                      <td className="text-right">{fmtPct(h.vix_5d_roc, 1)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <CriHistoryChart history={data.history} criScore={cri.score} />
         </>
       )}
     </div>

@@ -66,6 +66,22 @@ TZ=America/New_York date +"%A %H:%M"   # Check if market open (9:30–16:00 ET, 
 
 **Implementation**: `web/lib/criStaleness.ts` — `isCriDataStale(data, mtimeMs, todayET)` is the single source of truth for this logic. Tests in `web/tests/regime-cri-staleness.test.ts`. **Do not inline this logic in the route.**
 
+### RegimePanel Market-Closed Value Rules
+
+When `market_open === false`, the component **must**:
+
+| What | Rule |
+|------|------|
+| `vixVal` / `vvixVal` / `spyVal` | Use `data.vix` / `data.vvix` / `data.spy` only — never WS `last` |
+| `intradayCorr` | Return `null` — use `data.avg_sector_correlation` |
+| `liveCri` | Return `null` — use `data.cri` (authoritative EOD values) |
+| `intradayRvol` | Return `null` — use `data.realized_vol` |
+| VIX/VVIX timestamps | Do not update (gate `setVixLastTs`/`setVvixLastTs` on `marketOpen`) |
+| Snapshot buffer | Do not append — gate `appendSnapshot` on `marketOpen` |
+| SECTOR CORR badge | Must show DAILY, never INTRADAY |
+
+**Tests**: `web/tests/regime-market-closed-values.test.ts` (8 unit), `web/e2e/regime-market-closed-eod.spec.ts` (6 E2E)
+
 ---
 
 ## Evaluation — 7 Milestones (Stop on Any Failure)

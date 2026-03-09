@@ -18,6 +18,8 @@
     "test:ib": "python3 ../scripts/test_ib_realtime.py"
   },
   "dependencies": {
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
     "ib": "^0.2.9",
     "liveline": "^0.0.6",
     "lucide-react": "^0.544.0",

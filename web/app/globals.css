@@ -2443,6 +2443,22 @@ tr {
   text-transform: uppercase;
 }
 
+/* Panel inner title (used inside regime-components and regime-triggers) */
+.regime-panel-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
 /* Component Bars */
 .regime-components {
   background: var(--bg-panel);
