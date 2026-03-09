@@ -244,6 +244,10 @@ def group_positions(positions: List[Dict]) -> List[Dict]:
         key = (p['symbol'], p['expiry'] or 'stock')
         by_sym_exp[key].append(p)
 
+    # ── Covered call merge pass ──
+    # Merge standalone short-call group with same-ticker stock group
+    by_sym_exp = _merge_covered_call_groups_report(by_sym_exp)
+
     grouped = []
     for (sym, exp), legs in by_sym_exp.items():
         if len(legs) == 1:
@@ -253,6 +257,51 @@ def group_positions(positions: List[Dict]) -> List[Dict]:
 
     grouped.sort(key=lambda g: (0, g['dte']) if g['dte'] is not None else (1, 9999))
     return grouped
+
+
+def _merge_covered_call_groups_report(groups: dict) -> dict:
+    """
+    Merge standalone short-call groups into same-ticker stock groups for covered calls.
+    Portfolio report variant — uses 'sec_type', 'right', 'qty' field names.
+    """
+    stock_groups = {}   # symbol -> key
+    short_call_groups = {}  # symbol -> [key, ...]
+
+    for key, legs in groups.items():
+        symbol = key[0]
+
+        if all(l.get('sec_type') == 'STK' for l in legs):
+            long_shares = sum(l['qty'] for l in legs if l['qty'] > 0)
+            if long_shares > 0:
+                stock_groups[symbol] = key
+
+        elif all(l.get('sec_type') == 'OPT' for l in legs):
+            if all(l.get('right') == 'C' and l['qty'] < 0 for l in legs):
+                if symbol not in short_call_groups:
+                    short_call_groups[symbol] = []
+                short_call_groups[symbol].append(key)
+
+    merged = dict(groups)
+    for symbol, sc_keys in short_call_groups.items():
+        if symbol not in stock_groups:
+            continue
+
+        stk_key = stock_groups[symbol]
+        stk_legs = merged[stk_key]
+        total_shares = sum(l['qty'] for l in stk_legs if l['qty'] > 0)
+
+        for sc_key in sc_keys:
+            sc_legs = merged.get(sc_key, [])
+            total_short = sum(abs(l['qty']) for l in sc_legs)
+            shares_needed = total_short * 100
+
+            if total_shares >= shares_needed:
+                merged[sc_key] = list(stk_legs) + list(sc_legs)
+                del merged[stk_key]
+                total_shares -= shares_needed
+                break
+
+    return merged
 
 
 def _single_leg(sym, exp, leg):
@@ -272,8 +321,10 @@ def _single_leg(sym, exp, leg):
 
 
 def _multi_leg(sym, exp, legs):
-    calls = [l for l in legs if l.get('right') == 'C']
-    puts = [l for l in legs if l.get('right') == 'P']
+    stk_legs = [l for l in legs if l.get('sec_type') == 'STK']
+    opt_legs = [l for l in legs if l.get('sec_type') != 'STK']
+    calls = [l for l in opt_legs if l.get('right') == 'C']
+    puts = [l for l in opt_legs if l.get('right') == 'P']
     long_calls = [c for c in calls if c['qty'] > 0]
     short_calls = [c for c in calls if c['qty'] < 0]
     long_puts = [p for p in puts if p['qty'] > 0]
@@ -282,9 +333,28 @@ def _multi_leg(sym, exp, legs):
     total_pnl = sum(l['pnl'] for l in legs)
     total_entry = sum(l['entry_cost'] for l in legs if l['qty'] > 0)
     pnl_pct = (total_pnl / total_entry * 100) if total_entry > 0 else 0
-    dte = legs[0]['dte']
+    # Use the option DTE if present, otherwise stock DTE (None)
+    dte = next((l['dte'] for l in opt_legs if l.get('dte') is not None), legs[0].get('dte'))
     risk = 'defined'
     structure = f"{sym} Multi-leg {exp}"
+
+    # ── Covered Call: long stock + short calls ──
+    if stk_legs and short_calls and not long_calls and not puts:
+        long_shares = sum(l['qty'] for l in stk_legs if l['qty'] > 0)
+        short_contracts = sum(abs(c['qty']) for c in short_calls)
+        if long_shares >= short_contracts * 100:
+            sc = short_calls[0]
+            structure = f"{sym} Covered Call ${sc['strike']:.0f} ({int(long_shares):,} shares)"
+            risk = 'defined'
+            # Expiry from the option leg
+            opt_expiry = sc.get('expiry')
+            return {
+                'symbol': sym, 'structure': structure, 'legs': legs,
+                'entry_cost': total_entry, 'mkt_val': sum(l['mkt_val'] for l in legs),
+                'pnl': total_pnl, 'pnl_pct': pnl_pct,
+                'dte': sc.get('dte', dte), 'expiry': opt_expiry if opt_expiry and opt_expiry != 'stock' else exp,
+                'risk': risk,
+            }
 
     if long_calls and short_calls and not puts:
         lc = min(long_calls, key=lambda x: x['strike'])

@@ -1,12 +1,12 @@
 {
   "id": "fact-portfolio-rule-violations",
   "key": "portfolio.rule-violations",
-  "value": "5 active rule violations: APO risk reversal (short put $100, Apr 17), EWY risk reversal (short put $130, Mar 13), IWM risk reversal (short put $248, Apr 17), IGV synthetic long (short put $90), AMD position size 7.4% (exceeds 2.5% cap). APO and IWM are new violations opened 2026-03-06.",
+  "value": "4 active rule violations: APO risk reversal (short put $100, Apr 17), EWY risk reversal (short put $130, Mar 13), IWM risk reversal (short put $248, Apr 17), IGV synthetic long (short put $90), AMD position size 7.4% (exceeds 2.5% cap). URTY short call is NOT a violation \u2014 it is a covered call (4,000 shares cover 40 contracts). Covered call detection added to ib_sync.py and portfolio_report.py on 2026-03-09.",
   "confidence": 1.0,
-  "source": "ib-sync-2026-03-06",
+  "source": "portfolio-review-2026-03-09",
   "extractedBy": "context-evaluator",
   "createdAt": "2026-03-06T17:45:45.776071+00:00",
-  "updatedAt": "2026-03-06T19:54:45.912215+00:00",
-  "revisionId": 2,
+  "updatedAt": "2026-03-09T20:49:33.613798+00:00",
+  "revisionId": 3,
   "expiresAt": null
 }

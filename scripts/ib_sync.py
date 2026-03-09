@@ -137,8 +137,28 @@ def detect_structure_type(legs: list) -> Tuple[str, str]:
     
     # Sort legs by strike for consistent ordering
     opt_legs = [l for l in legs if l['secType'] == 'OPT']
+    stk_legs = [l for l in legs if l['secType'] == 'STK']
+    
     if not opt_legs:
         return "Mixed", "unknown"
+    
+    # ── Covered Call Detection ──
+    # Long stock + short call(s) in same ticker = covered call (defined risk)
+    # Requires: stock shares >= short call contracts * 100
+    if stk_legs and opt_legs:
+        long_stock = [s for s in stk_legs if s['position'] > 0]
+        short_calls = [o for o in opt_legs if o.get('right') == 'C' and o['position'] < 0]
+        
+        if long_stock and short_calls and len(opt_legs) == len(short_calls):
+            total_shares = sum(s['position'] for s in long_stock)
+            total_short_contracts = sum(abs(o['position']) for o in short_calls)
+            shares_needed = total_short_contracts * 100
+            
+            if total_shares >= shares_needed:
+                return "Covered Call", "defined"
+            else:
+                # Partially covered — still has naked exposure
+                return "Partially Covered Call", "undefined"
     
     # Analyze leg composition
     calls = [l for l in opt_legs if l.get('right') == 'C']
@@ -203,6 +223,15 @@ def format_structure_description(structure_type: str, legs: list) -> str:
         strikes = [l.get('strike') for l in opt_legs]
         return f"{structure_type} ${min(strikes)}/${max(strikes)}"
     
+    if "Covered Call" in structure_type:
+        call_legs = sorted([l for l in opt_legs if l.get('right') == 'C'], key=lambda x: x.get('strike', 0))
+        stk_legs = [l for l in legs if l.get('secType') == 'STK' or l.get('type') == 'Stock']
+        shares = sum(abs(l.get('position', l.get('contracts', 0))) for l in stk_legs)
+        if call_legs:
+            strike = call_legs[0].get('strike', '?')
+            return f"{structure_type} ${strike} ({int(shares)} shares)"
+        return structure_type
+    
     if "Synthetic" in structure_type:
         strike = next((l.get('strike') for l in opt_legs if l.get('right') in ('C', 'P')), '?')
         return f"{structure_type} ${strike}"
@@ -221,6 +250,72 @@ def format_structure_description(structure_type: str, legs: list) -> str:
     return structure_type
 
 
+def _merge_covered_call_groups(groups: dict) -> dict:
+    """
+    Merge standalone short-call groups into same-ticker stock groups to form covered calls.
+    
+    IB returns stock and options as separate positions with different expiries,
+    so they end up in separate (symbol, expiry) groups. This pass detects when
+    a short-call-only group can be merged with a long-stock group for the same ticker,
+    creating a covered call structure.
+    
+    Only merges if:
+    1. The short call group contains ONLY short calls (no other option types)
+    2. A stock group exists for the same ticker with long shares
+    3. Stock shares >= short call contracts * 100 (fully covered)
+    """
+    from collections import defaultdict
+    
+    # Find all stock groups and short-call-only groups per ticker
+    stock_groups = {}  # ticker -> (key, legs)
+    short_call_groups = {}  # ticker -> [(key, legs), ...]
+    
+    for key, legs in groups.items():
+        symbol = key[0]
+        
+        # Is this a stock-only group?
+        if all(l['secType'] == 'STK' for l in legs):
+            long_shares = sum(l['position'] for l in legs if l['position'] > 0)
+            if long_shares > 0:
+                stock_groups[symbol] = key
+        
+        # Is this a short-call-only group?
+        elif all(l['secType'] == 'OPT' for l in legs):
+            opt_legs = legs
+            if all(l.get('right') == 'C' and l['position'] < 0 for l in opt_legs):
+                if symbol not in short_call_groups:
+                    short_call_groups[symbol] = []
+                short_call_groups[symbol].append(key)
+    
+    # Merge matching pairs
+    merged = dict(groups)  # copy
+    for symbol, sc_keys in short_call_groups.items():
+        if symbol not in stock_groups:
+            continue
+        
+        stk_key = stock_groups[symbol]
+        stk_legs = merged[stk_key]
+        total_shares = sum(l['position'] for l in stk_legs if l['position'] > 0)
+        
+        for sc_key in sc_keys:
+            sc_legs = merged.get(sc_key, [])
+            total_short_contracts = sum(abs(l['position']) for l in sc_legs)
+            shares_needed = total_short_contracts * 100
+            
+            if total_shares >= shares_needed:
+                # Merge: combine legs into a single group keyed by the option expiry
+                combined = list(stk_legs) + list(sc_legs)
+                # Use the option expiry as the group key (more informative than N/A)
+                merged[sc_key] = combined
+                # Remove the stock group (now absorbed)
+                del merged[stk_key]
+                # Reduce available shares for any additional short call groups
+                total_shares -= shares_needed
+                break  # Only merge one short call group per stock group
+    
+    return merged
+
+
 def collapse_positions(positions: list) -> list:
     """
     Collapse individual legs into multi-leg structures.
@@ -234,6 +329,11 @@ def collapse_positions(positions: list) -> list:
         # Use N/A expiry for stocks to keep them separate
         key = (pos['symbol'], pos['expiry'])
         groups[key].append(pos)
+    
+    # ── Second pass: merge covered calls ──
+    # A standalone short call group + same-ticker stock group = covered call.
+    # Merge them into a single group so detect_structure_type can identify it.
+    groups = _merge_covered_call_groups(groups)
     
     collapsed = []
     position_id = 1

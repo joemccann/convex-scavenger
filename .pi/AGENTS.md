@@ -1293,6 +1293,25 @@ python3 scripts/ib_sync.py --port 4001   # IB Gateway Live
 python3 scripts/ib_sync.py --port 4002   # IB Gateway Paper
 ```
 
+### Covered Call Detection (Automatic)
+
+**Both `ib_sync.py` and `portfolio_report.py` automatically detect covered calls.**
+
+When a ticker has both long stock AND short calls:
+- Stock shares ≥ short call contracts × 100 → **Covered Call** (defined risk ✅)
+- Stock shares < short call contracts × 100 → **Partially Covered Call** (undefined risk ⛔)
+
+**How it works:** Positions are initially grouped by `(symbol, expiry)`. Since stock has no expiry and options do, they end up in separate groups. A second pass (`_merge_covered_call_groups`) detects matching pairs and merges them before structure detection runs.
+
+**Example:** 4,000 shares URTY + 40 short URTY calls = Covered Call (4,000 shares cover 40×100 = 4,000 shares). This is **defined risk**, not a rule violation.
+
+**What is NOT a covered call:**
+- Short put + long stock (different risk profile)
+- Short call without matching stock (naked call = undefined)
+- Stock in ticker A + short call in ticker B (different underlyings)
+
+**Tests:** `scripts/tests/test_covered_call_detection.py` (7 tests)
+
 ### Startup Protocol (Full Visibility)
 
 When Pi starts, the startup extension (`.pi/extensions/startup-protocol.ts`) runs all checks with **numbered progress indicators**:

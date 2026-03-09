@@ -84,6 +84,7 @@
 |----------|-----------|--------|--------|
 | ~~AAOI Risk Reversal~~ | ~~Undefined risk (short put)~~ | 2026-03-03 | ✅ RESOLVED (short put closed) |
 | ~~EWY Risk Reversal (Mar 6)~~ | ~~Undefined risk (short put)~~ | 2026-03-03 | ✅ RESOLVED (closed for +$9,888) |
+| ~~URTY Short Call~~ | ~~Undefined risk (short call)~~ | 2026-03-09 | ✅ NOT A VIOLATION — Covered Call (4,000 shares cover 40 contracts) |
 | EWY Risk Reversal (Mar 13) | Undefined risk (short put $130) | 2026-03-04 | ⚠️ ACTIVE |
 | IGV Synthetic Long | Undefined risk (short put $90) | Active | ⚠️ ACTIVE |
 | AMD Long Call | Position size 7.4% (exceeds 2.5% cap) | 2026-03-03 | ⚠️ ACTIVE |
