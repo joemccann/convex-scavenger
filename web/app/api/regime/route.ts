@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readFile, readdir, writeFile, stat, mkdir } from "fs/promises";
 import { join } from "path";
+import { isCriDataStale } from "@/lib/criStaleness";
 import { spawn } from "child_process";
 
 export const runtime = "nodejs";
@@ -9,7 +10,6 @@ const DATA_DIR = join(process.cwd(), "..", "data");
 const CACHE_PATH = join(DATA_DIR, "cri.json");
 const SCHEDULED_DIR = join(DATA_DIR, "cri_scheduled");
 const SCRIPTS_DIR = join(process.cwd(), "..", "scripts");
-const CACHE_TTL_MS = 60_000; // 1 minute
 
 /** Today's date in ET (YYYY-MM-DD) — the trading calendar reference */
 function todayET(): string {
@@ -61,17 +61,14 @@ async function readLatestCri(): Promise<{ data: object; path: string } | null> {
   return null;
 }
 
-/** Check if the latest cached data is stale:
- *  1. Data date doesn't match today in ET → always stale
- *  2. File mtime older than TTL → stale (triggers refresh for intraday updates) */
+/** Check if the latest cached data is stale (market-hours aware).
+ *  - Different day            → always stale (new trading day)
+ *  - market_open=false+today  → NOT stale (EOD data is final; launchd handles schedule)
+ *  - market_open=true+today   → stale if mtime > 60s (intraday refresh) */
 async function isCacheStale(filePath: string, data: Record<string, unknown>): Promise<boolean> {
-  // If the data's date doesn't match today in ET, it's from a previous session
-  const dataDate = data.date as string | undefined;
-  if (dataDate && dataDate !== todayET()) return true;
-
   try {
     const s = await stat(filePath);
-    return Date.now() - s.mtimeMs > CACHE_TTL_MS;
+    return isCriDataStale(data, s.mtimeMs, todayET());
   } catch {
     return true;
   }
