@@ -1,0 +1,40 @@
+{
+  "ticker": "ETHA",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T14:18:05.940Z",
+  "uw_info": {
+    "symbol": "ETHA",
+    "logo": "https://storage.googleapis.com/uwassets/logos/placeholder.png",
+    "beta": "1.9266",
+    "full_name": "ISHARES ETHEREUM TRUST ETF",
+    "sector": null,
+    "has_options": true,
+    "marketcap_size": "mid",
+    "outstanding": "423440000",
+    "announce_time": null,
+    "issue_type": "ETF",
+    "marketcap": "6327184026",
+    "next_earnings_date": null,
+    "avg30_volume": "43145087.714285714286",
+    "uw_tags": [],
+    "short_name": "ISHARES ETHEREUM TRUST ETF",
+    "short_description": "",
+    "has_investment_arm": false,
+    "has_dividend": false,
+    "has_earnings_history": false
+  },
+  "stock_state": {
+    "close": "15.3",
+    "high": "15.3399",
+    "low": "15.155",
+    "open": "15.23",
+    "volume": 8233223,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T14:18:05Z",
+    "total_volume": 10741749,
+    "prev_close": "15.24"
+  },
+  "exa_profile": {},
+  "exa_stats": {},
+  "fetched_at": "2026-03-09T14:18:05.940Z"
+}

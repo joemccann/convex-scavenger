@@ -1,0 +1,20 @@
+{
+  "ticker": "SPXU",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T15:30:09.750Z",
+  "uw_info": {},
+  "stock_state": {
+    "close": "53.13",
+    "high": "54.79",
+    "low": "53.025",
+    "open": "53.85",
+    "volume": 5287948,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T15:30:08Z",
+    "total_volume": 5991910,
+    "prev_close": "53.9"
+  },
+  "exa_profile": {},
+  "exa_stats": {},
+  "fetched_at": "2026-03-09T15:30:09.750Z"
+}

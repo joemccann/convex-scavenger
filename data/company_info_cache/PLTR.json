@@ -1,0 +1,40 @@
+{
+  "ticker": "PLTR",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T14:08:24.123Z",
+  "uw_info": {
+    "symbol": "PLTR",
+    "logo": "https://storage.googleapis.com/uwassets/logos/PLTR.png",
+    "beta": "1.9217",
+    "full_name": "PALANTIR",
+    "sector": "Technology",
+    "has_options": true,
+    "marketcap_size": "big",
+    "outstanding": "2291470751",
+    "announce_time": "unknown",
+    "issue_type": "Common Stock",
+    "marketcap": "360127543227",
+    "next_earnings_date": "2026-05-04",
+    "avg30_volume": "58755025.47619047619",
+    "uw_tags": [],
+    "short_name": "PALANTIR",
+    "short_description": "palantir technologies builds software platforms that help human experts perform powerful, collaborative analysis of data at scale. palantir’s ...",
+    "has_investment_arm": true,
+    "has_dividend": false,
+    "has_earnings_history": true
+  },
+  "stock_state": {
+    "close": "154.795",
+    "high": "158.44",
+    "low": "153.87",
+    "open": "155.69",
+    "volume": 8936269,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T14:08:22Z",
+    "total_volume": 10680082,
+    "prev_close": "155.69"
+  },
+  "exa_profile": {},
+  "exa_stats": {},
+  "fetched_at": "2026-03-09T14:08:24.123Z"
+}

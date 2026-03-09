@@ -1,0 +1,24 @@
+{
+  "ticker": "EWY",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T15:36:07.882Z",
+  "uw_info": {},
+  "stock_state": {
+    "close": "127.05",
+    "high": "127.985",
+    "low": "122.1",
+    "open": "123.7",
+    "volume": 17771036,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T15:36:06Z",
+    "total_volume": 19556357,
+    "prev_close": "123.51"
+  },
+  "exa_profile": {},
+  "exa_stats": {
+    "pe_ratio": "17.37",
+    "week_52_high": 52,
+    "week_52_low": 48.49
+  },
+  "fetched_at": "2026-03-09T15:36:07.882Z"
+}

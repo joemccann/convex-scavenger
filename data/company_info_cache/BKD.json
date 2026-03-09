@@ -1,0 +1,49 @@
+{
+  "ticker": "BKD",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T15:43:56.354Z",
+  "uw_info": {
+    "symbol": "BKD",
+    "logo": "https://storage.googleapis.com/uwassets/logos/BKD.png",
+    "beta": "0.85",
+    "full_name": "BROOKDALE SENIOR LIVING",
+    "sector": "Healthcare",
+    "has_options": true,
+    "marketcap_size": "mid",
+    "outstanding": "237792413",
+    "announce_time": "unknown",
+    "issue_type": "Common Stock",
+    "marketcap": "3540729030",
+    "next_earnings_date": "2026-05-05",
+    "avg30_volume": "5639577.095238095238",
+    "uw_tags": [],
+    "short_name": "BROOKDALE SENIOR LIVING",
+    "short_description": "looking for work that is a calling as much as it is a career? an opportunity to enhance the lives of others? then consider brookdale. brookdale ...",
+    "has_investment_arm": false,
+    "has_dividend": true,
+    "has_earnings_history": true
+  },
+  "stock_state": {
+    "close": "14.115",
+    "high": "14.835",
+    "low": "13.81",
+    "open": "14.75",
+    "volume": 2676652,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T16:20:39Z",
+    "total_volume": 2678988,
+    "prev_close": "14.4"
+  },
+  "exa_profile": {
+    "ceo": "Nikolas W. Stengle",
+    "employees": "33,000",
+    "headquarters": "Brentwood, Tennessee",
+    "founded": "1978"
+  },
+  "exa_stats": {
+    "pe_ratio": "-13.83",
+    "week_52_high": 52,
+    "week_52_low": 4.97
+  },
+  "fetched_at": "2026-03-09T15:43:56.354Z"
+}

@@ -1,0 +1,40 @@
+{
+  "ticker": "EC",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T15:38:29.851Z",
+  "uw_info": {
+    "symbol": "EC",
+    "logo": "https://storage.googleapis.com/uwassets/logos/EC.png",
+    "beta": "0.8037",
+    "full_name": "ECOPETROL SA",
+    "sector": "Energy",
+    "has_options": true,
+    "marketcap_size": "large",
+    "outstanding": "2055834734",
+    "announce_time": "postmarket",
+    "issue_type": "ADR",
+    "marketcap": "26561384763",
+    "next_earnings_date": "2026-03-04",
+    "avg30_volume": "3094036.761904761905",
+    "uw_tags": [],
+    "short_name": "ECOPETROL SA",
+    "short_description": "Ecopetrol, formerly known as Empresa Colombiana de Petróleos S.A. is the largest and primary petroleum company in Colombia.",
+    "has_investment_arm": false,
+    "has_dividend": true,
+    "has_earnings_history": true
+  },
+  "stock_state": {
+    "close": "13.215",
+    "high": "13.41",
+    "low": "13.115",
+    "open": "13.27",
+    "volume": 2156354,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T15:38:25Z",
+    "total_volume": 2230956,
+    "prev_close": "13.1"
+  },
+  "exa_profile": {},
+  "exa_stats": {},
+  "fetched_at": "2026-03-09T15:38:29.851Z"
+}

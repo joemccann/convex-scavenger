@@ -1,0 +1,40 @@
+{
+  "ticker": "USAX",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T14:02:41.845Z",
+  "uw_info": {
+    "symbol": "USAX",
+    "logo": null,
+    "beta": "3.4924",
+    "full_name": "Tradr 2X Long USAR Daily ETF",
+    "sector": null,
+    "has_options": true,
+    "marketcap_size": null,
+    "outstanding": "15000",
+    "announce_time": null,
+    "issue_type": "ETF",
+    "marketcap": null,
+    "next_earnings_date": null,
+    "avg30_volume": "188995.095238095238",
+    "uw_tags": [],
+    "short_name": "Tradr 2X Long USAR Daily ETF",
+    "short_description": null,
+    "has_investment_arm": false,
+    "has_dividend": false,
+    "has_earnings_history": false
+  },
+  "stock_state": {
+    "close": "18.98",
+    "high": "18.98",
+    "low": "17.92",
+    "open": "18.07",
+    "volume": 19321,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T14:01:05Z",
+    "total_volume": 27938,
+    "prev_close": "18.25"
+  },
+  "exa_profile": {},
+  "exa_stats": {},
+  "fetched_at": "2026-03-09T14:02:41.845Z"
+}

@@ -1,0 +1,40 @@
+{
+  "ticker": "MSFT",
+  "profile_expires": null,
+  "stats_expires": "2026-03-10T14:10:11.903Z",
+  "uw_info": {
+    "symbol": "MSFT",
+    "logo": "https://storage.googleapis.com/uwassets/logos/MSFT.png",
+    "beta": "0.8722",
+    "full_name": "MICROSOFT",
+    "sector": "Technology",
+    "has_options": true,
+    "marketcap_size": "big",
+    "outstanding": "7425629076",
+    "announce_time": "unknown",
+    "issue_type": "Common Stock",
+    "marketcap": "3036785266921",
+    "next_earnings_date": "2026-04-29",
+    "avg30_volume": "39579630.095238095238",
+    "uw_tags": [],
+    "short_name": "MICROSOFT",
+    "short_description": "Microsoft Corporation is an American multinational technology corporation headquartered in Redmond, Washington. Microsofts best-known software ...",
+    "has_investment_arm": false,
+    "has_dividend": true,
+    "has_earnings_history": true
+  },
+  "stock_state": {
+    "close": "405.72",
+    "high": "408.5",
+    "low": "403.5",
+    "open": "404.915",
+    "volume": 4509828,
+    "market_time": "regular",
+    "tape_time": "2026-03-09T14:10:09Z",
+    "total_volume": 5237166,
+    "prev_close": "404.97"
+  },
+  "exa_profile": {},
+  "exa_stats": {},
+  "fetched_at": "2026-03-09T14:10:11.903Z"
+}
