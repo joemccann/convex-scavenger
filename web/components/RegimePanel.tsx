@@ -101,11 +101,16 @@ function TriggerRow({ label, met, value, live }: { label: string; met: boolean; 
 export default function RegimePanel({ prices }: RegimePanelProps) {
   const { data, syncing, lastSync } = useRegime(true);
 
-  // Live prices from WS
+  // market_open flag from CRI data — gates live vs static behaviour.
+  // Default true (live) when undefined so behaviour is unchanged until the
+  // flag propagates from the first CRI scan response.
+  const marketOpen = data?.market_open ?? true;
+
+  // Live prices from WS — only meaningful while market is open
   const liveVix = prices["VIX"]?.last ?? null;
   const liveVvix = prices["VVIX"]?.last ?? null;
   const liveSpy = prices["SPY"]?.last ?? null;
-  const hasLive = liveVix != null || liveVvix != null || liveSpy != null;
+  const hasLive = marketOpen && (liveVix != null || liveVvix != null || liveSpy != null);
 
   // Timestamps for last live VIX / VVIX value received
   const [vixLastTs, setVixLastTs] = useState<string | null>(null);
@@ -153,7 +158,9 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
   // ── Intraday realized vol ────────────────────────────────────────────────
   // Replace today's last close in the 21-day SPY series with the live price,
   // then recompute: std(log_returns) * sqrt(252) * 100  (same as cri_scan.py).
+  // When the market is closed, skip live computation — use data?.realized_vol.
   const intradayRvol = useMemo(() => {
+    if (!marketOpen) return null;
     if (liveSpy == null || !data?.spy_closes?.length) return null;
     const closes = data.spy_closes;
     // Need at least 21 prices to get 20 log-returns.
@@ -169,7 +176,7 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
     const mean = logReturns.reduce((s, r) => s + r, 0) / logReturns.length;
     const variance = logReturns.reduce((s, r) => s + (r - mean) ** 2, 0) / (logReturns.length - 1);
     return Math.sqrt(variance) * Math.sqrt(252) * 100;
-  }, [liveSpy, data?.spy_closes]);
+  }, [marketOpen, liveSpy, data?.spy_closes]);
 
   const hasIntradayRvol = intradayRvol != null;
   const activeRvol = intradayRvol ?? data?.realized_vol ?? null;
@@ -252,22 +259,44 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
         </div>
       </div>
 
+      {/* ── Market Closed Indicator ───────────────── */}
+      {!marketOpen && (
+        <div
+          data-testid="market-closed-indicator"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "6px 12px",
+            background: "rgba(245,158,11,0.12)",
+            color: "var(--warning, #f59e0b)",
+            fontSize: "11px",
+            fontFamily: "var(--font-mono, monospace)",
+            letterSpacing: "0.08em",
+            fontWeight: 600,
+            borderLeft: "2px solid var(--warning, #f59e0b)",
+          }}
+        >
+          MARKET CLOSED — END OF DAY VALUES
+        </div>
+      )}
+
       {/* ── Row 2: Live Tickers Strip ─────────────── */}
       <div className="regime-strip">
         <div className="regime-strip-cell" data-testid="strip-vix">
-          <div className="regime-strip-label">VIX <LiveBadge live={liveVix != null} /></div>
+          <div className="regime-strip-label">VIX <LiveBadge live={marketOpen && liveVix != null} /></div>
           <div className="regime-strip-value">{fmt(vixVal)}</div>
           <div className="regime-strip-sub">5d RoC: {fmtPct(data?.vix_5d_roc, 1)}</div>
           <div className="regime-strip-ts">{vixLastTs ?? "---"}</div>
         </div>
         <div className="regime-strip-cell" data-testid="strip-vvix">
-          <div className="regime-strip-label">VVIX <LiveBadge live={liveVvix != null} /></div>
+          <div className="regime-strip-label">VVIX <LiveBadge live={marketOpen && liveVvix != null} /></div>
           <div className="regime-strip-value">{fmt(vvixVal)}</div>
           <div className="regime-strip-sub">VVIX/VIX: {fmt(vvixVixRatio)}</div>
           <div className="regime-strip-ts">{vvixLastTs ?? "---"}</div>
         </div>
         <div className="regime-strip-cell">
-          <div className="regime-strip-label">SPY <LiveBadge live={liveSpy != null} /></div>
+          <div className="regime-strip-label">SPY <LiveBadge live={marketOpen && liveSpy != null} /></div>
           <div className="regime-strip-value">${fmt(spyVal)}</div>
           <div className="regime-strip-sub">vs 100d MA: {fmtPct(spxDistPct)}</div>
         </div>
@@ -299,10 +328,10 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
         CRI COMPONENTS
       </div>
       <div className="regime-components">
-        <ComponentBar label="VIX" score={cri.components.vix} live={liveVix != null} />
-        <ComponentBar label="VVIX" score={cri.components.vvix} live={liveVvix != null} />
-        <ComponentBar label="CORRELATION" score={cri.components.correlation} live={hasIntradayCorr} />
-        <ComponentBar label="MOMENTUM" score={cri.components.momentum} live={liveSpy != null} />
+        <ComponentBar label="VIX" score={cri.components.vix} live={marketOpen && liveVix != null} />
+        <ComponentBar label="VVIX" score={cri.components.vvix} live={marketOpen && liveVvix != null} />
+        <ComponentBar label="CORRELATION" score={cri.components.correlation} live={marketOpen && hasIntradayCorr} />
+        <ComponentBar label="MOMENTUM" score={cri.components.momentum} live={marketOpen && liveSpy != null} />
       </div>
 
       {/* ── Row 4: Crash Trigger Panel ────────────── */}
@@ -318,7 +347,7 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
           label="SPX < 100d MA"
           met={spxBelowMa}
           value={`${fmtPct(spxDistPct)} (MA: $${fmt(ma)})`}
-          live={liveSpy != null}
+          live={marketOpen && liveSpy != null}
         />
         <TriggerRow
           label="Realized Vol > 25%"
