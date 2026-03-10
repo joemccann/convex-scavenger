@@ -28,7 +28,7 @@ Radon reconstructs market structure from multiple institutional signals and conv
 
 **Inputs**
 
-- Dark pool and OTC flow from Unusual Whales
+- Dark pool and OTC flow from [Unusual Whales](https://unusualwhales.com/referral#39985a64-656c-4642-a051-db89f6324d64)
 - Options flow, volatility surface, and open-interest change data
 - Real-time quotes and options chains from Interactive Brokers
 - Cross-asset volatility relationships, CTA positioning, and analyst context
@@ -87,7 +87,7 @@ Six active strategies drive the system.
 | **GARCH Convergence** | Cross-asset vol repricing lag | Surface adjustment is slower than regime change | Calendars, verticals | 2-8 weeks | Defined |
 | **Risk Reversal** | Skew distortion between puts and calls | Put demand richer than equivalent call demand | Risk reversal | 2-8 weeks | Undefined |
 | **Volatility-Credit Gap (VCG)** | VIX/VVIX/HYG divergence | Credit markets are lagging vol stress | Index puts, put spreads | 1-5 days | Defined |
-| **Crash Risk Index (CRI)** | CTA deleveraging plus correlation stress | Systematic positioning unwind | Index puts, tactical hedges | 3-5 days | Defined |
+| **Crash Risk Index (CRI)** | CTA deleveraging plus COR1M implied-correlation stress | Systematic positioning unwind | Index puts, tactical hedges | 3-5 days | Defined |
 
 Full strategy specs live in [docs/strategies.md](docs/strategies.md). VCG research notes live in [docs/VCG_institutional_research_note.md](docs/VCG_institutional_research_note.md).
 
@@ -123,7 +123,7 @@ At a high level:
 - Python `3.9+`
 - Node.js `18+`
 - Interactive Brokers TWS or Gateway running locally
-- Unusual Whales API access
+- [Unusual Whales](https://unusualwhales.com/referral#39985a64-656c-4642-a051-db89f6324d64) API access
 
 **Install and run**
 
@@ -271,7 +271,7 @@ Important directories:
 Market-data priority is intentionally strict:
 
 1. **Interactive Brokers** for real-time quotes, options chains, and portfolio state
-2. **Unusual Whales** for dark pool flow, sweeps, options flow, and analyst data
+2. **[Unusual Whales](https://unusualwhales.com/referral#39985a64-656c-4642-a051-db89f6324d64)** for dark pool flow, sweeps, options flow, and analyst data
 3. **Exa** for company and market research
 4. **Yahoo Finance** as a last-resort fallback
 
@@ -294,7 +294,7 @@ cd web && npm test
 cd web && npx playwright test
 ```
 
-Unit tests use mocked API calls where possible, so most development work does not require a live IB or Unusual Whales connection.
+Unit tests use mocked API calls where possible, so most development work does not require a live IB or [Unusual Whales](https://unusualwhales.com/referral#39985a64-656c-4642-a051-db89f6324d64) connection.
 
 ## Services
 
