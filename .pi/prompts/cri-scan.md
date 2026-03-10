@@ -6,7 +6,7 @@ Run the Crash Risk Index (CRI) scan:
 ```bash
 python3 scripts/cri_scan.py --json
 ```
-This fetches 1Y daily bars for VIX, VVIX, SPY, and 11 SPDR sector ETFs (IB primary, Yahoo fallback), computes the CRI composite score, CTA exposure model, and crash trigger conditions.
+This fetches 1Y daily bars for VIX, VVIX, SPY, and Cboe COR1M implied correlation (IB primary; Yahoo `^COR1M` last resort for the index), computes the CRI composite score, CTA exposure model, and crash trigger conditions.
 
 **STEP 2: PARSE THE CRI SCORE**
 From the JSON output, extract and present:
@@ -16,7 +16,7 @@ From the JSON output, extract and present:
 | `cri.score` | Composite score 0-100. LOW (<25), ELEVATED (25-50), HIGH (50-75), CRITICAL (75+) |
 | `cri.components.vix` | VIX component (0-25): level + 5d rate of change |
 | `cri.components.vvix` | VVIX component (0-25): level + VVIX/VIX ratio |
-| `cri.components.correlation` | Correlation component (0-25): 20d rolling avg + 5d spike |
+| `cri.components.correlation` | Correlation component (0-25): COR1M level + 5-session spike |
 | `cri.components.momentum` | Momentum component (0-25): SPX distance from 100d MA |
 
 **STEP 3: EVALUATE CTA EXPOSURE MODEL**
@@ -29,7 +29,7 @@ From the JSON output, extract and present:
 All three must fire simultaneously for crash regime:
 - `crash_trigger.conditions.spx_below_100d_ma` — SPX below 100-day moving average
 - `crash_trigger.conditions.realized_vol_gt_25` — 20d realized vol > 25% annualized
-- `crash_trigger.conditions.avg_correlation_gt_060` — Avg sector correlation > 0.60
+- `crash_trigger.conditions.cor1m_gt_60` — COR1M implied correlation > 60
 
 If any condition fails, state which one and why the crash thesis is weakened.
 
@@ -53,7 +53,7 @@ python3 scripts/cri_scan.py
 - Add tail hedges: SPY puts (2-4 week expiry), VIX calls
 - Avoid catching the knife — wait for vol mean-reversion signal
 - Size hedges: 2.5% bankroll cap per position
-- Exit hedges when: CRI normalizes < 25, realized vol drops below 20%, correlation < 0.40
+- Exit hedges when: CRI normalizes < 25, realized vol drops below 20%, COR1M < 40
 
 Present the scan results as:
 
@@ -70,7 +70,7 @@ LEVELS:
   VIX  : {vix} (5d RoC: {roc}%)
   VVIX : {vvix} (VVIX/VIX: {ratio})
   SPY  : ${spy} (vs 100d MA: {dist}%)
-  Corr : {correlation}
+  COR1M: {cor1m} (5d chg: {cor1m_5d_change})
   RVol : {realized_vol}%
 
 CTA MODEL:
@@ -81,7 +81,7 @@ CTA MODEL:
 CRASH TRIGGER:
   SPX < 100d MA  : {PASS/FAIL}
   RVol > 25%     : {PASS/FAIL}
-  Corr > 0.60    : {PASS/FAIL}
+  COR1M > 60     : {PASS/FAIL}
   TRIGGERED      : {YES/NO}
 
 SIGNAL: {CRASH REGIME / ELEVATED / WATCH / NORMAL}

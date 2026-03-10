@@ -89,13 +89,13 @@ export const SECTION_TOOLTIPS: Record<string, string> = {
 
   "CRI COMPONENTS":
     "Crash Risk Index broken into 4 sub-scores (0-25 each, 100 total). " +
-    "VIX and VVIX measure implied vol stress. Correlation tracks sector herding. " +
+    "VIX and VVIX measure implied vol stress. Correlation tracks COR1M implied herding in the largest S&P 500 stocks. " +
     "Momentum captures SPX trend breakdown. Live values update from WS during market hours.",
 
   "CRASH TRIGGER CONDITIONS":
     "Three simultaneous conditions that signal a potential crash regime: " +
     "SPX below 100-day MA (trend break), realized vol > 25% (historical stress), " +
-    "and avg sector correlation > 0.60 (panic herding). All three must fire to trigger.",
+    "and COR1M > 60 (panic herding). All three must fire to trigger.",
 
   "10-DAY HISTORY":
     "D3 chart showing VIX (color-coded: green < 20, amber 20-30, red > 30) " +

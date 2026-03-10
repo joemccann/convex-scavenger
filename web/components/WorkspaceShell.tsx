@@ -95,7 +95,7 @@ export default function WorkspaceShell({ section }: WorkspaceShellProps) {
 
   const regimeStocks = useMemo(
     () => activeSection === "regime"
-      ? ["SPY", "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY"]
+      ? ["SPY"]
       : [],
     [activeSection],
   );
@@ -112,7 +112,11 @@ export default function WorkspaceShell({ section }: WorkspaceShellProps) {
 
   const regimeIndexes = useMemo<IndexContract[]>(
     () => activeSection === "regime"
-      ? [{ symbol: "VIX", exchange: "CBOE" }, { symbol: "VVIX", exchange: "CBOE" }]
+      ? [
+          { symbol: "VIX", exchange: "CBOE" },
+          { symbol: "VVIX", exchange: "CBOE" },
+          { symbol: "COR1M", exchange: "CBOE" },
+        ]
       : [],
     [activeSection],
   );

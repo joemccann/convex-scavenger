@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { fileURLToPath } from "url";
 
 /**
  * Source-inspection tests confirming RegimePanel correctly gates live
@@ -10,7 +11,8 @@ import { join } from "path";
  * Tests parse component source (no DOM environment needed).
  */
 
-const PANEL_PATH = join(__dirname, "../components/RegimePanel.tsx");
+const TEST_DIR = fileURLToPath(new URL(".", import.meta.url));
+const PANEL_PATH = join(TEST_DIR, "../components/RegimePanel.tsx");
 const source = readFileSync(PANEL_PATH, "utf-8");
 
 describe("RegimePanel — market closed static fallback", () => {
@@ -50,6 +52,13 @@ describe("RegimePanel — market closed static fallback", () => {
     expect(source).toMatch(/marketOpen.*liveVvix|liveVvix.*marketOpen|marketOpen && liveVvix|marketOpen \? liveVvix/);
   });
 
+  it("renders COR1M as a daily field, not an intraday sector proxy", () => {
+    expect(source).toContain("COR1M");
+    expect(source).not.toContain("SECTOR CORR");
+    expect(source).not.toContain("avg_sector_correlation");
+    expect(source).not.toContain("computeIntradaySectorCorr");
+  });
+
   it("uses static data.realized_vol when market is closed (activeRvol fallback)", () => {
     // When marketOpen is false, intradayRvol is null so activeRvol falls
     // through to data?.realized_vol.  The existing fallback line handles this
@@ -62,5 +71,9 @@ describe("RegimePanel — market closed static fallback", () => {
     // The MARKET CLOSED badge must use warning/amber colour signalling,
     // consistent with the design system.
     expect(source).toMatch(/warning|amber|#f59e0b/i);
+  });
+
+  it("crash trigger label uses COR1M > 60", () => {
+    expect(source).toContain("COR1M > 60");
   });
 });

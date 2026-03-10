@@ -91,14 +91,13 @@ When `market_open === false`, the component **must**:
 | What | Rule |
 |------|------|
 | `vixVal` / `vvixVal` / `spyVal` | Use `data.vix` / `data.vvix` / `data.spy` only — never WS `last` |
-| `intradayCorr` | Return `null` — use `data.avg_sector_correlation` |
+| `activeCorr` | Use `data.cor1m` from the CRI payload — do not rebuild or infer correlation from sector ETFs in the UI |
 | `liveCri` | Return `null` — use `data.cri` (authoritative EOD values) |
 | `intradayRvol` | Return `null` — use `data.realized_vol` |
 | VIX/VVIX timestamps | Do not update (gate `setVixLastTs`/`setVvixLastTs` on `marketOpen`) |
-| Snapshot buffer | Do not append — gate `appendSnapshot` on `marketOpen` |
-| SECTOR CORR badge | Must show DAILY, never INTRADAY |
+| COR1M badge | Must show DAILY — COR1M is displayed from the CRI scan payload, not an intraday sector proxy |
 
-**Tests**: `web/tests/regime-market-closed-values.test.ts` (8 unit), `web/e2e/regime-market-closed-eod.spec.ts` (6 E2E)
+**Tests**: `web/tests/regime-market-closed-values.test.ts`, `web/e2e/regime-market-closed-eod.spec.ts`, `web/e2e/regime-cor1m.spec.ts`
 
 ---
 

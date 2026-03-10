@@ -786,12 +786,12 @@ See: `reports/iwm-risk-reversal-2026-03-06.html`
 ### How It Works
 
 The script (`cri_scan.py`) is **self-contained**:
-1. Fetches 1Y daily bars for VIX, VVIX, SPY, and 11 SPDR sector ETFs (IB primary, Yahoo fallback)
-2. Computes 20-day rolling average of 55 pairwise sector correlations
+1. Fetches 1Y daily bars for VIX, VVIX, SPY, and Cboe COR1M implied correlation (IB primary, Yahoo `^COR1M` last resort)
+2. Reads the latest COR1M level and 5-session change as the CRI correlation input
 3. Computes 20-day realized volatility, 100-day SPX moving average
 4. Scores four CRI components (VIX, VVIX, Correlation, Momentum) — each 0-25, total 0-100
 5. Models CTA exposure (vol-targeting) and estimates forced selling pressure
-6. Evaluates crash trigger conditions (SPX < 100d MA + RVol > 25% + Corr > 0.60)
+6. Evaluates crash trigger conditions (SPX < 100d MA + RVol > 25% + COR1M > 60)
 7. Fills the template → writes HTML → opens browser
 
 **You do NOT need to fetch data separately.** Just run:
@@ -807,7 +807,7 @@ Every CRI report MUST include these sections (in order):
 |---|---------|-------------|
 | 1 | **Header** | Title, date, market status, CRI level pill |
 | 2 | **CRI Score Display** | Large score number with progress bar and level labels |
-| 3 | **Metric Cards** (6) | VIX, VVIX, Avg Sector Correlation, SPY vs 100d MA, Realized Vol, Crash Trigger status |
+| 3 | **Metric Cards** (6) | VIX, VVIX, COR1M Implied Correlation, SPY vs 100d MA, Realized Vol, Crash Trigger status |
 | 4 | **Component Breakdown** | Bar chart showing each component's contribution (VIX, VVIX, Correlation, Momentum) out of 25 |
 | 5 | **CTA Exposure Model** | Realized vol, implied exposure, forced reduction %, estimated selling pressure |
 | 6 | **Crash Trigger Conditions** | Pass/fail table for all 3 conditions with actual values |
@@ -1035,14 +1035,14 @@ See: `scripts/scenario_report.py` (full report generation with narratives)
 ### CRI Reports
 
 1. [ ] Run `python3 scripts/cri_scan.py` — script is fully self-contained
-2. [ ] Verify data fetched for all 14 tickers (VIX, VVIX, SPY, 11 sector ETFs)
+2. [ ] Verify data fetched for all 4 instruments (VIX, VVIX, SPY, COR1M)
 3. [ ] Verify all 7 sections present:
    - [ ] Header with CRI level pill (LOW/ELEVATED/HIGH/CRITICAL)
    - [ ] CRI score display with progress bar
-   - [ ] 6 metric cards (VIX, VVIX, Correlation, SPY vs MA, Realized Vol, Crash Trigger)
+   - [ ] 6 metric cards (VIX, VVIX, COR1M, SPY vs MA, Realized Vol, Crash Trigger)
    - [ ] Component breakdown bars (VIX, VVIX, Correlation, Momentum — each /25)
    - [ ] CTA Exposure Model (vol, exposure %, forced reduction, est. selling)
-   - [ ] Crash trigger conditions table (SPX < MA, RVol > 25%, Corr > 0.60)
+   - [ ] Crash trigger conditions table (SPX < MA, RVol > 25%, COR1M > 60)
    - [ ] Rolling 10-day history table
 4. [ ] Verify CRI score color matches level (green=LOW, amber=ELEVATED/HIGH, red=CRITICAL)
 5. [ ] Verify crash trigger shows PASS/FAIL for each of 3 conditions

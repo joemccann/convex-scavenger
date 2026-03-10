@@ -299,7 +299,7 @@ Scans all watchlist tickers for dark pool flow signals. Returns scored candidate
 ```bash
 python3 scripts/cri_scan.py --json
 ```
-Computes the Crash Risk Index — VIX/VVIX momentum, sector correlations, CTA exposure model. Returns regime level (LOW/ELEVATED/HIGH/CRITICAL) and crash trigger status.
+Computes the Crash Risk Index — VIX/VVIX momentum, Cboe 1-Month Implied Correlation Index (COR1M), CTA exposure model. Returns regime level (LOW/ELEVATED/HIGH/CRITICAL) and crash trigger status.
 
 **Step 3 — Combine and Report:**
 Use the CRI regime data to contextualize the flow signals:
@@ -331,7 +331,7 @@ Output: `reports/daily-scan-{date}.html` — auto-open in browser.
 
 **CRI data in the report MUST include:**
 - CRI score and level pill (color-coded: green=LOW, amber=ELEVATED, orange=HIGH, red=CRITICAL)
-- Crash trigger: TRIGGERED or NOT TRIGGERED with 3 conditions (SPX < 100d MA, RVol > 25%, Corr > 0.60)
+- Crash trigger: TRIGGERED or NOT TRIGGERED with 3 conditions (SPX < 100d MA, RVol > 25%, COR1M > 60)
 - CTA model: exposure %, forced reduction %, estimated selling $B
 - VIX 5-day rate of change
 - SPX distance from 100-day MA

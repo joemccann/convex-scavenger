@@ -2,19 +2,18 @@
 """Crash Risk Index (CRI) Scanner.
 
 Detects systematic crash risk by scoring four components: VIX, VVIX,
-cross-sector correlation, and SPX momentum.  When the composite CRI
+COR1M implied correlation, and SPX momentum. When the composite CRI
 score is HIGH/CRITICAL and the crash trigger conditions hold (SPX below
-100d MA, realized vol > 25%, avg sector correlation > 0.60), CTAs are
-forced to deleverage — creating predictable selling cascades.
+100d MA, realized vol > 25%, COR1M > 60), CTAs are forced to deleverage
+— creating predictable selling cascades.
 
 Strategy spec: docs/strategies.md (Strategy 6)
 
 Data sources (priority order):
   1. Interactive Brokers — Index('VIX','CBOE'), Index('VVIX','CBOE'),
-     Stock('SPY','SMART','USD'), 11 SPDR sector ETFs
-  2. Unusual Whales — OHLC for stocks/ETFs (SPY, sector ETFs).
-     Does NOT support VIX/VVIX indices.
-  3. Yahoo Finance — ABSOLUTE LAST RESORT. Only for VIX/VVIX when
+     Index('COR1M','CBOE'), Stock('SPY','SMART','USD')
+  2. Unusual Whales — OHLC for SPY only. Does NOT support VIX/VVIX/COR1M.
+  3. Yahoo Finance — ABSOLUTE LAST RESORT. Only for VIX/VVIX/COR1M when
      IB unavailable (UW cannot serve index data).
 
 Usage:
@@ -42,14 +41,8 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 # ── constants ─────────────────────────────────────────────────────
-SECTOR_ETFS = [
-    "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY",
-]
+ALL_TICKERS = ["VIX", "VVIX", "SPY", "COR1M"]
 
-# All tickers we need
-ALL_TICKERS = ["VIX", "VVIX", "SPY"] + SECTOR_ETFS  # 14 total
-
-CORR_WINDOW = 20       # Rolling correlation window (trading days)
 MA_WINDOW = 100        # SPX moving average window
 VOL_WINDOW = 20        # Realized vol window (annualized)
 MIN_BARS = MA_WINDOW + 20  # Minimum price history
@@ -63,6 +56,7 @@ CTA_AUM_BN = 400.0     # Estimated CTA AUM in billions
 YAHOO_TICKERS = {
     "VIX": "^VIX",
     "VVIX": "^VVIX",
+    "COR1M": "^COR1M",
 }
 
 
@@ -70,11 +64,22 @@ YAHOO_TICKERS = {
 # Data Fetching
 # ══════════════════════════════════════════════════════════════════
 
+def _valid_quote_value(value: Any) -> Optional[float]:
+    """Return a positive finite quote value, else None."""
+    if value is None:
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(numeric) or math.isinf(numeric) or numeric <= 0:
+        return None
+    return numeric
+
 def _fetch_ib(tickers: List[str]) -> Dict[str, List[Tuple[str, float]]]:
     """Fetch 1Y daily bars from IB concurrently using asyncio.gather.
 
-    Fires all qualify + historical data requests in parallel for ~3x speedup
-    over sequential fetching (14 tickers: ~1.9s vs ~5.3s sequential).
+    Fires all qualify + historical data requests in parallel.
 
     Returns {ticker: [(date_str, close), ...]}.
     """
@@ -99,7 +104,7 @@ def _fetch_ib(tickers: List[str]) -> Dict[str, List[Tuple[str, float]]]:
 
     async def _qualify_and_fetch(ticker: str) -> None:
         """Qualify contract and fetch historical data for a single ticker."""
-        if ticker in ("VIX", "VVIX"):
+        if ticker in ("VIX", "VVIX", "COR1M"):
             contract = Index(ticker, "CBOE")
         else:
             contract = Stock(ticker, "SMART", "USD")
@@ -141,7 +146,7 @@ def _fetch_ib(tickers: List[str]) -> Dict[str, List[Tuple[str, float]]]:
 def _fetch_uw(tickers: List[str]) -> Dict[str, List[Tuple[str, float]]]:
     """Fetch 1Y daily bars from Unusual Whales OHLC endpoint.
 
-    UW supports stocks and ETFs but NOT indices (VIX, VVIX).
+    UW supports stocks and ETFs but NOT indices (VIX, VVIX, COR1M).
     Returns {ticker: [(date_str, close), ...]} for successful fetches.
     """
     try:
@@ -150,7 +155,7 @@ def _fetch_uw(tickers: List[str]) -> Dict[str, List[Tuple[str, float]]]:
         return {}
 
     # UW cannot serve index data
-    INDEX_TICKERS = {"VIX", "VVIX"}
+    INDEX_TICKERS = {"VIX", "VVIX", "COR1M"}
     fetchable = [t for t in tickers if t not in INDEX_TICKERS]
     if not fetchable:
         return {}
@@ -179,8 +184,8 @@ def _fetch_uw(tickers: List[str]) -> Dict[str, List[Tuple[str, float]]]:
     return results
 
 
-def _fetch_yahoo(ticker: str, days: int = 400) -> List[Tuple[str, float]]:
-    """Fetch daily bars from Yahoo Finance.  Returns [(date_str, close), ...]."""
+def _fetch_yahoo_chart_result(ticker: str, days: int = 400) -> Optional[Dict[str, Any]]:
+    """Fetch Yahoo chart payload for a ticker."""
     from urllib.request import Request, urlopen
 
     yahoo_sym = YAHOO_TICKERS.get(ticker, ticker)
@@ -194,18 +199,140 @@ def _fetch_yahoo(ticker: str, days: int = 400) -> List[Tuple[str, float]]:
     try:
         with urlopen(req, timeout=10) as resp:
             data = json.load(resp)
-        result = data["chart"]["result"][0]
-        timestamps = result["timestamp"]
-        closes = result["indicators"]["quote"][0]["close"]
-        bars = []
-        for ts, c in zip(timestamps, closes):
-            if c is not None:
-                dt = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
-                bars.append((dt, float(c)))
-        return bars
+        return data["chart"]["result"][0]
     except Exception as exc:
         print(f"  Yahoo: {ticker} ({yahoo_sym}) failed — {exc}", file=sys.stderr)
+        return None
+
+
+def _fetch_yahoo(ticker: str, days: int = 400) -> List[Tuple[str, float]]:
+    """Fetch daily bars from Yahoo Finance.  Returns [(date_str, close), ...]."""
+    result = _fetch_yahoo_chart_result(ticker, days=days)
+    if not result:
         return []
+
+    timestamps = result.get("timestamp", [])
+    quote = result.get("indicators", {}).get("quote", [{}])
+    closes = quote[0].get("close", []) if quote else []
+    bars = []
+    for ts, c in zip(timestamps, closes):
+        if c is not None:
+            dt = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
+            bars.append((dt, float(c)))
+    return bars
+
+
+def _fetch_yahoo_current_quote(ticker: str) -> Optional[float]:
+    """Fetch the current quote/last value from Yahoo chart metadata."""
+    result = _fetch_yahoo_chart_result(ticker, days=30)
+    if not result:
+        return None
+
+    meta = result.get("meta", {})
+    for key in ("regularMarketPrice", "regularMarketPreviousClose", "previousClose", "chartPreviousClose"):
+        value = _valid_quote_value(meta.get(key))
+        if value is not None:
+            return value
+    return None
+
+
+def _extract_ib_quote_value(ticker: Any) -> Optional[float]:
+    """Return an actionable current quote, ignoring stale close-only snapshots."""
+    last = _valid_quote_value(getattr(ticker, "last", None))
+    if last is not None:
+        return last
+
+    bid = _valid_quote_value(getattr(ticker, "bid", None))
+    ask = _valid_quote_value(getattr(ticker, "ask", None))
+    if bid is not None and ask is not None:
+        return (bid + ask) / 2.0
+
+    for candidate in (bid, ask):
+        value = _valid_quote_value(candidate)
+        if value is not None:
+            return value
+    return None
+
+
+def _fetch_ib_current_quote(ticker: str) -> Optional[float]:
+    """Fetch a current quote from IB, trying live then delayed data."""
+    try:
+        from ib_insync import IB, Index
+    except ImportError:
+        return None
+
+    ib = IB()
+    try:
+        try:
+            ib.connect("127.0.0.1", 4001, clientId=51, timeout=8)
+        except Exception:
+            ib.connect("127.0.0.1", 7497, clientId=51, timeout=8)
+    except Exception:
+        return None
+
+    contract = Index(ticker, "CBOE")
+    try:
+        qualified = ib.qualifyContracts(contract)
+        if not qualified:
+            return None
+        contract = qualified[0]
+
+        for data_type in (1, 3, 4):
+            try:
+                ib.reqMarketDataType(data_type)
+                snapshot = ib.reqMktData(contract, "", True, False)
+                ib.sleep(2)
+                value = _extract_ib_quote_value(snapshot)
+                ib.cancelMktData(contract)
+                if value is not None:
+                    return value
+            except Exception:
+                continue
+        return None
+    finally:
+        ib.disconnect()
+
+
+def select_cor1m_current_quote(
+    ib_quote: Optional[float],
+    yahoo_quote: Optional[float],
+    discrepancy_threshold: float = 1.0,
+) -> Optional[float]:
+    """Choose the most reliable current COR1M level.
+
+    IB is preferred when it is the only source or when it agrees with Yahoo.
+    If both exist and diverge materially, prefer Yahoo's chart metadata for the
+    current level while retaining IB for historical bars.
+    """
+    if ib_quote is None:
+        return yahoo_quote
+    if yahoo_quote is None:
+        return ib_quote
+    if abs(ib_quote - yahoo_quote) > discrepancy_threshold:
+        return yahoo_quote
+    return ib_quote
+
+
+def fetch_cor1m_current_quote() -> Optional[float]:
+    """Fetch the current COR1M level separate from daily history."""
+    ib_quote = _fetch_ib_current_quote("COR1M")
+    yahoo_quote = _fetch_yahoo_current_quote("COR1M")
+
+    if ib_quote is not None:
+        print(f"  IB: COR1M current quote {ib_quote:.2f}", file=sys.stderr)
+    if yahoo_quote is not None:
+        print(f"  Yahoo: COR1M current quote {yahoo_quote:.2f}", file=sys.stderr)
+
+    selected = select_cor1m_current_quote(ib_quote, yahoo_quote)
+    if ib_quote is not None and yahoo_quote is not None and selected == yahoo_quote and abs(ib_quote - yahoo_quote) > 1.0:
+        print(
+            f"  COR1M quote discrepancy detected (IB {ib_quote:.2f} vs Yahoo {yahoo_quote:.2f}) — using Yahoo current value",
+            file=sys.stderr,
+        )
+    elif selected is None:
+        print("  ERROR: No current COR1M quote available", file=sys.stderr)
+
+    return selected
 
 
 def fetch_all(tickers: List[str]) -> Tuple[Dict[str, np.ndarray], List[str]]:
@@ -275,60 +402,30 @@ def fetch_all(tickers: List[str]) -> Tuple[Dict[str, np.ndarray], List[str]]:
 
 
 # ══════════════════════════════════════════════════════════════════
-# Correlation Computation
+# COR1M Implied Correlation
 # ══════════════════════════════════════════════════════════════════
 
-def rolling_sector_correlation(
-    sector_prices: Dict[str, np.ndarray],
-    window: int = CORR_WINDOW,
+def cor1m_level_and_change(
+    cor1m_values: np.ndarray,
+    current_override: Optional[float] = None,
 ) -> Tuple[float, float]:
-    """Compute rolling 20-day avg of 55 pairwise correlations across 11 sector ETFs.
+    """Return current COR1M level and 5-session change.
 
-    Returns (current_avg_correlation, 5d_change_in_correlation).
+    COR1M is already quoted as a percentage index (e.g. 31.1 means
+    31.1% implied average correlation), so no scaling is applied here.
     """
-    etfs = SECTOR_ETFS
-    # Compute returns for each sector
-    returns = {}
-    for etf in etfs:
-        prices = sector_prices.get(etf)
-        if prices is None or len(prices) < 2:
-            return float("nan"), float("nan")
-        # Check for all-NaN
-        if np.all(np.isnan(prices)):
-            return float("nan"), float("nan")
-        ret = np.diff(prices) / prices[:-1]
-        returns[etf] = ret
-
-    n = len(returns[etfs[0]])
-    if n < window:
+    if cor1m_values is None or len(cor1m_values) == 0:
+        return float("nan"), float("nan")
+    if np.all(np.isnan(cor1m_values)):
         return float("nan"), float("nan")
 
-    def _avg_corr_at(end_idx: int) -> float:
-        """Compute average pairwise correlation for the window ending at end_idx."""
-        start = end_idx - window + 1
-        if start < 0:
-            return float("nan")
-        ret_matrix = np.array([returns[etf][start:end_idx + 1] for etf in etfs])
-        # Check for NaN or constant columns
-        if np.any(np.isnan(ret_matrix)):
-            return float("nan")
-        # np.corrcoef returns 11x11 matrix
-        try:
-            corr_matrix = np.corrcoef(ret_matrix)
-        except Exception:
-            return float("nan")
-        if np.any(np.isnan(corr_matrix)):
-            return float("nan")
-        # Extract upper triangle (55 pairs)
-        upper = corr_matrix[np.triu_indices(len(etfs), k=1)]
-        return float(np.mean(upper))
+    current = current_override if current_override is not None else float(cor1m_values[-1])
+    if math.isnan(current):
+        return float("nan"), float("nan")
 
-    current = _avg_corr_at(n - 1)
-
-    # 5-day change
-    if n >= window + 5:
-        prev = _avg_corr_at(n - 6)
-        change = current - prev if not (np.isnan(current) or np.isnan(prev)) else float("nan")
+    if len(cor1m_values) >= 6:
+        prev = float(cor1m_values[-6])
+        change = current - prev if not math.isnan(prev) else float("nan")
     else:
         change = float("nan")
 
@@ -396,19 +493,19 @@ def score_correlation_component(corr: float, corr_5d_change: float) -> float:
     """Score correlation component (0-25).
 
     Inputs:
-        corr: current 20d rolling avg sector correlation
-        corr_5d_change: 5-day change in correlation
+        corr: current COR1M level (percentage points)
+        corr_5d_change: 5-session change in COR1M (percentage points)
     """
     if math.isnan(corr):
         return 0.0
     if math.isnan(corr_5d_change):
         corr_5d_change = 0.0
 
-    # Correlation level score (0-17): linear from 0.25 → 0.70
-    level_score = np.clip((corr - 0.25) / (0.70 - 0.25) * 17.0, 0.0, 17.0)
+    # COR1M level score (0-17): linear from 25 → 70
+    level_score = np.clip((corr - 25.0) / (70.0 - 25.0) * 17.0, 0.0, 17.0)
 
-    # Correlation spike score (0-8): linear from 0 → 0.20 change
-    spike_score = np.clip(max(corr_5d_change, 0.0) / 0.20 * 8.0, 0.0, 8.0)
+    # COR1M spike score (0-8): linear from 0 → 20 points of 5d change
+    spike_score = np.clip(max(corr_5d_change, 0.0) / 20.0 * 8.0, 0.0, 8.0)
 
     return float(np.clip(level_score + spike_score, 0.0, 25.0))
 
@@ -513,17 +610,17 @@ def cta_exposure_model(
 def crash_trigger(
     spx_below_ma: bool,
     realized_vol: float,
-    avg_correlation: float,
+    cor1m: float,
 ) -> Dict[str, Any]:
     """Evaluate the three crash trigger conditions.
 
     All three must fire simultaneously:
       1. SPX < 100-day MA
       2. 20d realized vol > 25% annualized
-      3. Avg sector correlation > 0.60
+      3. COR1M implied correlation > 60
     """
     vol_ok = (not math.isnan(realized_vol)) and realized_vol > 25.0
-    corr_ok = (not math.isnan(avg_correlation)) and avg_correlation > 0.60
+    corr_ok = (not math.isnan(cor1m)) and cor1m > 60.0
     triggered = spx_below_ma and vol_ok and corr_ok
 
     return {
@@ -531,11 +628,11 @@ def crash_trigger(
         "conditions": {
             "spx_below_100d_ma": spx_below_ma,
             "realized_vol_gt_25": vol_ok,
-            "avg_correlation_gt_060": corr_ok,
+            "cor1m_gt_60": corr_ok,
         },
         "values": {
             "realized_vol": round(realized_vol, 2) if not math.isnan(realized_vol) else None,
-            "avg_correlation": round(avg_correlation, 4) if not math.isnan(avg_correlation) else None,
+            "cor1m": round(cor1m, 2) if not math.isnan(cor1m) else None,
         },
     }
 
@@ -547,11 +644,14 @@ def crash_trigger(
 def run_analysis(
     aligned: Dict[str, np.ndarray],
     common_dates: List[str],
+    current_quotes: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
     """Run full CRI analysis on aligned price data."""
     vix = aligned["VIX"]
     vvix = aligned["VVIX"]
     spy = aligned["SPY"]
+    cor1m_values = aligned["COR1M"]
+    current_quotes = current_quotes or {}
 
     # Current values
     vix_now = float(vix[-1])
@@ -577,9 +677,11 @@ def run_analysis(
         spx_distance_pct = 0.0
         spx_below_ma = False
 
-    # Sector correlation
-    sector_prices = {etf: aligned[etf] for etf in SECTOR_ETFS}
-    corr, corr_5d_change = rolling_sector_correlation(sector_prices, CORR_WINDOW)
+    # CBOE 1-Month Implied Correlation Index (COR1M)
+    cor1m_now, cor1m_5d_change = cor1m_level_and_change(
+        cor1m_values,
+        current_override=current_quotes.get("COR1M"),
+    )
 
     # Realized vol (SPY)
     realized_vol = compute_realized_vol(spy, VOL_WINDOW)
@@ -588,7 +690,7 @@ def run_analysis(
     cri = compute_cri(
         vix=vix_now, vix_5d_roc=float(vix_5d_roc),
         vvix=vvix_now, vvix_vix_ratio=float(vvix_vix_ratio),
-        corr=corr, corr_5d_change=corr_5d_change,
+        corr=cor1m_now, corr_5d_change=cor1m_5d_change,
         spx_distance_pct=float(spx_distance_pct),
     )
 
@@ -617,7 +719,7 @@ def run_analysis(
     trigger = crash_trigger(
         spx_below_ma=spx_below_ma,
         realized_vol=realized_vol,
-        avg_correlation=corr,
+        cor1m=cor1m_now,
     )
 
     # Rolling 10-day history
@@ -645,6 +747,7 @@ def run_analysis(
             "vix": round(v, 2),
             "vvix": round(vv, 2),
             "spy": round(s, 2),
+            "cor1m": round(cor1m_now if i == n - 1 and not math.isnan(cor1m_now) else float(cor1m_values[i]), 2),
             "spx_vs_ma_pct": round(float(day_dist), 2),
             "vix_5d_roc": round(float(day_vix_roc), 1),
         })
@@ -658,8 +761,8 @@ def run_analysis(
         "vvix_vix_ratio": round(float(vvix_vix_ratio), 2) if not math.isnan(vvix_vix_ratio) else None,
         "spx_100d_ma": round(ma_100, 2) if not math.isnan(ma_100) else None,
         "spx_distance_pct": round(float(spx_distance_pct), 2),
-        "avg_sector_correlation": round(corr, 4) if not math.isnan(corr) else None,
-        "corr_5d_change": round(corr_5d_change, 4) if not math.isnan(corr_5d_change) else None,
+        "cor1m": round(cor1m_now, 2) if not math.isnan(cor1m_now) else None,
+        "cor1m_5d_change": round(cor1m_5d_change, 2) if not math.isnan(cor1m_5d_change) else None,
         "realized_vol": round(realized_vol, 2) if not math.isnan(realized_vol) else None,
         "cri": cri,
         "cta": cta,
@@ -697,8 +800,9 @@ def print_summary(result: Dict[str, Any], market_open: bool) -> None:
     print(f"    VIX  : {result['vix']:.2f} (5d RoC: {result['vix_5d_roc']:+.1f}%)", file=sys.stderr)
     print(f"    VVIX : {result['vvix']:.2f} (VVIX/VIX: {result['vvix_vix_ratio']:.2f})", file=sys.stderr)
     print(f"    SPY  : ${result['spy']:.2f} (vs 100d MA: {result['spx_distance_pct']:+.2f}%)", file=sys.stderr)
-    corr_str = f"{result['avg_sector_correlation']:.4f}" if result['avg_sector_correlation'] is not None else "N/A"
-    print(f"    Corr : {corr_str}", file=sys.stderr)
+    cor1m_str = f"{result['cor1m']:.2f}" if result['cor1m'] is not None else "N/A"
+    cor1m_chg_str = f"{result['cor1m_5d_change']:+.2f}" if result['cor1m_5d_change'] is not None else "N/A"
+    print(f"    COR1M: {cor1m_str} (5d chg: {cor1m_chg_str})", file=sys.stderr)
     vol_str = f"{result['realized_vol']:.2f}%" if result['realized_vol'] is not None else "N/A"
     print(f"    RVol : {vol_str}", file=sys.stderr)
 
@@ -728,7 +832,7 @@ def print_summary(result: Dict[str, Any], market_open: bool) -> None:
     print(f"\n  CRASH TRIGGER CONDITIONS:", file=sys.stderr)
     print(f"    SPX < 100d MA    : {'PASS' if conds['spx_below_100d_ma'] else 'FAIL'}", file=sys.stderr)
     print(f"    RVol > 25%       : {'PASS' if conds['realized_vol_gt_25'] else 'FAIL'}", file=sys.stderr)
-    print(f"    Corr > 0.60      : {'PASS' if conds['avg_correlation_gt_060'] else 'FAIL'}", file=sys.stderr)
+    print(f"    COR1M > 60      : {'PASS' if conds['cor1m_gt_60'] else 'FAIL'}", file=sys.stderr)
     print(f"    TRIGGERED        : {'YES' if trigger['triggered'] else 'NO'}", file=sys.stderr)
 
     # Decision
@@ -805,8 +909,8 @@ def generate_html_report(
 </div>""")
 
     # ── 4-Card Metric Grid ──
-    corr_str = f"{result['avg_sector_correlation']:.4f}" if result['avg_sector_correlation'] is not None else "---"
-    corr_chg = f"{result['corr_5d_change']:+.4f}" if result.get('corr_5d_change') is not None else "---"
+    corr_str = f"{result['cor1m']:.2f}" if result['cor1m'] is not None else "---"
+    corr_chg = f"{result['cor1m_5d_change']:+.2f}" if result.get('cor1m_5d_change') is not None else "---"
     vol_str = f"{result['realized_vol']:.2f}%" if result['realized_vol'] is not None else "---"
     ma_str = f"${result['spx_100d_ma']:.2f}" if result['spx_100d_ma'] is not None else "---"
 
@@ -823,9 +927,9 @@ def generate_html_report(
     <div class="metric-change">VVIX/VIX: {result['vvix_vix_ratio']:.2f}</div>
   </div>
   <div class="metric">
-    <div class="metric-label">Avg Sector Correlation</div>
-    <div class="metric-value {"text-negative" if result.get('avg_sector_correlation', 0) and result['avg_sector_correlation'] > 0.60 else ""}">{corr_str}</div>
-    <div class="metric-change">5d change: {corr_chg}</div>
+    <div class="metric-label">COR1M Implied Corr</div>
+    <div class="metric-value {"text-negative" if result.get('cor1m', 0) and result['cor1m'] > 60 else ""}">{corr_str}</div>
+    <div class="metric-change">5d change: {corr_chg} pts</div>
   </div>
   <div class="metric">
     <div class="metric-label">SPY vs 100d MA</div>
@@ -1026,7 +1130,7 @@ def generate_html_report(
     trigger_rows = [
         ("SPX below 100-day MA", "Below", f"{result['spx_distance_pct']:+.2f}%", conds['spx_below_100d_ma']),
         ("20d Realized Vol > 25%", "> 25%", vol_str, conds['realized_vol_gt_25']),
-        ("Avg Sector Correlation > 0.60", "> 0.60", corr_str, conds['avg_correlation_gt_060']),
+        ("COR1M > 60", "> 60", corr_str, conds['cor1m_gt_60']),
     ]
     for label, req, actual, passed in trigger_rows:
         icon = '<span class="text-positive">PASS</span>' if passed else '<span class="text-negative">FAIL</span>'
@@ -1096,10 +1200,10 @@ def generate_html_report(
     body_parts.append(f"""
 <div class="footer">
   <strong>CRI Scanner — Crash Risk Index</strong><br>
-  Components: VIX (level + RoC) | VVIX (level + ratio) | Sector Correlation (20d rolling, 11 ETFs) | SPX Momentum (vs 100d MA)<br>
+  Components: VIX (level + RoC) | VVIX (level + ratio) | COR1M implied correlation (level + 5d change) | SPX Momentum (vs 100d MA)<br>
   CTA Model: Exposure = 10% target / Realized Vol | Estimated AUM: $400B<br>
-  Crash Trigger: SPX &lt; 100d MA AND 20d RVol &gt; 25% AND Avg Corr &gt; 0.60<br>
-  Data: IB (primary), Yahoo Finance (fallback) | {now}<br>
+  Crash Trigger: SPX &lt; 100d MA AND 20d RVol &gt; 25% AND COR1M &gt; 60<br>
+  Data: IB (primary) | UW for SPY fallback | Yahoo Finance last-resort for indices | {now}<br>
   Strategy spec: <code>docs/strategies.md</code> (Strategy 6) |
   <a href="https://chatgpt.com/share/69ab7eee-fe34-8013-b489-7758297da446" style="color:var(--text-muted)">Source: CTA Deleveraging Research</a>
 </div>""")
@@ -1143,7 +1247,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 The CRI detects systematic crash risk by scoring four components: VIX level
-and momentum, VVIX convexity demand, cross-sector correlation, and SPX
+and momentum, VVIX convexity demand, COR1M implied correlation, and SPX
 distance from the 100-day moving average. When the crash trigger fires
 (all three conditions met), CTAs are forced to deleverage.
 
@@ -1169,13 +1273,16 @@ Examples:
 
     t_start = time.time()
 
-    # Fetch data for all 14 tickers
+    # Fetch data for all required instruments
     aligned, common_dates = fetch_all(ALL_TICKERS)
 
     print(f"  Data range: {common_dates[0]} to {common_dates[-1]} ({len(common_dates)} bars)", file=sys.stderr)
 
+    cor1m_current = fetch_cor1m_current_quote()
+    current_quotes = {"COR1M": cor1m_current} if cor1m_current is not None else {}
+
     # Run analysis
-    result = run_analysis(aligned, common_dates)
+    result = run_analysis(aligned, common_dates, current_quotes=current_quotes)
 
     elapsed = time.time() - t_start
 

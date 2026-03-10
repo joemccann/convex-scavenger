@@ -8,6 +8,7 @@ export type CriHistoryEntry = {
   vix: number;
   vvix: number;
   spy: number;
+  cor1m?: number;
   spx_vs_ma_pct: number;
   vix_5d_roc: number;
 };
@@ -23,8 +24,8 @@ export type CriData = {
   vvix_vix_ratio: number | null;
   spx_100d_ma: number | null;
   spx_distance_pct: number;
-  avg_sector_correlation: number | null;
-  corr_5d_change: number | null;
+  cor1m: number | null;
+  cor1m_5d_change: number | null;
   realized_vol: number | null;
   cri: {
     score: number;
@@ -53,7 +54,7 @@ export type CriData = {
     conditions: {
       spx_below_100d_ma: boolean;
       realized_vol_gt_25: boolean;
-      avg_correlation_gt_060: boolean;
+      cor1m_gt_60: boolean;
     };
     values: Record<string, unknown>;
   };

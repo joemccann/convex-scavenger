@@ -103,7 +103,7 @@ export default function LandingPage() {
       { label: "VVIX", value: (116.75 + (Math.random() * 0.5 - 0.25)).toFixed(2), change: "+1.2%", color: "text-warn" },
       { label: "SPY", value: (682.28 + (Math.random() * 0.1 - 0.05)).toFixed(2), change: "+0.01%", color: "text-signal-strong" },
       { label: "REALIZED VOL", value: "11.80%", change: "20d", color: "text-signal-strong" },
-      { label: "SECTOR CORR", value: "0.0231", change: "Intraday", color: "text-primary" }
+      { label: "COR1M", value: "31.10", change: "5d +1.8", color: "text-primary" }
     ]
   }), [tick]);
 

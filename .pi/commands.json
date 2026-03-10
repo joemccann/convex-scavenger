@@ -6,7 +6,7 @@
     },
     {
       "command": "scan",
-      "description": "Scan watchlist for dark pool flow signals + CRI regime overlay (crash risk, CTA exposure) \u2014 generates HTML report"
+      "description": "Scan watchlist for dark pool flow signals + CRI regime overlay (COR1M, crash risk, CTA exposure) \u2014 generates HTML report"
     },
     {
       "command": "discover",
@@ -50,7 +50,7 @@
     },
     {
       "command": "cri-scan",
-      "description": "Crash Risk Index \u2014 sector correlations, CTA exposure model, crash trigger conditions"
+      "description": "Crash Risk Index \u2014 COR1M implied correlation, CTA exposure model, crash trigger conditions"
     },
     {
       "command": "garch-convergence [TICKERS]",

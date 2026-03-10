@@ -114,6 +114,7 @@ At a high level:
 
 - `scripts/` contains scanners, evaluators, pricing logic, reporting, and broker integrations
 - `web/` contains the Next.js terminal for portfolio, flow, orders, and AI-assisted workflows
+- `site/` contains the standalone marketing website
 - `data/` holds runtime artifacts and scan outputs
 
 ## Quick Start
@@ -191,6 +192,18 @@ Visit `http://localhost:3000`.
 - Order management, including combo spread workflows
 - Flow analysis, regime views, and thesis checks
 - AI chat interface for command execution and analysis
+
+## Marketing Site
+
+The repo also includes a standalone Next.js site in `site/`.
+
+```bash
+cd site
+npm install
+npm run dev
+```
+
+For Vercel, the project should use `site/` as the Root Directory. The site app includes an ignored-build step in [site/vercel.json](/Users/joemccann/dev/apps/finance/radon/site/vercel.json) so pushes only trigger a site deploy when files under `site/` changed.
 
 ## Example Workflow
 

@@ -32,10 +32,10 @@ export function scoreVvix(vvix: number, vvixVixRatio: number): number {
 export function scoreCorrelation(corr: number, corr5dChange: number): number {
   if (!Number.isFinite(corr)) return 0;
   const safeChange = Number.isFinite(corr5dChange) ? corr5dChange : 0;
-  // Correlation level score (0–17): linear from 0.25 → 0.70
-  const levelScore = clamp(((corr - 0.25) / (0.70 - 0.25)) * 17, 0, 17);
-  // Correlation spike score (0–8): linear from 0 → 0.20 change
-  const spikeScore = clamp((Math.max(safeChange, 0) / 0.20) * 8, 0, 8);
+  // COR1M level score (0–17): linear from 25 → 70
+  const levelScore = clamp(((corr - 25) / (70 - 25)) * 17, 0, 17);
+  // COR1M spike score (0–8): linear from 0 → 20 points of 5-session change
+  const spikeScore = clamp((Math.max(safeChange, 0) / 20) * 8, 0, 8);
   return clamp(levelScore + spikeScore, 0, 25);
 }
 

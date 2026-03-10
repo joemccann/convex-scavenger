@@ -1,39 +1,42 @@
 /**
- * Unit tests: RegimePanel market-closed value gating
+ * Unit tests: RegimePanel COR1M presentation + market-closed value gating
  *
- * Bug: After market close, RegimePanel continued to:
- *  1. Show INTRADAY badge on SECTOR CORR (intradayCorr not gated on marketOpen)
- *  2. Show live WS values for VIX/VVIX (vixVal/vvixVal ignored marketOpen flag)
- *  3. Show timestamps on VIX/VVIX strip (timestamp effect not gated on marketOpen)
- *
- * All three require `marketOpen` gating — verified here via source inspection.
+ * Regression target:
+ *  1. The regime strip must use COR1M fields from CRI data, not sector ETF proxies.
+ *  2. The component must no longer depend on intraday sector-correlation snapshots.
+ *  3. VIX/VVIX/SPY live values and timestamps remain gated on marketOpen.
  */
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { fileURLToPath } from "url";
 
-const PANEL_PATH = join(__dirname, "../components/RegimePanel.tsx");
+const TEST_DIR = fileURLToPath(new URL(".", import.meta.url));
+const PANEL_PATH = join(TEST_DIR, "../components/RegimePanel.tsx");
 const source = readFileSync(PANEL_PATH, "utf-8");
 
-describe("RegimePanel — intradayCorr must be gated on marketOpen", () => {
-  it("intradayCorr useMemo early-returns null when market is closed", () => {
-    // The intradayCorr memo must check !marketOpen before calling
-    // computeIntradaySectorCorr(). Without this gate, accumulated WS snapshots
-    // produce a stale INTRADAY badge after close.
-    const corrMemo = source.match(
-      /intradayCorr\s*=\s*useMemo[\s\S]*?(?=\n\s*const\s|\n\s*\/\/)/
-    )?.[0] ?? "";
-    expect(corrMemo).toMatch(/marketOpen/);
+describe("RegimePanel — COR1M replaces sector ETF correlation inputs", () => {
+  it("renders COR1M instead of SECTOR CORR", () => {
+    expect(source).toContain("COR1M");
+    expect(source).not.toContain("SECTOR CORR");
   });
 
-  it("snapshot buffer stops accumulating when market is closed", () => {
-    // appendSnapshot should only run when marketOpen is true so the
-    // buffer doesn't keep growing with stale post-close ticks.
-    const snapEffect = source.match(
-      /appendSnapshot[\s\S]*?(?=\}\s*,\s*\[)/
-    )?.[0] ?? "";
-    expect(snapEffect).toMatch(/marketOpen/);
+  it("reads COR1M fields from CRI data", () => {
+    expect(source).toContain("data?.cor1m");
+    expect(source).toContain("data?.cor1m_5d_change");
+    expect(source).not.toContain("avg_sector_correlation");
+  });
+
+  it("does not depend on intraday sector correlation utilities", () => {
+    expect(source).not.toContain("computeIntradaySectorCorr");
+    expect(source).not.toContain("appendSnapshot");
+    expect(source).not.toContain("bufferDepth");
+    expect(source).not.toContain("resetBuffer");
+  });
+
+  it("uses COR1M > 60 for the crash-trigger label", () => {
+    expect(source).toContain("COR1M > 60");
   });
 });
 

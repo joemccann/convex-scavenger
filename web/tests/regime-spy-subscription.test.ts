@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { fileURLToPath } from "url";
 
 /**
  * Source-inspection tests confirming WorkspaceShell guarantees SPY is
@@ -10,7 +11,8 @@ import { join } from "path";
  * environment needed) and verify the structural logic is present.
  */
 
-const SHELL_PATH = join(__dirname, "../components/WorkspaceShell.tsx");
+const TEST_DIR = fileURLToPath(new URL(".", import.meta.url));
+const SHELL_PATH = join(TEST_DIR, "../components/WorkspaceShell.tsx");
 const source = readFileSync(SHELL_PATH, "utf-8");
 
 describe("WorkspaceShell — regime SPY subscription", () => {
@@ -31,10 +33,11 @@ describe("WorkspaceShell — regime SPY subscription", () => {
   });
 
   it("does NOT add SPY to regimeIndexes (SPY is a Stock, not an Index)", () => {
-    // regimeIndexes must only contain VIX and VVIX
+    // regimeIndexes must contain only CBOE indexes for the regime view.
     const regimeIndexesBlock = source.match(/regimeIndexes\s*=\s*useMemo[^;]+;/s)?.[0] ?? "";
     expect(regimeIndexesBlock).not.toContain("SPY");
     expect(regimeIndexesBlock).toContain("VIX");
     expect(regimeIndexesBlock).toContain("VVIX");
+    expect(regimeIndexesBlock).toContain("COR1M");
   });
 });

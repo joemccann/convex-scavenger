@@ -676,14 +676,14 @@ Full mathematical specification: [`VCG_institutional_research_note.md`](VCG_inst
 
 ### Thesis
 
-Systematic CTA funds (~$400B AUM) use vol-targeting: they maintain 10% portfolio volatility by adjusting equity exposure inversely to realized vol. When realized vol doubles, they must halve exposure — creating predictable, mechanical selling cascades ($200B+ in March 2020). The CRI detects when three crash regime signals converge: VIX rising, cross-sector correlation spiking, and SPX breaking below its 100-day moving average.
+Systematic CTA funds (~$400B AUM) use vol-targeting: they maintain 10% portfolio volatility by adjusting equity exposure inversely to realized vol. When realized vol doubles, they must halve exposure — creating predictable, mechanical selling cascades ($200B+ in March 2020). The CRI detects when three crash regime signals converge: VIX rising, the Cboe 1-Month Implied Correlation Index (COR1M) spiking, and SPX breaking below its 100-day moving average.
 
 **The edge is predictability, not direction.** CTA selling is mechanical and time-bound (3-5 days). Knowing it's coming allows you to position defensively or profit from the cascade.
 
 ### Edge Source
 
 - **VIX + VVIX rising**: Volatility complex repricing — CTAs must adjust
-- **Sector correlation spiking**: All sectors selling together — diversification breaks down
+- **COR1M spiking**: The top 50 SPX names are expected to move together — diversification breaks down
 - **SPX below 100d MA**: Trend-following CTAs flip from long to short
 - **Realized vol > 25%**: Vol-targeting math forces exposure reduction
 
@@ -695,7 +695,7 @@ Four components, each scored 0-25:
 |-----------|--------|----------|-------------|
 | **VIX** | Level + 5d RoC | VIX < 15, flat | VIX > 40, rising fast |
 | **VVIX** | Level + VVIX/VIX ratio | VVIX < 90 | VVIX > 140, ratio > 8 |
-| **Correlation** | 20d rolling avg of 55 pairwise sector ETF correlations + 5d change | Corr < 0.25 | Corr > 0.70, spiking |
+| **Correlation** | COR1M level + 5-session change | COR1M < 25 | COR1M > 70, spiking |
 | **Momentum** | SPX distance from 100d MA | Above MA | 10%+ below MA |
 
 ### Signal Levels
@@ -727,24 +727,32 @@ Est_selling = Forced_reduction × CTA_AUM (~$400B)
 All three must fire simultaneously:
 1. SPX < 100-day moving average
 2. 20d realized vol > 25% annualized
-3. Average sector correlation > 0.60
+3. COR1M implied correlation > 60
 
-### Correlation Computation
+### COR1M Implied Correlation Signal
 
-Rolling 20-day average of 55 pairwise correlations across 11 SPDR sector ETFs:
-XLB, XLC, XLE, XLF, XLI, XLK, XLP, XLRE, XLU, XLV, XLY.
+The Cboe 1-Month Implied Correlation Index (COR1M) measures the market's expectation of how tightly the 50 largest stocks in the S&P 500 will move together over the next month.
 
-Uses daily returns and `np.corrcoef` on rolling windows.
+**What it captures**:
+- **Market herding**: Higher COR1M means the market expects the largest SPX names to trade in lockstep.
+- **Diversification regime**: Lower COR1M means more single-name dispersion and better diversification potential.
+- **Relative options pricing**: COR1M reflects the spread between SPX implied volatility and the weighted average implied volatility of the largest underlying stocks.
 
-#### Why 11 Sector ETFs, Not 503 S&P 500 Stocks
+**How it is constructed**:
+- Uses one-month, approximately at-the-money options.
+- Compares SPX implied volatility to the market-cap-weighted implied volatilities of the 50 largest SPX constituents.
+- Solves for the average correlation coefficient that reconciles index variance with the weighted variance of the component stocks.
+- Produces a percentage-style index value, so a reading like `31.1` means 31.1% implied average correlation.
 
-The CRI correlation component measures whether **institutions are selling across sectors simultaneously** — the signature of systematic CTA deleveraging. Sector ETFs are the correct instrument for this signal. Using all 503 S&P 500 constituents would degrade the signal for three reasons:
+#### Why COR1M Is Better Than a Sector ETF Proxy
 
-1. **Idiosyncratic noise drowns the signal.** Individual stocks have earnings, M&A, guidance, and analyst revisions that move prices independently of systematic flows. A pharma stock dropping on a failed trial is not a CTA sell signal. Sector ETFs wash out single-name noise by construction — if XLV (Health Care) drops, it's sector-wide selling, not one stock.
+COR1M is the better crash-regime signal because it is:
 
-2. **Sector count imbalance biases the measurement.** The S&P 500 has ~71 tech stocks but only ~7 energy stocks. Raw pairwise correlation across 503 stocks (126,253 pairs) would be dominated by intra-tech pairs correlating with each other — which they always do regardless of crash regime. You'd need to weight by sector to correct this, which converges back to sector-level measurement.
+1. **Forward-looking, not backward-looking.** Sector ETF correlations are realized-price proxies. COR1M comes directly from options markets, so it reflects expected co-movement before the selloff is fully expressed in realized returns.
 
-3. **The 0.60 trigger threshold is calibrated to sector ETFs.** The crash trigger condition (avg correlation > 0.60) was derived from historical crash episodes (2008, 2020, 2022) using 11-ETF pairwise correlations. Changing the input universe changes the distribution of correlations and invalidates the threshold.
+2. **Closer to the diversification question.** COR1M is explicitly built to quantify the market's expected diversification benefit across the largest SPX names. That is exactly the regime question CRI is trying to answer.
+
+3. **Rooted in index-versus-component volatility.** The signal is derived from the relative pricing of SPX options versus single-name options, which is where institutional hedging and herd behavior actually show up.
 
 ### Position Structure (when Crash Trigger fires)
 
@@ -765,7 +773,7 @@ The CRI correlation component measures whether **institutions are selling across
 |-----------|--------|
 | CRI normalizes (< 25) | Close hedges — crash risk subsided |
 | Realized vol drops below 20% | Close — vol-targeting pressure relieved |
-| Correlation < 0.40 | Close — diversification restored |
+| COR1M < 40 | Close — implied diversification restored |
 | 5 trading days elapsed | Re-evaluate — CTA selling is time-bound |
 
 ### MenthorQ CTA Positioning (Institutional Data Overlay)

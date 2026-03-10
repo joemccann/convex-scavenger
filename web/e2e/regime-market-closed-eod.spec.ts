@@ -2,9 +2,10 @@
  * E2E: /regime page — market closed EOD values
  *
  * Verifies that when market_open=false:
- *  1. SECTOR CORR shows "DAILY" badge, NOT "INTRADAY"
+ *  1. COR1M shows "DAILY" badge, NOT "INTRADAY"
  *  2. VIX value matches CRI data (not live WS)
  *  3. VVIX value matches CRI data (not live WS)
+ *  4. COR1M value matches CRI data (not a sector ETF proxy)
  *  4. VIX timestamp shows "---" (no live update)
  *  5. VVIX timestamp shows "---" (no live update)
  *  6. MARKET CLOSED banner is visible
@@ -22,15 +23,15 @@ const CRI_MOCK_CLOSED = {
   vix_5d_roc: 18.9,
   vvix_vix_ratio: 4.11,
   realized_vol: 11.72,
-  avg_sector_correlation: 0.3812,
-  corr_5d_change: 0.01,
+  cor1m: 38.12,
+  cor1m_5d_change: 1.0,
   spx_100d_ma: 682.05,
   spx_distance_pct: -0.64,
   spy_closes: Array.from({ length: 22 }, (_, i) => 660 + i),
   cri: { score: 24, level: "LOW", components: { vix: 6, vvix: 5, correlation: 7, momentum: 6 } },
   crash_trigger: {
     triggered: false,
-    conditions: { spx_below_100d_ma: false, realized_vol_gt_25: false, avg_corr_gt_60: false },
+    conditions: { spx_below_100d_ma: false, realized_vol_gt_25: false, cor1m_gt_60: false },
   },
   cta: { exposure_pct: 95, forced_reduction_pct: 0, est_selling_bn: 0 },
   menthorq_cta: null,
@@ -114,19 +115,29 @@ test.describe("Regime /regime — market closed EOD values", () => {
     await expect(banner).toContainText("MARKET CLOSED");
   });
 
-  test("SECTOR CORR shows DAILY badge (not INTRADAY) when market closed", async ({ page }) => {
+  test("COR1M shows DAILY badge (not INTRADAY) when market closed", async ({ page }) => {
     await setupMocks(page);
     await page.goto("/regime");
 
     // Wait for regime strip to render
     await page.locator('[data-testid="strip-vix"]').waitFor({ timeout: 10_000 });
 
-    // The sector corr cell badge text must be DAILY, not INTRADAY
-    const corrCell = page.locator(".regime-strip-cell").filter({ hasText: "SECTOR CORR" });
+    // The COR1M cell badge text must be DAILY, not INTRADAY
+    const corrCell = page.locator(".regime-strip-cell").filter({ hasText: "COR1M" });
     await expect(corrCell).toBeVisible();
     const badge = corrCell.locator(".regime-badge");
     await expect(badge).not.toHaveText("INTRADAY");
     await expect(badge).toHaveText("DAILY");
+  });
+
+  test("COR1M value shows CRI EOD data (38.12)", async ({ page }) => {
+    await setupMocks(page);
+    await page.goto("/regime");
+
+    const corrCell = page.locator(".regime-strip-cell").filter({ hasText: "COR1M" });
+    await corrCell.waitFor({ timeout: 10_000 });
+
+    await expect(corrCell.locator(".regime-strip-value")).toHaveText("38.12");
   });
 
   test("VIX value shows CRI EOD data (29.49), not live WS", async ({ page }) => {

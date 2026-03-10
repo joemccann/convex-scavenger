@@ -24,8 +24,8 @@ const CRI_MOCK = {
   vix_5d_roc: 18.9,
   vvix_vix_ratio: 4.11,
   realized_vol: 11.72,
-  avg_sector_correlation: 0.38,
-  corr_5d_change: 0.01,
+  cor1m: 38.0,
+  cor1m_5d_change: 1.0,
   spx_100d_ma: 682.05,
   spx_distance_pct: -0.64,
   spy_closes: Array.from({ length: 22 }, (_, i) => 660 + i),
@@ -34,7 +34,7 @@ const CRI_MOCK = {
   menthorq_cta: null,
   crash_trigger: {
     triggered: false,
-    conditions: { spx_below_100d_ma: false, realized_vol_gt_25: false, avg_corr_gt_60: false },
+    conditions: { spx_below_100d_ma: false, realized_vol_gt_25: false, cor1m_gt_60: false },
   },
   history: [
     { date: "2026-03-03", vix: 22.1, vvix: 105.3, spy: 660.2, spx_vs_ma_pct: -1.2, vix_5d_roc: 5.1 },

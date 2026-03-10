@@ -1,5 +1,78 @@
 # TODO
 
+## Session: Vercel Site Build Gate (2026-03-10)
+
+### Dependency Graph
+- T1 (Inspect current repo/Vercel configuration and confirm the site app deployment root assumptions) depends_on: []
+- T2 (Add a repo-side Vercel ignored-build rule so the site deploy only runs when `/site` changes) depends_on: [T1]
+- T3 (Document the site deployment gating behavior in the relevant README files) depends_on: [T2]
+- T4 (Run targeted validation for the ignore-step script and prepare a scoped commit/push) depends_on: [T2, T3]
+
+### Checklist
+- [x] T1 Inspect current repo/Vercel configuration and confirm the site app deployment root assumptions
+- [x] T2 Add a repo-side Vercel ignored-build rule so the site deploy only runs when `/site` changes
+- [x] T3 Document the site deployment gating behavior in the relevant README files
+- [x] T4 Run targeted validation for the ignore-step script and prepare a scoped commit/push
+
+### Review
+- Added [site/vercel.json](/Users/joemccann/dev/apps/finance/radon/site/vercel.json) with a Vercel `ignoreCommand` and implemented the git-diff gate in [vercel-ignore-build.mjs](/Users/joemccann/dev/apps/finance/radon/site/scripts/vercel-ignore-build.mjs).
+- The ignore-step script now only skips the deploy when it can prove there were no changes under `site/`; if the previous SHA or diff lookup is unavailable, it continues the build instead of risking a false skip.
+- Documented the deployment behavior in [site/README.md](/Users/joemccann/dev/apps/finance/radon/site/README.md) and the repo-level [README.md](/Users/joemccann/dev/apps/finance/radon/README.md), including the requirement that the Vercel project Root Directory be `site/`.
+- Verified the ignore-step locally from both the site root and repo root with identical SHAs: `node scripts/vercel-ignore-build.mjs` and `node site/scripts/vercel-ignore-build.mjs` both exited `0` and reported that the build would be skipped.
+
+## Session: COR1M Current Value Fix (2026-03-10)
+
+### Dependency Graph
+- T1 (Audit current COR1M sourcing, cache flow, and UI expectations for the mismatch) depends_on: []
+- T2 (Add failing backend and browser regressions for COR1M current-value sourcing) depends_on: [T1]
+- T3 (Implement CRI scan fix so COR1M current value comes from quote metadata/current quote, not the daily-bar close) depends_on: [T2]
+- T4 (Refresh CRI cache artifacts and align any affected generated files) depends_on: [T3]
+- T5 (Run targeted verification and capture review notes) depends_on: [T3, T4]
+
+### Checklist
+- [x] T1 Audit current COR1M sourcing, cache flow, and UI expectations for the mismatch
+- [x] T2 Add failing backend and browser regressions for COR1M current-value sourcing
+- [x] T3 Implement CRI scan fix so COR1M current value comes from quote metadata/current quote, not the daily-bar close
+- [x] T4 Refresh CRI cache artifacts and align any affected generated files
+- [x] T5 Run targeted verification and capture review notes
+
+### Review
+- Confirmed red phase: `pytest scripts/tests/test_cri_scan.py -q` failed on the new `current_override` and `current_quotes` expectations before the fix.
+- Backend fix now separates COR1M current-level sourcing from historical bars: `run_analysis()` accepts `current_quotes`, `cor1m_level_and_change()` supports a current override, and the last history row is patched to the selected current quote.
+- Added current-quote source selection for COR1M in `scripts/cri_scan.py`: prefer IB current quote when available, compare against Yahoo chart metadata, and fall back to Yahoo when IB diverges materially or is unavailable.
+- Refreshed the served CRI artifacts by correcting [data/cri.json](/Users/joemccann/dev/apps/finance/radon/data/cri.json) and writing a clean latest scheduled snapshot at [cri-2026-03-10T18-45.json](/Users/joemccann/dev/apps/finance/radon/data/cri_scheduled/cri-2026-03-10T18-45.json).
+- Verified `pytest scripts/tests/test_cri_scan.py -q` passes with `59/59`.
+- Verified `npx playwright test e2e/regime-cor1m.spec.ts e2e/regime-cor1m-live-route.spec.ts` passes with `3/3`, including an unmocked `/regime` browser check against the live route.
+- Verified the running dev server returns the corrected payload via `http://localhost:3000/api/regime`: `cor1m: 28.97`, `cor1m_5d_change: 6.88`, `cri.score: 25.4`.
+
+## Session: CRI COR1M Refactor (2026-03-10)
+
+### Dependency Graph
+- T1 (Audit CRI data flow, frontend consumers, and repo-wide documentation references) depends_on: []
+- T2 (Define COR1M fetch/calculation contract and write failing backend tests) depends_on: [T1]
+- T3 (Implement backend CRI refactor from sector-ETF correlation to COR1M implied correlation) depends_on: [T2]
+- T4 (Refactor frontend `/regime` consumers, labels, and API typing for COR1M) depends_on: [T3]
+- T5 (Add or update browser E2E coverage for COR1M presentation and behavior) depends_on: [T4]
+- T6 (Update all relevant docs, strategy references, site copy, and command/help surfaces) depends_on: [T1, T3, T4]
+- T7 (Run verification, capture review notes, and summarize residual risks) depends_on: [T5, T6]
+
+### Checklist
+- [x] T1 Audit CRI data flow, frontend consumers, and repo-wide documentation references
+- [x] T2 Define COR1M fetch/calculation contract and write failing backend tests
+- [x] T3 Implement backend CRI refactor from sector-ETF correlation to COR1M implied correlation
+- [x] T4 Refactor frontend `/regime` consumers, labels, and API typing for COR1M
+- [x] T5 Add or update browser E2E coverage for COR1M presentation and behavior
+- [x] T6 Update all relevant docs, strategy references, site copy, and command/help surfaces
+- [x] T7 Run verification, capture review notes, and summarize residual risks
+
+### Review
+- Confirmed red/green TDD: `pytest scripts/tests/test_cri_scan.py -q` failed on missing `cor1m_level_and_change`, then passed with 51/51 after the refactor.
+- Confirmed browser automation against the running dev server: `npx playwright test e2e/regime-cor1m.spec.ts e2e/regime-market-closed-eod.spec.ts` passed with 9/9.
+- Confirmed targeted `/regime` source-inspection tests pass after updating them to ESM-safe path handling: `npx tsx --test tests/regime-market-closed-values.test.ts tests/regime-market-closed.test.ts tests/regime-spy-subscription.test.ts`.
+- Confirmed `cd web && npm run build` passes after the COR1M subscription and UI contract changes.
+- Refreshed CRI cache artifacts with live COR1M data: `python3 scripts/cri_scan.py --json > data/cri.json` and wrote `data/cri_scheduled/cri-2026-03-10T17-21.json`.
+- Residual risk: older scheduled CRI cache files still exist historically in `data/cri_scheduled/`; the app now has a fresh COR1M-shaped file, so current reads are correct.
+
 ## Dependency Graph
 - T1 (Scope Alignment) -> T2 (Next.js App Bootstrap) -> T3 (Backend Command Runtime) -> T4 (Conversational Chat UI) -> T5 (Technical Minimalist Design) -> T6 (Verification + Docs)
 

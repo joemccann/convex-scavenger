@@ -26,16 +26,41 @@ const EMPTY_CRI = {
   vvix_vix_ratio: null,
   spx_100d_ma: null,
   spx_distance_pct: 0,
-  avg_sector_correlation: null,
-  corr_5d_change: null,
+  cor1m: null,
+  cor1m_5d_change: null,
   realized_vol: null,
   cri: { score: 0, level: "LOW", components: { vix: 0, vvix: 0, correlation: 0, momentum: 0 } },
   cta: { realized_vol: 0, exposure_pct: 200, forced_reduction_pct: 0, est_selling_bn: 0 },
   menthorq_cta: null,
-  crash_trigger: { triggered: false, conditions: { spx_below_100d_ma: false, realized_vol_gt_25: false, avg_correlation_gt_060: false }, values: {} },
+  crash_trigger: { triggered: false, conditions: { spx_below_100d_ma: false, realized_vol_gt_25: false, cor1m_gt_60: false }, values: {} },
   history: [],
   spy_closes: [],
 };
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function normalizeCriPayload(raw: Record<string, unknown>): Record<string, unknown> {
+  const crashTrigger = (raw.crash_trigger ?? {}) as Record<string, unknown>;
+  const conditions = (crashTrigger.conditions ?? {}) as Record<string, unknown>;
+
+  return {
+    ...EMPTY_CRI,
+    ...raw,
+    cor1m: asNumber(raw.cor1m),
+    cor1m_5d_change: asNumber(raw.cor1m_5d_change),
+    crash_trigger: {
+      ...EMPTY_CRI.crash_trigger,
+      ...crashTrigger,
+      conditions: {
+        ...EMPTY_CRI.crash_trigger.conditions,
+        ...conditions,
+        cor1m_gt_60: typeof conditions.cor1m_gt_60 === "boolean" ? conditions.cor1m_gt_60 : false,
+      },
+    },
+  };
+}
 
 let bgScanInFlight = false;
 
@@ -116,7 +141,7 @@ function triggerBackgroundScan(): void {
 
 export async function GET(): Promise<Response> {
   const result = await readLatestCri();
-  const data = (result?.data ?? EMPTY_CRI) as Record<string, unknown>;
+  const data = normalizeCriPayload((result?.data ?? EMPTY_CRI) as Record<string, unknown>);
 
   // Stale-while-revalidate: return cached data immediately,
   // kick off a background scan if data date != today (ET) or file mtime > TTL
@@ -133,7 +158,7 @@ export async function POST(): Promise<Response> {
     const jsonStart = stdout.indexOf("{");
     if (jsonStart === -1) throw new Error("No JSON output from cri_scan.py");
     const jsonStr = stdout.slice(jsonStart);
-    const data = JSON.parse(jsonStr);
+    const data = normalizeCriPayload(JSON.parse(jsonStr));
 
     await writeFile(CACHE_PATH, JSON.stringify(data, null, 2));
 
