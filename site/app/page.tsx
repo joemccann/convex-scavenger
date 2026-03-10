@@ -78,7 +78,7 @@ export default function LandingPage() {
               variants={itemVariants}
               className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-8 max-w-5xl leading-[1.05] tracking-tight"
             >
-              The Terminal You Didn't Know You Were Missing. <span className="text-muted">Until Now.</span>
+              Market structure, <span className="text-muted">reconstructed.</span>
             </motion.h1>
 
             <motion.p 
