@@ -18,7 +18,7 @@ import {
   Wrench,
   XCircle,
 } from "lucide-react";
-import type { BlotterTrade, ExecutedOrder, FlowAnalysisPosition, OpenOrder, OrdersData, PortfolioData, ScannerSignal, WorkspaceSection } from "@/lib/types";
+import type { BlotterTrade, DiscoverCandidate, ExecutedOrder, FlowAnalysisPosition, OpenOrder, OrdersData, PortfolioData, ScannerSignal, WorkspaceSection } from "@/lib/types";
 import { useOrderActions } from "@/lib/OrderActionsContext";
 import type { PriceData } from "@/lib/pricesProtocol";
 import { optionKey } from "@/lib/pricesProtocol";
@@ -528,9 +528,28 @@ function ScannerSections() {
 
 /* ─── Non-table sections ────────────────────────────────── */
 
+type DiscoverSortKey = "ticker" | "score" | "dp_direction" | "dp_strength" | "dp_buy_ratio" | "options_bias" | "alerts" | "total_premium" | "sweeps" | "sector";
+
+const discoverExtract = (item: DiscoverCandidate, key: DiscoverSortKey): string | number | null => {
+  switch (key) {
+    case "ticker": return item.ticker;
+    case "score": return item.score;
+    case "dp_direction": return item.dp_direction;
+    case "dp_strength": return item.dp_strength;
+    case "dp_buy_ratio": return item.dp_buy_ratio;
+    case "options_bias": return item.options_bias;
+    case "alerts": return item.alerts;
+    case "total_premium": return item.total_premium;
+    case "sweeps": return item.sweeps;
+    case "sector": return item.sector || item.issue_type || "";
+    default: return null;
+  }
+};
+
 function DiscoverSections() {
   const { data, syncing, error, lastSync } = useDiscover(true);
   const candidates = data?.candidates ?? [];
+  const { sorted, sort, toggle } = useSort<DiscoverCandidate, DiscoverSortKey>(candidates, discoverExtract, "score", "desc");
 
   const fmtPremium = (v: number) => {
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -585,20 +604,20 @@ function DiscoverSections() {
             <table>
               <thead>
                 <tr>
-                  <th>Ticker</th>
-                  <th className="right">Score</th>
-                  <th>DP Direction</th>
-                  <th className="right">DP Strength</th>
-                  <th className="right">Buy Ratio</th>
-                  <th>Options Bias</th>
-                  <th className="right">Alerts</th>
-                  <th className="right">Premium</th>
-                  <th className="right">Sweeps</th>
-                  <th>Sector</th>
+                  <SortTh<DiscoverSortKey> label="Ticker" sortKey="ticker" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Score" sortKey="score" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="DP Direction" sortKey="dp_direction" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="DP Strength" sortKey="dp_strength" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Buy Ratio" sortKey="dp_buy_ratio" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Options Bias" sortKey="options_bias" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Alerts" sortKey="alerts" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Premium" sortKey="total_premium" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Sweeps" sortKey="sweeps" className="right" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
+                  <SortTh<DiscoverSortKey> label="Sector" sortKey="sector" activeKey={sort.key} direction={sort.direction} onToggle={toggle} />
                 </tr>
               </thead>
               <tbody>
-                {candidates.map((c) => (
+                {sorted.map((c) => (
                   <tr key={c.ticker}>
                     <td><TickerLink ticker={c.ticker} /></td>
                     <td className="right">
