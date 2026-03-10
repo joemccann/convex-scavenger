@@ -9,7 +9,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SCRIPTS_DIR="$PROJECT_ROOT/scripts"
 MANIFEST="$PROJECT_ROOT/.claude/hooks/dead-code.manifest"
-LOCK="/tmp/convex-scavenger-audit-$$-$PPID"
+LOCK="/tmp/radon-audit-$$-$PPID"
 
 # Only run once per parent process (Claude session)
 if [[ -f "$LOCK" ]]; then

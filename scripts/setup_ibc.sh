@@ -19,12 +19,12 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 IBC_VENDOR="$PROJECT_DIR/vendor/ibc"
-PLIST_NAME="com.convex-scavenger.ibc-gateway.plist"
+PLIST_NAME="com.radon.ibc-gateway.plist"
 PLIST_SRC="$PROJECT_DIR/config/$PLIST_NAME"
 PLIST_DST="$HOME/Library/LaunchAgents/$PLIST_NAME"
 IBC_CONFIG="$HOME/ibc/config.ini"
 IBC_LOG_DIR="$HOME/ibc/logs"
-LABEL="com.convex-scavenger.ibc-gateway"
+LABEL="com.radon.ibc-gateway"
 
 # --- Helpers ---
 

@@ -4,7 +4,7 @@
 <dict>
     <!-- Service identifier -->
     <key>Label</key>
-    <string>com.convex-scavenger.exit-order-service</string>
+    <string>com.radon.exit-order-service</string>
     
     <!-- Description -->
     <key>ServiceDescription</key>
@@ -14,7 +14,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Users/joemccann/dev/apps/finance/convex-scavenger/scripts/exit_order_service.py</string>
+        <string>/Users/joemccann/dev/apps/finance/radon/scripts/exit_order_service.py</string>
     </array>
     
     <!-- Run every 5 minutes -->
@@ -27,7 +27,7 @@
     
     <!-- Working directory -->
     <key>WorkingDirectory</key>
-    <string>/Users/joemccann/dev/apps/finance/convex-scavenger</string>
+    <string>/Users/joemccann/dev/apps/finance/radon</string>
     
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
@@ -35,16 +35,16 @@
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
         <key>PYTHONPATH</key>
-        <string>/Users/joemccann/dev/apps/finance/convex-scavenger</string>
+        <string>/Users/joemccann/dev/apps/finance/radon</string>
     </dict>
     
     <!-- Log stdout -->
     <key>StandardOutPath</key>
-    <string>/Users/joemccann/dev/apps/finance/convex-scavenger/logs/exit-order-service.out.log</string>
+    <string>/Users/joemccann/dev/apps/finance/radon/logs/exit-order-service.out.log</string>
     
     <!-- Log stderr -->
     <key>StandardErrorPath</key>
-    <string>/Users/joemccann/dev/apps/finance/convex-scavenger/logs/exit-order-service.err.log</string>
+    <string>/Users/joemccann/dev/apps/finance/radon/logs/exit-order-service.err.log</string>
     
     <!-- Keep alive settings - only run during work hours -->
     <!-- Note: launchd doesn't have built-in market hours, so we handle this in the script -->

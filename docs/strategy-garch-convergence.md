@@ -262,7 +262,7 @@ Also supports any file preset from `data/presets/` (150+ presets with pairs).
 
 | Rule | Limit | Rationale |
 |------|-------|-----------|
-| Max per position | 2.5% of bankroll | Standard Convex Scavenger cap |
+| Max per position | 2.5% of bankroll | Standard Radon cap |
 | Max concurrent convergence trades | 3 | Convergence trades can correlate in vol selloffs |
 | Sizing method | Fractional Kelly (0.25x) | Conservative for estimation uncertainty |
 | Correlation check | Pairs must share <50% overlap with existing positions | Avoid concentrated sector bets |

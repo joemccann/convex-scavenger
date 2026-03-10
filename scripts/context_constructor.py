@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Context Constructor — Startup context pipeline for Convex Scavenger.
+Context Constructor — Startup context pipeline for Radon.
 
 Implements the Constructor stage from the context-engineering architecture:
 1. Reads persistent facts from context/memory/fact/
@@ -72,7 +72,7 @@ def list_context_entries(directory: Path) -> list[dict]:
     return entries
 
 
-def log_transaction(operation: str, path_str: str, agent_id: str = "convex-scavenger"):
+def log_transaction(operation: str, path_str: str, agent_id: str = "radon"):
     """Append to the transaction log."""
     log_path = HISTORY_DIR / "_transactions.jsonl"
     tx = {
@@ -105,7 +105,7 @@ def construct_context(token_budget: int = 8000) -> dict:
     manifest = {
         "manifestId": str(uuid.uuid4()),
         "taskId": "session-startup",
-        "agentId": "convex-scavenger",
+        "agentId": "radon",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "tokenBudget": token_budget,
         "tokenUsed": 0,
@@ -240,7 +240,7 @@ def construct_context(token_budget: int = 8000) -> dict:
     
     # Log the construction
     if context:
-        log_transaction("construct", "session-startup", "convex-scavenger")
+        log_transaction("construct", "session-startup", "radon")
     
     return {
         "context": context,
@@ -284,7 +284,7 @@ def save_fact(key: str, value: str, confidence: float = 0.9, source: str = "sess
     }
     
     filepath.write_text(json.dumps(entry, indent=2))
-    log_transaction("write", f"memory/fact/{filename}", "convex-scavenger")
+    log_transaction("write", f"memory/fact/{filename}", "radon")
     
     return entry
 
@@ -310,7 +310,7 @@ def save_episode(summary: str, session_id: str | None = None):
     }
     
     filepath.write_text(json.dumps(entry, indent=2))
-    log_transaction("write", f"memory/episodic/{filename}", "convex-scavenger")
+    log_transaction("write", f"memory/episodic/{filename}", "radon")
     
     return entry
 

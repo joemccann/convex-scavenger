@@ -11,7 +11,7 @@ The `UW_TOKEN` environment variable should contain your API key.
 
 ---
 
-## Core Endpoints for Convex Scavenger
+## Core Endpoints for Radon
 
 ### Dark Pool / OTC Flow (Primary Edge Source)
 

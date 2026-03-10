@@ -1,4 +1,4 @@
-# Convex Scavenger - Spec & Deliverables
+# Radon - Spec & Deliverables
 
 ## Goal
 Autonomous options trading via convex, edge-driven bets sized by fractional Kelly criterion.

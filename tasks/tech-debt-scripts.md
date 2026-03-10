@@ -1,6 +1,6 @@
 # Technical Debt Inventory: `scripts/`
 
-**Repository**: convex-scavenger
+**Repository**: radon
 **Analysis Date**: 2026-03-04
 **Scope**: `scripts/` directory (22 Python files, 8,252 LOC)
 **Total Debt Items**: 16

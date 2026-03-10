@@ -11,11 +11,11 @@
 Radon should not read as a retail trading app, a hype-heavy scanner, or a generic fintech dashboard. It should feel like a calibrated instrument used to inspect, decompose, and reconstruct hidden structure from incomplete market data.
 
 ### Naming migration
-The prior "Convex Scavenger" naming should be retired in favor of a cleaner instrument hierarchy.
+The prior "Radon" naming should be retired in favor of a cleaner instrument hierarchy.
 
 | Legacy | New Radon Hierarchy | Role |
 |---|---|---|
-| Convex Scavenger | **Radon Terminal** | Primary operating environment |
+| Radon | **Radon Terminal** | Primary operating environment |
 | Scanner | **Radon Flow** | Flow reconstruction and event isolation |
 | Alerts | **Radon Signals** | Signal detection, ranking, and state changes |
 | Exposure View | **Radon Exposure** | Risk and positioning surfaces |

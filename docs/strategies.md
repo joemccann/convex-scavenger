@@ -4,7 +4,7 @@
 
 ## Overview
 
-The Convex Scavenger employs six strategies, each exploiting informational or structural advantages that institutional players leave behind.
+The Radon employs six strategies, each exploiting informational or structural advantages that institutional players leave behind.
 
 | Strategy | Edge Source | Instrument | Timeframe | Risk Profile |
 |----------|-------------|------------|-----------|--------------|

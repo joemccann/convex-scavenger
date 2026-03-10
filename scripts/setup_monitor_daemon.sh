@@ -13,14 +13,14 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-PLIST_NAME="com.convex-scavenger.monitor-daemon.plist"
+PLIST_NAME="com.radon.monitor-daemon.plist"
 PLIST_SRC="$PROJECT_DIR/config/$PLIST_NAME"
 PLIST_DST="$HOME/Library/LaunchAgents/$PLIST_NAME"
 LOG_DIR="$PROJECT_DIR/logs"
 LOG_FILE="$LOG_DIR/monitor-daemon.log"
 
 # Also manage old exit order service
-OLD_PLIST_NAME="com.convex-scavenger.exit-order-service.plist"
+OLD_PLIST_NAME="com.radon.exit-order-service.plist"
 OLD_PLIST_DST="$HOME/Library/LaunchAgents/$OLD_PLIST_NAME"
 
 install() {
@@ -73,7 +73,7 @@ status() {
     fi
     
     # Check launchctl
-    if launchctl list | grep -q "com.convex-scavenger.monitor-daemon"; then
+    if launchctl list | grep -q "com.radon.monitor-daemon"; then
         echo "Service: RUNNING"
         
         # Show last run from state file

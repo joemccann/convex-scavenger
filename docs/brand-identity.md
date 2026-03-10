@@ -28,7 +28,7 @@ This document is the enforced reference for all UI and asset work. The full bran
 
 | Legacy | Radon Name | Role |
 |--------|-----------|------|
-| Convex Scavenger | **Radon Terminal** | Primary operating environment |
+| Radon | **Radon Terminal** | Primary operating environment |
 | Scanner | **Radon Flow** | Flow reconstruction and event isolation |
 | Alerts | **Radon Signals** | Signal detection, ranking, state changes |
 | Exposure View | **Radon Exposure** | Risk and positioning surfaces |

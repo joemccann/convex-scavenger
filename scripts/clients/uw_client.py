@@ -121,7 +121,7 @@ class UWClient:
             {
                 "Authorization": f"Bearer {self._token}",
                 "Accept": "application/json",
-                "User-Agent": "convex-scavenger/2.0",
+                "User-Agent": "radon/2.0",
             }
         )
 

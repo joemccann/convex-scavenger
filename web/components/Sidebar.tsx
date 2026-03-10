@@ -18,7 +18,7 @@ export default function Sidebar({ activeSection, actionTone, ibConnected = true,
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="logo-icon" />
-        <span className="logo-text">Convex Scavenger</span>
+        <span className="logo-text">Radon</span>
       </div>
 
       <nav className="sidebar-nav">

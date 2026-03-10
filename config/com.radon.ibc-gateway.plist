@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.convex-scavenger.ibc-gateway</string>
+    <string>com.radon.ibc-gateway</string>
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/joemccann/dev/apps/finance/convex-scavenger/vendor/ibc/scripts/displaybannerandlaunch.sh</string>
+        <string>/Users/joemccann/dev/apps/finance/radon/vendor/ibc/scripts/displaybannerandlaunch.sh</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/joemccann/dev/apps/finance/convex-scavenger</string>
+    <string>/Users/joemccann/dev/apps/finance/radon</string>
 
     <key>EnvironmentVariables</key>
     <dict>
@@ -20,7 +20,7 @@
         <key>TWS_MAJOR_VRSN</key>
         <string>10.44</string>
         <key>IBC_PATH</key>
-        <string>/Users/joemccann/dev/apps/finance/convex-scavenger/vendor/ibc</string>
+        <string>/Users/joemccann/dev/apps/finance/radon/vendor/ibc</string>
         <key>IBC_INI</key>
         <string>/Users/joemccann/ibc/config.ini</string>
         <key>LOG_PATH</key>

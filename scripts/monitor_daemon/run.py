@@ -165,7 +165,7 @@ def list_handlers():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Extensible monitoring daemon for Convex Scavenger"
+        description="Extensible monitoring daemon for Radon"
     )
     
     parser.add_argument("--once", action="store_true",

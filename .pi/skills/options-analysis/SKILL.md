@@ -1,11 +1,11 @@
 ---
-description: On-demand options pricing and structure analysis for the Convex Scavenger trading agent
+description: On-demand options pricing and structure analysis for the Radon trading agent
 ---
 
 # Options Analysis Skill
 
 ## Description
-On-demand options pricing and structure analysis for the Convex Scavenger trading agent.
+On-demand options pricing and structure analysis for the Radon trading agent.
 
 ## Capabilities
 - Fetch and parse options chains for a given ticker

@@ -1892,7 +1892,7 @@ Save a fact after any of these events:
 **Base URL:** `https://api.unusualwhales.com`
 **Auth:** `Authorization: Bearer {UW_TOKEN}`
 
-### Key Endpoints for Convex Scavenger
+### Key Endpoints for Radon
 
 | Endpoint | Purpose |
 |----------|---------|

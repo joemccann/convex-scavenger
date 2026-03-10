@@ -319,7 +319,7 @@ The codebase uses a **hybrid approach**:
 ## 7. Project Structure
 
 ```
-convex-scavenger/
+radon/
 ├── web/                          # Next.js frontend
 │   ├── app/                      # App Router pages + API routes
 │   │   ├── api/                  # REST API endpoints

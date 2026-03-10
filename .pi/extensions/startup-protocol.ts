@@ -351,7 +351,7 @@ ${memoryContent}
 
   // Check and start Monitor Daemon service
   const checkMonitorDaemon = (cwd: string, ui: any): { running: boolean; error: string | null } => {
-    const serviceName = "com.convex-scavenger.monitor-daemon";
+    const serviceName = "com.radon.monitor-daemon";
     const plistPath = path.join(process.env.HOME || "", "Library/LaunchAgents", `${serviceName}.plist`);
     
     // Check if plist is installed
@@ -384,8 +384,8 @@ ${memoryContent}
   };
   
   const startMonitorDaemon = (cwd: string, ui: any): { success: boolean; error: string | null } => {
-    const plistPath = path.join(process.env.HOME || "", "Library/LaunchAgents", "com.convex-scavenger.monitor-daemon.plist");
-    const configPath = path.join(cwd, "config/com.convex-scavenger.monitor-daemon.plist");
+    const plistPath = path.join(process.env.HOME || "", "Library/LaunchAgents", "com.radon.monitor-daemon.plist");
+    const configPath = path.join(cwd, "config/com.radon.monitor-daemon.plist");
     
     // If plist not in LaunchAgents, copy it
     if (!fs.existsSync(plistPath)) {

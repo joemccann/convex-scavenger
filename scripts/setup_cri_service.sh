@@ -19,10 +19,10 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-PLIST_NAME="com.convex-scavenger.cri-scan.plist"
+PLIST_NAME="com.radon.cri-scan.plist"
 PLIST_SRC="$PROJECT_DIR/config/$PLIST_NAME"
 PLIST_DST="$HOME/Library/LaunchAgents/$PLIST_NAME"
-LABEL="com.convex-scavenger.cri-scan"
+LABEL="com.radon.cri-scan"
 LOG_DIR="$PROJECT_DIR/logs"
 WRAPPER="$PROJECT_DIR/scripts/run_cri_scan.sh"
 

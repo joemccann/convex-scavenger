@@ -92,7 +92,7 @@ class TestClientInit:
         headers = client._session.headers
         assert headers["Authorization"] == "Bearer test-token-abc123"
         assert headers["Accept"] == "application/json"
-        assert "convex-scavenger" in headers["User-Agent"]
+        assert "radon" in headers["User-Agent"]
 
     def test_default_timeout(self, client):
         assert client._timeout == 30
