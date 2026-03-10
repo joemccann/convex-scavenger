@@ -60,9 +60,18 @@ export {
 
 /** Build a human-readable description from an ExecutedOrder.
  *  e.g. "Long AAOI 2026-04-17 Call $45.00" */
+/** Build a human-readable description from an ExecutedOrder.
+ *  When realizedPNL is present (closing trade), show the ORIGINAL position
+ *  direction: BOT closing = was Short, SLD closing = was Long.
+ *  When no realizedPNL (opening trade): BOT = Long, SLD = Short. */
 function execOrderDescription(e: ExecutedOrder): string {
   const c = e.contract;
-  const side = e.side === "BOT" ? "Long" : e.side === "SLD" ? "Short" : e.side;
+  const isClosing = e.realizedPNL != null;
+  const side = e.side === "BOT"
+    ? (isClosing ? "Short" : "Long")
+    : e.side === "SLD"
+      ? (isClosing ? "Long" : "Short")
+      : e.side;
   if (c.secType === "OPT" && c.strike != null && c.right && c.expiry) {
     const right = c.right === "C" || c.right === "CALL" ? "Call" : c.right === "P" || c.right === "PUT" ? "Put" : c.right;
     return `${side} ${c.symbol} ${c.expiry} ${right} $${c.strike.toFixed(2)}`;

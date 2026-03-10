@@ -42,7 +42,15 @@ type BlotterTrade = {
 // Re-implement the helpers to test them (they're not exported from WorkspaceSections)
 function execOrderDescription(e: ExecutedOrder): string {
   const c = e.contract;
-  const side = e.side === "BOT" ? "Long" : e.side === "SLD" ? "Short" : e.side;
+  // When realizedPNL exists, this is a closing trade — show the original position direction.
+  // BOT closing = was Short; SLD closing = was Long.
+  // When no realizedPNL (opening trade): BOT = Long, SLD = Short.
+  const isClosing = e.realizedPNL != null;
+  const side = e.side === "BOT"
+    ? (isClosing ? "Short" : "Long")
+    : e.side === "SLD"
+      ? (isClosing ? "Long" : "Short")
+      : e.side;
   if (c.secType === "OPT" && c.strike != null && c.right && c.expiry) {
     const right = c.right === "C" || c.right === "CALL" ? "Call" : c.right === "P" || c.right === "PUT" ? "Put" : c.right;
     return `${side} ${c.symbol} ${c.expiry} ${right} $${c.strike.toFixed(2)}`;
@@ -90,33 +98,77 @@ function buildTweetText(description: string, pnl: number, pnlPct: number | null,
     parts.push(`${pSign}${pnlPct.toFixed(2)}%`);
   }
   const pnlStr = parts.join(" ");
-  return `${description} ${pnlStr}\n\nExecuted with @raaborern`;
+  return `${description} ${pnlStr}\n\nExecuted with Radon`;
 }
 
 describe("execOrderDescription", () => {
-  it("formats long option correctly", () => {
+  // --- Closing trades (realizedPNL present) → show ORIGINAL position direction ---
+
+  it("closing BOT with realizedPNL → Short (was short, buying to close)", () => {
     const order: ExecutedOrder = {
-      execId: "1", symbol: "AAOI", side: "BOT", quantity: 5,
-      avgPrice: 2.50, commission: -2.60, realizedPNL: 1234.56,
-      time: "2026-03-10T14:30:00", exchange: "SMART",
-      contract: { conId: 123, symbol: "AAOI", secType: "OPT", strike: 45, right: "C", expiry: "2026-04-17" },
+      execId: "1", symbol: "EWY", side: "BOT", quantity: 3,
+      avgPrice: 2.00, commission: -7.55, realizedPNL: 1500,
+      time: "2026-03-10T08:42:00", exchange: "SMART",
+      contract: { conId: 123, symbol: "EWY", secType: "OPT", strike: 130, right: "P", expiry: "2026-03-13" },
+    };
+    expect(execOrderDescription(order)).toBe("Short EWY 2026-03-13 Put $130.00");
+  });
+
+  it("closing SLD with realizedPNL → Long (was long, selling to close)", () => {
+    const order: ExecutedOrder = {
+      execId: "2", symbol: "AAOI", side: "SLD", quantity: 5,
+      avgPrice: 8.75, commission: -4.20, realizedPNL: 1234.56,
+      time: "2026-03-10T14:30:00", exchange: "CBOE",
+      contract: { conId: 456, symbol: "AAOI", secType: "OPT", strike: 45, right: "C", expiry: "2026-04-17" },
     };
     expect(execOrderDescription(order)).toBe("Long AAOI 2026-04-17 Call $45.00");
   });
 
-  it("formats short put correctly", () => {
+  it("closing SLD stock with realizedPNL → Long", () => {
     const order: ExecutedOrder = {
-      execId: "2", symbol: "TSLA", side: "SLD", quantity: 2,
-      avgPrice: 8.75, commission: -4.20, realizedPNL: -567.89,
+      execId: "3", symbol: "AAPL", side: "SLD", quantity: 100,
+      avgPrice: 180.00, commission: -1.00, realizedPNL: 500,
+      time: "2026-03-10T11:00:00", exchange: "ARCA",
+      contract: { conId: 101, symbol: "AAPL", secType: "STK", strike: null, right: null, expiry: null },
+    };
+    expect(execOrderDescription(order)).toBe("Long AAPL");
+  });
+
+  it("closing BOT with negative realizedPNL → Short (loss on short position)", () => {
+    const order: ExecutedOrder = {
+      execId: "4", symbol: "TSLA", side: "BOT", quantity: 2,
+      avgPrice: 15.00, commission: -4.20, realizedPNL: -567.89,
       time: "2026-03-10T10:15:00", exchange: "CBOE",
       contract: { conId: 456, symbol: "TSLA", secType: "OPT", strike: 200, right: "P", expiry: "2026-03-21" },
     };
     expect(execOrderDescription(order)).toBe("Short TSLA 2026-03-21 Put $200.00");
   });
 
-  it("handles CALL/PUT right values", () => {
+  // --- Opening trades (no realizedPNL) → show execution direction ---
+
+  it("opening BOT with null realizedPNL → Long", () => {
     const order: ExecutedOrder = {
-      execId: "3", symbol: "SPY", side: "BOT", quantity: 1,
+      execId: "5", symbol: "SPY", side: "BOT", quantity: 1,
+      avgPrice: 5.00, commission: -1.30, realizedPNL: null,
+      time: "2026-03-10T09:30:00", exchange: "SMART",
+      contract: { conId: 789, symbol: "SPY", secType: "OPT", strike: 500, right: "CALL", expiry: "2026-06-20" },
+    };
+    expect(execOrderDescription(order)).toBe("Long SPY 2026-06-20 Call $500.00");
+  });
+
+  it("opening SLD with null realizedPNL → Short", () => {
+    const order: ExecutedOrder = {
+      execId: "6", symbol: "NFLX", side: "SLD", quantity: 2,
+      avgPrice: 3.50, commission: -2.60, realizedPNL: null,
+      time: "2026-03-10T10:00:00", exchange: "SMART",
+      contract: { conId: 300, symbol: "NFLX", secType: "OPT", strike: 600, right: "C", expiry: "2026-04-17" },
+    };
+    expect(execOrderDescription(order)).toBe("Short NFLX 2026-04-17 Call $600.00");
+  });
+
+  it("handles CALL/PUT right values on closing trade", () => {
+    const order: ExecutedOrder = {
+      execId: "7", symbol: "SPY", side: "SLD", quantity: 1,
       avgPrice: 5.00, commission: -1.30, realizedPNL: 100,
       time: "2026-03-10T09:30:00", exchange: "SMART",
       contract: { conId: 789, symbol: "SPY", secType: "OPT", strike: 500, right: "CALL", expiry: "2026-06-20" },
@@ -124,19 +176,9 @@ describe("execOrderDescription", () => {
     expect(execOrderDescription(order)).toBe("Long SPY 2026-06-20 Call $500.00");
   });
 
-  it("formats stock order (no option details)", () => {
-    const order: ExecutedOrder = {
-      execId: "4", symbol: "AAPL", side: "BOT", quantity: 100,
-      avgPrice: 175.50, commission: -1.00, realizedPNL: 250,
-      time: "2026-03-10T11:00:00", exchange: "ARCA",
-      contract: { conId: 101, symbol: "AAPL", secType: "STK", strike: null, right: null, expiry: null },
-    };
-    expect(execOrderDescription(order)).toBe("Long AAPL");
-  });
-
   it("preserves unknown side values", () => {
     const order: ExecutedOrder = {
-      execId: "5", symbol: "GOOG", side: "CANCELLED", quantity: 0,
+      execId: "8", symbol: "GOOG", side: "CANCELLED", quantity: 0,
       avgPrice: null, commission: null, realizedPNL: null,
       time: "2026-03-10T12:00:00", exchange: "SMART",
       contract: { conId: 202, symbol: "GOOG", secType: "STK", strike: null, right: null, expiry: null },
@@ -280,7 +322,7 @@ describe("buildTweetText", () => {
     expect(text).toContain("+$1,234.56");
     expect(text).toContain("+47.50%");
     expect(text).toContain("Long AAOI 2026-04-17 Call $45.00");
-    expect(text).toContain("Executed with @raaborern");
+    expect(text).toContain("Executed with Radon");
   });
 
   it("includes only $ when showPct=false", () => {
@@ -310,7 +352,7 @@ describe("buildTweetText", () => {
   it("shows empty pnl portion when both disabled", () => {
     const text = buildTweetText("Long X", 100, 50, false, false);
     expect(text).toContain("Long X");
-    expect(text).toContain("Executed with @raaborern");
+    expect(text).toContain("Executed with Radon");
     expect(text).not.toContain("$");
     expect(text).not.toContain("%");
   });
