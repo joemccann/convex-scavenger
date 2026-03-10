@@ -69,7 +69,7 @@ export default function LandingPage() {
         if (prev === "PORTFOLIO") return "FLOW";
         return "REGIME";
       });
-    }, 8000); // Slower cycle to appreciate internal animations
+    }, 10000); // Slower cycle to appreciate the dense data
     return () => clearInterval(interval);
   }, [isAutoPlaying]);
 
@@ -107,21 +107,40 @@ export default function LandingPage() {
     ]
   }), [tick]);
 
-  const portfolioData = useMemo(() => [
-    { t: "AAOI", s: "Long Call $105", q: "50", u: (123.36 + (Math.random() * 0.4 - 0.2)).toFixed(2), l: (22.20 + (Math.random() * 0.1 - 0.05)).toFixed(2), d: "+64.08%", p: "+43,350", e: "2026-03-20" },
-    { t: "AAPL", s: "Bull Call Spread", q: "100", u: (262.15 + (Math.random() * 0.2 - 0.1)).toFixed(2), l: (4.65 + (Math.random() * 0.05 - 0.02)).toFixed(2), d: "+11.24%", p: "+4,700", e: "2026-04-17" },
-    { t: "ALAB", s: "Long Call $120", q: "5", u: (120.08 + (Math.random() * 0.3 - 0.15)).toFixed(2), l: (37.55 + (Math.random() * 0.1 - 0.05)).toFixed(2), d: "-2.80%", p: "+540", e: "2027-01-15" },
-    { t: "AMD", s: "Long Call $195", q: "20", u: (205.65 + (Math.random() * 0.5 - 0.25)).toFixed(2), l: (49.85 + (Math.random() * 0.2 - 0.1)).toFixed(2), d: "+4.22%", p: "+4,040", e: "2027-01-15" },
-    { t: "BRZE", s: "Long Call $22.5", q: "120", u: (19.01 + (Math.random() * 0.1 - 0.05)).toFixed(2), l: (0.18 + (Math.random() * 0.02 - 0.01)).toFixed(2), d: "-59.30%", p: "-11,500", e: "2026-03-20" },
+  const portfolioData = useMemo(() => ({
+    defined: [
+      { t: "AAOI", s: "Long Call $105", q: "50", u: (123.36 + (Math.random() * 0.4 - 0.2)).toFixed(2), l: (22.20 + (Math.random() * 0.1 - 0.05)).toFixed(2), d: "+64.08%", p: "+43,350", e: "2026-03-20" },
+      { t: "AAPL", s: "Bull Call Spread", q: "100", u: (262.15 + (Math.random() * 0.2 - 0.1)).toFixed(2), l: (4.65 + (Math.random() * 0.05 - 0.02)).toFixed(2), d: "+11.24%", p: "+4,700", e: "2026-04-17" },
+      { t: "AMD", s: "Long Call $195", q: "20", u: (205.65 + (Math.random() * 0.5 - 0.25)).toFixed(2), l: (49.85 + (Math.random() * 0.2 - 0.1)).toFixed(2), d: "+4.22%", p: "+4,040", e: "2027-01-15" },
+    ],
+    undefined: [
+      { t: "APO", s: "Risk Reversal", q: "25", u: (108.13 + (Math.random() * 0.3)).toFixed(2), l: "0.55", d: "+450.0%", p: "+2,335", e: "2026-04-17" },
+      { t: "IGV", s: "Synthetic Long", q: "40", u: (85.60 + (Math.random() * 0.2)).toFixed(2), l: "-3.60", d: "-122.2%", p: "+5,144", e: "2026-05-15" },
+      { t: "IWM", s: "Risk Reversal", q: "6", u: (254.50 + (Math.random() * 0.4)).toFixed(2), l: "1.06", d: "+325.5%", p: "+1,840", e: "2026-04-17" },
+    ],
+    equity: [
+      { t: "EC", s: "Stock (5000.0)", q: "5000", u: "12.37", l: (12.83 + (Math.random() * 0.05)).toFixed(2), d: "-0.08%", p: "+2,288", e: "---" },
+      { t: "MSFT", s: "Stock (1000.0)", q: "1000", u: "468.51", l: (404.44 + (Math.random() * 0.2)).toFixed(2), d: "-1.21%", p: "-64,065", e: "---" },
+      { t: "NAK", s: "Stock (18628.0)", q: "18628", u: "3.04", l: (1.40 + (Math.random() * 0.01)).toFixed(2), d: "+3.82%", p: "-30,563", e: "---" },
+    ]
+  }), [tick]);
+
+  const flowData = useMemo(() => [
+    { t: "TMUS", p: "Bull Call Spread", f: "83% ACCUM", s: [8, 9, 9, 7, 8, 9, 6], sig: "Strong institutional accumulation" },
+    { t: "GOOG", p: "Bull Call Spread", f: "80% ACCUM", s: [7, 8, 8, 9, 9, 8, 7], sig: "Strong institutional accumulation" },
+    { t: "IGV", p: "Synthetic Long", f: "77% ACCUM", s: [8, 6, 4, 7, 9, 8, 7], sig: "Moderate accumulation signal" },
+    { t: "IWM", p: "Risk Reversal", f: "74% ACCUM", s: [6, 7, 8, 8, 7, 6, 5], sig: "Moderate accumulation signal" },
+    { t: "BRZE", p: "Long Call", f: "73% DISTRIB", s: [4, 3, 2, 5, 4, 3, 2], sig: "Weak distribution signal", type: 'distrib' },
+    { t: "AAPL", p: "Bull Call Spread", f: "66% ACCUM", s: [5, 6, 7, 5, 4, 5, 6], sig: "Weak accumulation signal" },
+    { t: "RR", p: "Stock (10000.0)", f: "64% ACCUM", s: [4, 5, 6, 5, 4, 5, 4], sig: "Weak accumulation signal" },
+    { t: "PLTR", p: "Long Call", f: "63% ACCUM", s: [3, 4, 5, 4, 3, 4, 3], sig: "Weak accumulation signal" },
   ], [tick]);
 
   const renderMockView = () => {
     switch (activeView) {
       case "REGIME":
         return (
-          <motion.div 
-            key="regime" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6"
-          >
+          <motion.div key="regime" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6">
             <div className="border border-grid p-6 bg-panel/50 relative overflow-hidden">
               <motion.div animate={{ x: ["0%", "100%"] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-accent/5 to-transparent pointer-events-none" />
               <div className="flex justify-between items-start mb-2 relative z-10">
@@ -179,43 +198,34 @@ export default function LandingPage() {
         );
       case "FLOW":
         return (
-          <motion.div 
-            key="flow" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6"
-          >
-            <div className="flex items-center justify-between mb-2">
+          <motion.div key="flow" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4 overflow-y-auto max-h-full pr-2 scrollbar-thin scrollbar-thumb-grid">
+            <div className="flex items-center justify-between">
               <div className="text-[10px] font-mono text-primary flex items-center gap-2 uppercase tracking-widest">
                 <Shield size={12} className="text-accent" /> Flow Analysis Matrix
               </div>
+              <div className="text-[8px] font-mono text-muted uppercase tracking-widest">19 POSITIONS</div>
             </div>
             <div className="border border-grid bg-panel/30">
-              <table className="w-full text-left font-mono text-[10px] border-collapse">
+              <table className="w-full text-left font-mono text-[9px] border-collapse">
                 <thead>
-                  <tr className="border-b border-grid text-muted">
-                    <th className="p-4 font-medium uppercase tracking-widest text-[8px]">Ticker</th>
-                    <th className="p-4 font-medium uppercase tracking-widest text-[8px]">Position</th>
-                    <th className="p-4 font-medium uppercase tracking-widest text-[8px]">Flow Strength</th>
-                    <th className="p-4 font-medium uppercase tracking-widest text-[8px]">Signal Confidence</th>
+                  <tr className="border-b border-grid text-muted bg-panel-raised/50">
+                    <th className="p-3 font-medium uppercase tracking-widest text-[8px]">Ticker</th>
+                    <th className="p-3 font-medium uppercase tracking-widest text-[8px]">Position</th>
+                    <th className="p-3 font-medium uppercase tracking-widest text-[8px]">Flow</th>
+                    <th className="p-3 font-medium uppercase tracking-widest text-[8px]">Strength</th>
+                    <th className="p-3 font-medium uppercase tracking-widest text-[8px]">Signal Note</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { t: "IGV", p: "Long Call", f: "77% ACCUM", s: [8, 6, 4, 7, 9, 8, 7], sig: "Moderate accumulation signal" },
-                    { t: "MSFT", p: "Equity (1000)", f: "76% ACCUM", s: [9, 9, 3, 5, 8, 4, 6], sig: "Moderate accumulation signal" },
-                    { t: "NAK", p: "Equity (18k)", f: "73% ACCUM", s: [2, 2, 7, 5, 4, 8, 9], sig: "Moderate accumulation signal" },
-                    { t: "SOFI", p: "Long Call", f: "65% ACCUM", s: [5, 5, 5, 5, 4, 5, 6], sig: "Strong 6-day sustained accumulation" },
-                  ].map((row, i) => (
-                    <tr key={i} className="border-b border-grid/50">
-                      <td className="p-4 font-bold">{row.t}</td>
-                      <td className="p-4 text-muted">{row.p}</td>
-                      <td className="p-4"><Sparkline data={row.s} /></td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                           <div className="h-1 flex-1 bg-grid rounded-full overflow-hidden">
-                              <motion.div initial={{ width: 0 }} animate={{ width: row.f }} transition={{ duration: 1, delay: i * 0.1 }} className="h-full bg-accent" />
-                           </div>
-                           <span className="text-accent font-bold text-[9px]">{row.f}</span>
-                        </div>
+                  {flowData.map((row, i) => (
+                    <tr key={i} className="border-b border-grid/30 hover:bg-panel-raised/40 transition-colors">
+                      <td className="p-3 font-bold text-primary">{row.t}</td>
+                      <td className="p-3 text-muted">{row.p}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 border ${row.type === 'distrib' ? 'border-negative/30 text-negative' : 'border-accent/30 text-accent'} text-[8px] font-bold`}>{row.f}</span>
                       </td>
+                      <td className="p-3"><Sparkline data={row.s} color={row.type === 'distrib' ? 'var(--color-negative)' : 'var(--color-accent)'} /></td>
+                      <td className="p-3 text-muted italic">{row.sig}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,39 +235,57 @@ export default function LandingPage() {
         );
       case "PORTFOLIO":
         return (
-          <motion.div 
-            key="portfolio" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4 overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-[10px] font-mono text-primary flex items-center gap-2 uppercase tracking-widest">
-                <Activity size={12} className="text-accent" /> Defined Risk Matrix
+          <motion.div key="portfolio" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-6 overflow-y-auto max-h-full pr-2 scrollbar-thin scrollbar-thumb-grid">
+            {/* Undefined Risk Section */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] font-mono text-warn flex items-center gap-2 uppercase tracking-widest">
+                  <Zap size={12} /> Undefined Risk Positions
+                </div>
+                <div className="text-[8px] font-mono text-muted uppercase tracking-widest">3 POSITIONS</div>
+              </div>
+              <div className="border border-grid bg-panel/30">
+                <table className="w-full text-left font-mono text-[9px] border-collapse">
+                  <tbody className="divide-y divide-grid/30">
+                    {portfolioData.undefined.map((row, i) => (
+                      <tr key={i} className="hover:bg-panel-raised/40 transition-colors">
+                        <td className="p-3 font-bold text-warn">{row.t}</td>
+                        <td className="p-3 text-muted">{row.s}</td>
+                        <td className="p-3"><FlashingValue value={row.u} /></td>
+                        <td className="p-3 font-bold"><FlashingValue value={row.l} /></td>
+                        <td className="p-3 text-right text-signal-strong font-bold">{row.p}</td>
+                        <td className="p-3 text-right text-muted">{row.e}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-            <div className="border border-grid bg-panel/30 overflow-x-auto">
-              <table className="w-full text-left font-mono text-[9px] border-collapse whitespace-nowrap">
-                <thead>
-                  <tr className="border-b border-grid text-muted bg-panel-raised/50 text-[8px]">
-                    <th className="p-3 font-medium uppercase">Ticker</th>
-                    <th className="p-3 font-medium uppercase">Structure</th>
-                    <th className="p-3 font-medium uppercase">Underlying</th>
-                    <th className="p-3 font-medium uppercase">Last</th>
-                    <th className="p-3 font-medium uppercase text-right">P&L</th>
-                    <th className="p-3 font-medium uppercase text-right">Exp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {portfolioData.map((row, i) => (
-                    <tr key={i} className="border-b border-grid/30 hover:bg-panel-raised/50 transition-colors">
-                      <td className="p-3 font-bold text-accent">{row.t}</td>
-                      <td className="p-3 text-muted">{row.s}</td>
-                      <td className="p-3 font-mono"><FlashingValue value={row.u} /></td>
-                      <td className="p-3 font-bold"><FlashingValue value={row.l} /></td>
-                      <td className={`p-3 text-right font-bold ${row.p.startsWith('+') ? 'text-signal-strong' : 'text-negative'}`}>{row.p}</td>
-                      <td className="p-3 text-muted">{row.e}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+            {/* Equity Section */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] font-mono text-primary flex items-center gap-2 uppercase tracking-widest">
+                  <Activity size={12} className="text-accent" /> Equity Positions
+                </div>
+                <div className="text-[8px] font-mono text-muted uppercase tracking-widest">6 POSITIONS</div>
+              </div>
+              <div className="border border-grid bg-panel/30">
+                <table className="w-full text-left font-mono text-[9px] border-collapse">
+                  <tbody className="divide-y divide-grid/30">
+                    {portfolioData.equity.map((row, i) => (
+                      <tr key={i} className="hover:bg-panel-raised/40 transition-colors">
+                        <td className="p-3 font-bold text-accent">{row.t}</td>
+                        <td className="p-3 text-muted">{row.s}</td>
+                        <td className="p-3 text-muted">{row.u}</td>
+                        <td className="p-3 font-bold"><FlashingValue value={row.l} /></td>
+                        <td className={`p-3 text-right font-bold ${row.p.startsWith('+') ? 'text-signal-strong' : 'text-negative'}`}>{row.p}</td>
+                        <td className="p-3 text-right text-muted">{row.e}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </motion.div>
         );
