@@ -26,11 +26,11 @@ function posColor(v: number): string {
 }
 
 function pctileBg(v: number): string {
-  if (v <= 10) return "rgba(239,68,68,0.25)";
-  if (v <= 25) return "rgba(239,68,68,0.12)";
-  if (v <= 40) return "rgba(245,158,11,0.12)";
-  if (v >= 75) return "rgba(34,197,94,0.25)";
-  if (v >= 60) return "rgba(34,197,94,0.12)";
+  if (v <= 10) return "rgba(232,93,108,0.25)";
+  if (v <= 25) return "rgba(232,93,108,0.12)";
+  if (v <= 40) return "rgba(245,166,35,0.12)";
+  if (v >= 75) return "rgba(5,173,152,0.25)";
+  if (v >= 60) return "rgba(5,173,152,0.12)";
   return "transparent";
 }
 
@@ -133,7 +133,7 @@ export default function SortableCtaTable({ sectionKey, rows }: SortableCtaTableP
             marginLeft: "8px",
             fontSize: "9px",
             fontWeight: 400,
-            background: "rgba(255,255,255,0.06)",
+            background: "rgba(226,232,240,0.06)",
             padding: "1px 5px",
             letterSpacing: "0.04em",
           }}

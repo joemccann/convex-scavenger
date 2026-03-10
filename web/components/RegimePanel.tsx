@@ -46,12 +46,12 @@ type BadgeVariant = "live" | "intraday" | "daily";
 function LiveBadge({ live, variant }: { live: boolean; variant?: BadgeVariant }) {
   const resolved: BadgeVariant = variant ?? (live ? "live" : "daily");
   const bg =
-    resolved === "live" ? "rgba(34,197,94,0.15)"
-    : resolved === "intraday" ? "rgba(59,130,246,0.15)"
-    : "rgba(255,255,255,0.06)";
+    resolved === "live" ? "rgba(5,173,152,0.15)"
+    : resolved === "intraday" ? "rgba(139,92,246,0.15)"
+    : "rgba(226,232,240,0.06)";
   const color =
     resolved === "live" ? "var(--positive)"
-    : resolved === "intraday" ? "var(--info, #3b82f6)"
+    : resolved === "intraday" ? "var(--info, #8B5CF6)"
     : "var(--text-muted)";
   const label =
     resolved === "live" ? "LIVE"
@@ -286,13 +286,13 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
             alignItems: "center",
             gap: "8px",
             padding: "6px 12px",
-            background: "rgba(245,158,11,0.12)",
-            color: "var(--warning, #f59e0b)",
+            background: "rgba(245,166,35,0.12)",
+            color: "var(--warning, #F5A623)",
             fontSize: "11px",
             fontFamily: "var(--font-mono, monospace)",
             letterSpacing: "0.08em",
             fontWeight: 600,
-            borderLeft: "2px solid var(--warning, #f59e0b)",
+            borderLeft: "2px solid var(--warning, #F5A623)",
           }}
         >
           MARKET CLOSED — END OF DAY VALUES

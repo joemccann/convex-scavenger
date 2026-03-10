@@ -28,9 +28,9 @@ const MARGIN = { top: 16, right: 60, bottom: 32, left: 48 };
 const HEIGHT = 220;
 
 function vixColor(vix: number): string {
-  if (vix < 20) return "#22c55e";
-  if (vix <= 30) return "#f59e0b";
-  return "#ef4444";
+  if (vix < 20) return "#05AD98";
+  if (vix <= 30) return "#F5A623";
+  return "#E85D6C";
 }
 
 export default function CriHistoryChart({ history, criScore }: CriHistoryChartProps) {
@@ -105,7 +105,7 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
       .attr("x2", innerW)
       .attr("y1", (d) => yVix(d))
       .attr("y2", (d) => yVix(d))
-      .attr("stroke", "#1C1C1C")
+      .attr("stroke", "#1e293b")
       .attr("stroke-width", 1);
 
     // CRI score bars (if criScore provided, render as a horizontal band)
@@ -118,14 +118,14 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
         .attr("x2", innerW)
         .attr("y1", criY)
         .attr("y2", criY)
-        .attr("stroke", "#444444")
+        .attr("stroke", "#475569")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "3,3");
 
       g.append("text")
         .attr("x", innerW + 4)
         .attr("y", criY + 3)
-        .attr("fill", "#666666")
+        .attr("fill", "#94a3b8")
         .attr("font-size", "9px")
         .attr("font-family", "JetBrains Mono, monospace")
         .text(`CRI ${criScore.toFixed(0)}`);
@@ -141,7 +141,7 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
     g.append("path")
       .datum(history)
       .attr("fill", "none")
-      .attr("stroke", "#555555")
+      .attr("stroke", "#64748b")
       .attr("stroke-width", 1.5)
       .attr("d", spyLine);
 
@@ -170,7 +170,7 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
       .attr("cy", (d) => yVix(d.vix))
       .attr("r", 2.5)
       .attr("fill", (d) => vixColor(d.vix))
-      .attr("stroke", "#050505")
+      .attr("stroke", "#0a0f14")
       .attr("stroke-width", 1);
 
     // Left y-axis (VIX)
@@ -183,10 +183,10 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
       .call(yAxisLeft)
       .call((axis) => {
         axis.select(".domain").remove();
-        axis.selectAll(".tick line").attr("stroke", "#1C1C1C");
+        axis.selectAll(".tick line").attr("stroke", "#1e293b");
         axis
           .selectAll(".tick text")
-          .attr("fill", "#666666")
+          .attr("fill", "#94a3b8")
           .attr("font-size", "10px")
           .attr("font-family", "JetBrains Mono, monospace");
       });
@@ -202,10 +202,10 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
       .call(yAxisRight)
       .call((axis) => {
         axis.select(".domain").remove();
-        axis.selectAll(".tick line").attr("stroke", "#1C1C1C");
+        axis.selectAll(".tick line").attr("stroke", "#1e293b");
         axis
           .selectAll(".tick text")
-          .attr("fill", "#555555")
+          .attr("fill", "#64748b")
           .attr("font-size", "10px")
           .attr("font-family", "JetBrains Mono, monospace");
       });
@@ -224,11 +224,11 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
       .attr("transform", `translate(0,${innerH})`)
       .call(xAxis)
       .call((axis) => {
-        axis.select(".domain").attr("stroke", "#1C1C1C");
-        axis.selectAll(".tick line").attr("stroke", "#1C1C1C");
+        axis.select(".domain").attr("stroke", "#1e293b");
+        axis.selectAll(".tick line").attr("stroke", "#1e293b");
         axis
           .selectAll(".tick text")
-          .attr("fill", "#666666")
+          .attr("fill", "#94a3b8")
           .attr("font-size", "10px")
           .attr("font-family", "JetBrains Mono, monospace");
       });
@@ -236,8 +236,8 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
     // Legend
     const legendY = -4;
     const legendItems: { label: string; color: string }[] = [
-      { label: "VIX", color: "#22c55e" },
-      { label: "SPY", color: "#555555" },
+      { label: "VIX", color: "#05AD98" },
+      { label: "SPY", color: "#64748b" },
     ];
     legendItems.forEach((item, i) => {
       const lx = i * 56;
@@ -251,7 +251,7 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
       g.append("text")
         .attr("x", lx + 15)
         .attr("y", legendY + 4)
-        .attr("fill", "#666666")
+        .attr("fill", "#94a3b8")
         .attr("font-size", "9px")
         .attr("font-family", "JetBrains Mono, monospace")
         .text(item.label);
@@ -302,7 +302,7 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
             alignItems: "center",
             justifyContent: "center",
             height: HEIGHT,
-            color: "#666666",
+            color: "#94a3b8",
             fontFamily: "JetBrains Mono, monospace",
             fontSize: 11,
             letterSpacing: "0.05em",
@@ -323,8 +323,8 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
               ? { right: width - tooltip.x + 12 }
               : { left: tooltip.x + 12 }),
             top: tooltip.y - 10,
-            background: "var(--bg-panel, #111111)",
-            border: "1px solid var(--border-dim, #1C1C1C)",
+            background: "var(--bg-panel, #0f1519)",
+            border: "1px solid var(--border-dim, #1e293b)",
             padding: "8px 10px",
             pointerEvents: "none",
             zIndex: 10,
@@ -335,7 +335,7 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
             style={{
               fontFamily: "JetBrains Mono, monospace",
               fontSize: 10,
-              color: "#666666",
+              color: "#94a3b8",
               marginBottom: 4,
               letterSpacing: "0.05em",
             }}
@@ -345,17 +345,17 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
           {(
             [
               { label: "VIX", value: tooltip.d.vix.toFixed(2), color: vixColor(tooltip.d.vix) },
-              { label: "VVIX", value: tooltip.d.vvix.toFixed(2), color: "#aaaaaa" },
-              { label: "SPY", value: `$${tooltip.d.spy.toFixed(2)}`, color: "#888888" },
+              { label: "VVIX", value: tooltip.d.vvix.toFixed(2), color: "#94a3b8" },
+              { label: "SPY", value: `$${tooltip.d.spy.toFixed(2)}`, color: "#94a3b8" },
               {
                 label: "SPX/MA%",
                 value: `${tooltip.d.spx_vs_ma_pct >= 0 ? "+" : ""}${tooltip.d.spx_vs_ma_pct.toFixed(2)}%`,
-                color: tooltip.d.spx_vs_ma_pct >= 0 ? "#22c55e" : "#ef4444",
+                color: tooltip.d.spx_vs_ma_pct >= 0 ? "#05AD98" : "#E85D6C",
               },
               {
                 label: "VIX 5D ROC",
                 value: `${tooltip.d.vix_5d_roc >= 0 ? "+" : ""}${tooltip.d.vix_5d_roc.toFixed(2)}%`,
-                color: tooltip.d.vix_5d_roc >= 0 ? "#ef4444" : "#22c55e",
+                color: tooltip.d.vix_5d_roc >= 0 ? "#E85D6C" : "#05AD98",
               },
             ] as { label: string; value: string; color: string }[]
           ).map((row) => (
@@ -367,11 +367,11 @@ export default function CriHistoryChart({ history, criScore }: CriHistoryChartPr
                 gap: 12,
                 fontFamily: "JetBrains Mono, monospace",
                 fontSize: 10,
-                color: "#888888",
+                color: "#94a3b8",
                 lineHeight: "1.6",
               }}
             >
-              <span style={{ color: "#555555" }}>{row.label}</span>
+              <span style={{ color: "#64748b" }}>{row.label}</span>
               <span style={{ color: row.color }}>{row.value}</span>
             </div>
           ))}

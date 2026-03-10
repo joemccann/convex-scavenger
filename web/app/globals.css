@@ -1181,7 +1181,7 @@ td.negative, .negative {
 .bullish { color: var(--positive); }
 .bearish { color: var(--negative); }
 .lean-bullish { color: var(--positive); opacity: 0.7; }
-.ib-import { color: var(--informational, #3b82f6); }
+.ib-import { color: var(--info, #8B5CF6); }
 
 /* ── Sync button (journal IB sync) ── */
 .btn-sync {
@@ -1190,15 +1190,15 @@ td.negative, .negative {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--informational, #3b82f6);
+  color: var(--info, #8B5CF6);
   background: transparent;
-  border: 1px solid var(--informational, #3b82f6);
+  border: 1px solid var(--info, #8B5CF6);
   padding: 2px 8px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .btn-sync:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(139, 92, 246, 0.1);
 }
 .btn-sync:disabled {
   opacity: 0.5;
@@ -1532,7 +1532,7 @@ tr.leg-row td {
 }
 
 .btn-modify:not(:disabled):hover {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .btn-cancel {
@@ -2056,11 +2056,11 @@ tr.leg-row td {
 .ratings-bar-wrap { display: flex; flex-direction: column; gap: 4px; }
 .ratings-bar { display: flex; height: 24px; border: 1px solid var(--border-dim); overflow: hidden; }
 .ratings-bar-seg { display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 10px; font-weight: 500; min-width: 20px; }
-.ratings-strong-buy { background: #15803d; color: #fff; }
+.ratings-strong-buy { background: #048A7A; color: #fff; }
 .ratings-buy { background: var(--positive); color: #000; }
-.ratings-hold { background: #a3a3a3; color: #000; }
+.ratings-hold { background: #475569; color: #fff; }
 .ratings-sell { background: var(--negative); color: #fff; }
-.ratings-strong-sell { background: #991b1b; color: #fff; }
+.ratings-strong-sell { background: #9F1239; color: #fff; }
 .ratings-bar-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
 .ratings-targets { display: flex; flex-direction: column; gap: 8px; }
 .ratings-targets-title { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
@@ -2089,8 +2089,8 @@ tr.leg-row td {
     -45deg,
     transparent,
     transparent 8px,
-    rgba(59, 130, 246, 0.03) 8px,
-    rgba(59, 130, 246, 0.03) 16px
+    rgba(139, 92, 246, 0.03) 8px,
+    rgba(139, 92, 246, 0.03) 16px
   );
 }
 
@@ -2195,7 +2195,7 @@ tr {
 /* Detail table */
 .seasonality-detail { display: flex; flex-direction: column; gap: 8px; }
 .seasonality-detail-title { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
-.seasonality-row-current { background: rgba(59, 130, 246, 0.05); }
+.seasonality-row-current { background: rgba(139, 92, 246, 0.05); }
 .seasonality-table-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 500; padding: 2px 6px; letter-spacing: 0.03em; }
 .seasonality-table-badge.seasonality-favorable { color: var(--positive); }
 .seasonality-table-badge.seasonality-unfavorable { color: var(--negative); }

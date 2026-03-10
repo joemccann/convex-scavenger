@@ -2,15 +2,15 @@
  *  No CSS variables — Satori requires literal values. */
 
 export const OG = {
-  bg: "#050505",
-  panel: "#0A0A0A",
-  border: "#1C1C1C",
-  text: "#F0F0F0",
-  muted: "#757575",
-  positive: "#22C55E",
-  negative: "#EF4444",
-  warning: "#F59E0B",
-  info: "#3B82F6",
+  bg: "#0a0f14",
+  panel: "#0f1519",
+  border: "#1e293b",
+  text: "#e2e8f0",
+  muted: "#94a3b8",
+  positive: "#05AD98",
+  negative: "#E85D6C",
+  warning: "#F5A623",
+  info: "#8B5CF6",
 } as const;
 
 export function posColor(v: number): string {
@@ -20,11 +20,11 @@ export function posColor(v: number): string {
 }
 
 export function pctileBg(v: number): string {
-  if (v <= 10) return "rgba(239,68,68,0.25)";
-  if (v <= 25) return "rgba(239,68,68,0.12)";
-  if (v <= 40) return "rgba(245,158,11,0.12)";
-  if (v >= 75) return "rgba(34,197,94,0.25)";
-  if (v >= 60) return "rgba(34,197,94,0.12)";
+  if (v <= 10) return "rgba(232,93,108,0.25)";
+  if (v <= 25) return "rgba(232,93,108,0.12)";
+  if (v <= 40) return "rgba(245,166,35,0.12)";
+  if (v >= 75) return "rgba(5,173,152,0.25)";
+  if (v >= 60) return "rgba(5,173,152,0.12)";
   return "transparent";
 }
 

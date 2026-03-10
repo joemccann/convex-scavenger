@@ -8,31 +8,31 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-base: #050505; --bg-panel: #0A0A0A; --bg-hover: #141414;
-      --border-dim: #1C1C1C; --border-focus: #333333;
-      --text-primary: #F0F0F0; --text-muted: #666666;
-      --accent-bg: #FFFFFF; --accent-text: #000000;
-      --positive: #00FF88; --negative: #FF4444; --warning: #FFAA00;
+      --bg-base: #0a0f14; --bg-panel: #0f1519; --bg-hover: #151c22;
+      --border-dim: #1e293b; --border-focus: #05AD98;
+      --text-primary: #e2e8f0; --text-muted: #94a3b8;
+      --accent-bg: #05AD98; --accent-text: #0a0f14;
+      --positive: #05AD98; --negative: #E85D6C; --warning: #F5A623;
     }
     @media (prefers-color-scheme: light) {
       :root:not([data-theme="dark"]) {
-        --bg-base: #F5F5F5; --bg-panel: #FFFFFF; --bg-hover: #F0F0F0;
-        --border-dim: #D9D9D9; --border-focus: #A3A3A3; --text-primary: #0A0A0A;
-        --text-muted: #6B6B6B; --accent-bg: #000000; --accent-text: #FFFFFF;
-        --positive: #00AA55; --negative: #DD2222; --warning: #CC8800;
+        --bg-base: #FFFFFF; --bg-panel: #FFFFFF; --bg-hover: #f1f5f9;
+        --border-dim: #BBBFBF; --border-focus: #05AD98; --text-primary: #000000;
+        --text-muted: #878787; --accent-bg: #05AD98; --accent-text: #FFFFFF;
+        --positive: #048A7A; --negative: #D4183D; --warning: #D4910A;
       }
     }
     [data-theme="light"] {
-      --bg-base: #F5F5F5; --bg-panel: #FFFFFF; --bg-hover: #F0F0F0;
-      --border-dim: #D9D9D9; --border-focus: #A3A3A3; --text-primary: #0A0A0A;
-      --text-muted: #6B6B6B; --accent-bg: #000000; --accent-text: #FFFFFF;
-      --positive: #00AA55; --negative: #DD2222; --warning: #CC8800;
+      --bg-base: #FFFFFF; --bg-panel: #FFFFFF; --bg-hover: #f1f5f9;
+      --border-dim: #BBBFBF; --border-focus: #05AD98; --text-primary: #000000;
+      --text-muted: #878787; --accent-bg: #05AD98; --accent-text: #FFFFFF;
+      --positive: #048A7A; --negative: #D4183D; --warning: #D4910A;
     }
     [data-theme="dark"] {
-      --bg-base: #050505; --bg-panel: #0A0A0A; --bg-hover: #141414;
-      --border-dim: #1C1C1C; --border-focus: #333333; --text-primary: #F0F0F0;
-      --text-muted: #666666; --accent-bg: #FFFFFF; --accent-text: #000000;
-      --positive: #00FF88; --negative: #FF4444; --warning: #FFAA00;
+      --bg-base: #0a0f14; --bg-panel: #0f1519; --bg-hover: #151c22;
+      --border-dim: #1e293b; --border-focus: #05AD98; --text-primary: #e2e8f0;
+      --text-muted: #94a3b8; --accent-bg: #05AD98; --accent-text: #0a0f14;
+      --positive: #05AD98; --negative: #E85D6C; --warning: #F5A623;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; background: var(--bg-base); color: var(--text-primary); }
@@ -57,7 +57,7 @@
     td { padding: 10px 12px; border-bottom: 1px solid var(--border-dim); font-size: 12px; }
     tr:hover { background: var(--bg-hover); }
     tr.highlight { background: var(--bg-hover); }
-    tr.recommended { background: rgba(0, 255, 136, 0.05); border-left: 3px solid var(--positive); }
+    tr.recommended { background: rgba(5, 173, 152, 0.05); border-left: 3px solid var(--positive); }
     .text-right { text-align: right; }
     .text-center { text-align: center; }
     .text-muted { color: var(--text-muted); }

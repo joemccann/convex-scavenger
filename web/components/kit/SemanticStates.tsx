@@ -1,12 +1,12 @@
 "use client";
 
 const SIGNAL_STATES = [
-  { label: "Baseline", bgVar: "--neutral", textDark: "#060E09", textLight: "#FFFFFF" },
-  { label: "Emerging", bgVar: "--signal-deep", textDark: "#E5F0EA", textLight: "#FFFFFF" },
-  { label: "Clear", bgVar: "--signal-core", textDark: "#060E09", textLight: "#FFFFFF" },
-  { label: "Strong", bgVar: "--signal-strong", textDark: "#060E09", textLight: "#060E09" },
-  { label: "Dislocated", bgVar: "--dislocation", textDark: "#E5F0EA", textLight: "#FFFFFF" },
-  { label: "Extreme", bgVar: "--extreme", textDark: "#E5F0EA", textLight: "#FFFFFF" },
+  { label: "Baseline", bgVar: "--neutral", textDark: "#0a0f14", textLight: "#FFFFFF" },
+  { label: "Emerging", bgVar: "--signal-deep", textDark: "#e2e8f0", textLight: "#FFFFFF" },
+  { label: "Clear", bgVar: "--signal-core", textDark: "#0a0f14", textLight: "#FFFFFF" },
+  { label: "Strong", bgVar: "--signal-strong", textDark: "#0a0f14", textLight: "#0a0f14" },
+  { label: "Dislocated", bgVar: "--dislocation", textDark: "#e2e8f0", textLight: "#FFFFFF" },
+  { label: "Extreme", bgVar: "--extreme", textDark: "#e2e8f0", textLight: "#FFFFFF" },
 ] as const;
 
 interface MetricProps {

@@ -22,8 +22,8 @@ export default function PriceChart({ ticker, prices, priceKey, theme = "dark" }:
   const closePrice = priceData?.close ?? null;
 
   const color = useMemo(() => {
-    if (!closePrice || !value) return "#22c55e";
-    return value >= closePrice ? "#22c55e" : "#ef4444";
+    if (!closePrice || !value) return "#05AD98";
+    return value >= closePrice ? "#05AD98" : "#E85D6C";
   }, [value, closePrice]);
 
   const referenceLine = useMemo(() => {
