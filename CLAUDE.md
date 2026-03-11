@@ -145,6 +145,53 @@ Price trend arrows (↑↓) in `PositionTable.tsx` and `WorkspaceSections.tsx` m
 
 ---
 
+## High-Throughput Architecture
+
+Radon is optimized for 500+ symbol monitoring with <500ms signal-to-order latency.
+
+### Parallel Scanning
+
+`scanner.py` and `discover.py` use `ThreadPoolExecutor` for concurrent UW API calls. Default 15 workers (scanner), 10 workers (discover). CLI: `--workers N`.
+
+**Rate limit handling**: Per-ticker exception catching — `UWRateLimitError` skips the ticker, doesn't crash the batch. UWClient's built-in retry + exponential backoff still applies per-request.
+
+### Atomic State Persistence
+
+All portfolio state writes use `scripts/utils/atomic_io.py`:
+- `atomic_save(path, data)` — temp file + `os.replace()` (POSIX atomic) + SHA-256 checksum
+- `verified_load(path)` — loads + verifies checksum, graceful fallback for legacy files without checksum
+
+**Writers**: `ib_sync.py`, any script that modifies `portfolio.json`
+**Readers**: `ib_reconcile.py`, `flow_analysis.py`, `free_trade_analyzer.py`, `portfolio_performance.py`, `leap_iv_scanner.py`
+
+### Batched WebSocket Relay
+
+`ib_realtime_server.js` buffers price ticks per client (last-write-wins) and flushes every 100ms as `{"type": "batch", "updates": {...}}`. Client (`usePrices.ts`) applies all updates in a single `setPrices()` call.
+
+**Impact**: 500 symbols x 10 ticks/sec = 5000 msg/s → 10 batched updates/s. Initial subscription state still sent immediately (not batched).
+
+### Vectorized Math
+
+- `kelly_size_batch()` in `kelly.py` — NumPy batch sizing for N candidates
+- `portfolio_greeks_vectorized()` in `scripts/utils/vectorized_greeks.py` — NumPy delta across all positions
+- Cross-validated against TypeScript `approxDelta()` to 10⁻¹² tolerance
+
+### Resilient IB Client
+
+`IBClient` in `scripts/clients/ib_client.py` includes:
+- **Subscription tracking**: streaming `get_quote()` calls recorded in `_subscriptions[]`
+- **Disconnect recovery**: `_on_disconnect()` with exponential backoff (5 attempts, 2ⁿs capped at 30s), restores all tracked subscriptions
+- **Pacing violations** (codes 162, 366): per-reqId retry with 10s base backoff, max 3 retries
+- **Invalid contracts** (codes 200, 354): no retry, added to `_failed_contracts` set
+
+### Incremental Sync
+
+`scripts/utils/incremental_sync.py` — compares current `portfolio.json` positions against IB by `(ticker, expiry)` key + contract count. Skips full sync when nothing changed.
+
+**Tests**: 96 total (87 Python + 9 TypeScript) across `scripts/tests/test_{scanner_parallel,discover_parallel,atomic_io,kelly_vectorized,vectorized_greeks,batched_relay,ib_resilient,ib_error_handling,incremental_sync}.py` and `web/tests/batched-prices.test.ts`.
+
+---
+
 ## Evaluation — 7 Milestones (Stop on Any Failure)
 
 ```
@@ -192,17 +239,17 @@ Price trend arrows (↑↓) in `PositionTable.tsx` and `WorkspaceSections.tsx` m
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/clients/ib_client.py` | **IBClient** — Primary IB API client (connection, orders, quotes, options, fills, flex) |
+| `scripts/clients/ib_client.py` | **IBClient** — Primary IB API client (connection, orders, quotes, options, fills, flex). Includes resilient reconnection (subscription tracking, auto-restore), pacing violation handling (codes 162/366), invalid contract tracking (200/354) |
 | `scripts/clients/uw_client.py` | **UWClient** — Primary UW API client (dark pool, flow, chain, ratings, seasonality, 50+ endpoints) |
 | `scripts/clients/menthorq_client.py` | **MenthorQClient** — MenthorQ browser automation client. Constants: `DASHBOARD_COMMANDS` (8 commands), `TICKER_TAB_COMMANDS` (5), `DASHBOARD_TICKERS` (16), `SCREENER_SLUGS` (6 categories, 45 slugs), `SUMMARY_CATEGORIES` (2), `FOREX_CARD_SLUGS` (2). Methods: `get_cta()`, `get_eod()`, `get_dashboard_image()`, `get_forex_levels()`, `get_summary()`, `get_screener()`, `get_screener_category()`, `get_all_screener_data()`, `discover_screener_cards()`, `get_futures_list/detail/contracts()`, `get_forex_list/detail()`, `get_crypto_list/detail()`, `get_intraday()`. |
 | `scripts/fetch_ticker.py` | Ticker validation |
 | `scripts/fetch_flow.py` | Dark pool + options flow |
 | `scripts/fetch_options.py` | Options chain + institutional flow |
 | `scripts/fetch_analyst_ratings.py` | Ratings, upgrades/downgrades |
-| `scripts/scanner.py` | Watchlist batch scan |
-| `scripts/discover.py` | Market-wide flow scanner |
-| `scripts/kelly.py` | Kelly calculator |
-| `scripts/ib_sync.py` | Sync live IB portfolio |
+| `scripts/scanner.py` | Watchlist batch scan (ThreadPoolExecutor, 15 workers default, `--workers` CLI arg) |
+| `scripts/discover.py` | Market-wide flow scanner (parallel by ticker + by day) |
+| `scripts/kelly.py` | Kelly calculator — scalar `kelly_size()` + vectorized `kelly_size_batch()` (NumPy) |
+| `scripts/ib_sync.py` | Sync live IB portfolio (atomic writes via `atomic_save()`) |
 | `scripts/ib_reconcile.py` | Reconcile fills vs trade_log |
 | `scripts/blotter.py` | Today's fill P&L |
 | `scripts/trade_blotter/flex_query.py` | Historical fills (365d via Flex) |
@@ -218,6 +265,11 @@ Price trend arrows (↑↓) in `PositionTable.tsx` and `WorkspaceSections.tsx` m
 | `scripts/setup_ibc.sh` | **Legacy** — superseded by `local.ibc-gateway` global service (see IB Gateway & IBC section) |
 | `scripts/setup_cri_service.sh` | CRI Scan launchd service (every 30 min, 4:05 AM–8 PM ET, Mon-Fri trading days) |
 | `scripts/run_cri_scan.sh` | Holiday-aware CRI scan wrapper for launchd |
+| `scripts/utils/atomic_io.py` | Atomic JSON save/load with SHA-256 checksum verification |
+| `scripts/utils/vectorized_greeks.py` | NumPy vectorized portfolio delta/gamma engine |
+| `scripts/utils/incremental_sync.py` | Diff-based portfolio sync (skip full sync when positions unchanged) |
+| `scripts/batched_relay.py` | Async WebSocket batch buffer (configurable flush interval, last-write-wins) |
+| `scripts/ib_realtime_server.js` | WS relay server — per-client batch buffers, 100ms flush, initial state immediate |
 | `scripts/clients/inspect_dashboard.py` | MenthorQ DOM inspector — finds chart containers, S3 image URLs per command |
 | `scripts/clients/map_nav.py` | MenthorQ navigation tree mapper — discovers all sidebar links and pages |
 | `scripts/clients/map_screeners.py` | MenthorQ screener slug discovery — maps all sub-slugs and ticker tab clicks |

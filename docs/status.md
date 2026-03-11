@@ -1,9 +1,10 @@
 # Status & Decision Log
 
 ## Last Updated
-2026-03-11T12:15:00-04:00
+2026-03-11T13:00:00-04:00
 
 ## Recent Commits
+- 2026-03-11 13:00:00 -0400 — **feat: High-throughput optimization — parallel scanning (15 workers), atomic state (SHA-256), batched WS (100ms flush), vectorized Kelly+Greeks (NumPy), resilient IB client (auto-reconnect + sub recovery), pacing/invalid contract handling. 96 new tests.**
 - 2026-03-11 12:15:00 -0400 — **fix: Rebuild `/regime` RVOL history from CRI cache, prefer richer CRI artifacts, and refresh post-close CRI caches atomically**
 - 2026-03-11 11:00:00 -0400 — **feat: Regime strip day change arrows, 20-session dual charts, portfolio arrow alignment, short leg delta sign fix**
 - 2026-03-11 10:30:00 -0400 — **fix: Regime page showing "MARKET CLOSED" during market hours — corrupt CRI cache files + stale market_open override**
