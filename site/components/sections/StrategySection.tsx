@@ -12,9 +12,8 @@ export function StrategySection() {
             Real strategy modules, not generic feature cards.
           </h2>
           <p className="mt-5 text-base leading-7 text-secondary">
-            The landing page should sell how Radon thinks. Each module exposes edge,
-            instruments, hold period, expected behavior, and command surface so the
-            user understands what is deployable and why.
+            Each module exposes its edge source, instruments, hold period, expected
+            behavior, and command surface so you understand what is deployable and why.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

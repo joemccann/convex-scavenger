@@ -17,9 +17,9 @@ export function ExecutionWorkflow() {
           No hidden handoff between signal and risk.
         </h3>
         <p className="mt-4 text-sm leading-6 text-secondary">
-          The landing page needs to sell a very specific claim: Radon does not stop
-          at ideas. It carries the operator through structure selection, bankroll
-          discipline, execution, and post-trade auditability.
+          Radon carries every position from candidate selection through structure
+          design, bankroll sizing, execution, and post-trade auditability. Nothing
+          falls through the gap between conviction and capital deployment.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <SignalPill tone="core">Source Linked</SignalPill>
