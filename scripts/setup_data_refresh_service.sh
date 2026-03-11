@@ -2,9 +2,9 @@
 #
 # Data Refresh Scheduled Service Manager
 #
-# Runs scanner.py, flow_analysis.py, and discover.py every 10 minutes,
-# 9:30 AM – 4:10 PM ET, Mon-Fri on trading days only. Uses launchd
-# StartCalendarInterval with explicit time slots (205 entries: 41 slots x 5 weekdays).
+# Runs scanner.py, flow_analysis.py, and discover.py every 15 minutes,
+# 9:30 AM – 4:15 PM ET, Mon-Fri on trading days only. Uses launchd
+# StartCalendarInterval with explicit time slots (135 entries: 27 slots x 5 weekdays).
 #
 # Usage:
 #   ./scripts/setup_data_refresh_service.sh install   - Install and load service
@@ -32,7 +32,7 @@ generate_plist() {
     for weekday in 1 2 3 4 5; do
         hour=9
         minute=30
-        while [ "$hour" -lt 16 ] || ([ "$hour" -eq 16 ] && [ "$minute" -le 10 ]); do
+        while [ "$hour" -lt 16 ] || ([ "$hour" -eq 16 ] && [ "$minute" -le 15 ]); do
             entries+="        <dict>
             <key>Hour</key>
             <integer>${hour}</integer>
@@ -42,7 +42,7 @@ generate_plist() {
             <integer>${weekday}</integer>
         </dict>
 "
-            minute=$((minute + 10))
+            minute=$((minute + 15))
             if [ "$minute" -ge 60 ]; then
                 minute=$((minute - 60))
                 hour=$((hour + 1))
@@ -118,7 +118,7 @@ install() {
     echo "  Data directory: data/"
 
     # 4. Generate plist
-    echo "  Generating plist (205 schedule entries)..."
+    echo "  Generating plist (135 schedule entries)..."
     generate_plist
 
     # 5. Validate plist
@@ -174,7 +174,7 @@ status() {
     fi
 
     # Schedule
-    echo "Schedule: Every 10 min, 9:30 AM – 4:10 PM ET, Mon-Fri"
+    echo "Schedule: Every 15 min, 9:30 AM – 4:15 PM ET, Mon-Fri"
 
     # Last refresh time for each data file
     for datafile in scanner.json flow_analysis.json discover.json; do

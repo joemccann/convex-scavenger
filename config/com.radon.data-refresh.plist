@@ -28,15 +28,7 @@
             <key>Hour</key>
             <integer>9</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>9</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -52,15 +44,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -76,15 +60,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -100,15 +76,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -124,15 +92,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -148,15 +108,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -172,15 +124,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -196,15 +140,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -220,15 +156,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -244,15 +172,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -268,15 +188,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -292,15 +204,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
             <integer>15</integer>
-            <key>Minute</key>
-            <integer>20</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -316,15 +220,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>1</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>15</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -340,7 +236,7 @@
             <key>Hour</key>
             <integer>16</integer>
             <key>Minute</key>
-            <integer>10</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>1</integer>
         </dict>
@@ -356,15 +252,7 @@
             <key>Hour</key>
             <integer>9</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>9</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -380,15 +268,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -404,15 +284,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -428,15 +300,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -452,15 +316,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -476,15 +332,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -500,15 +348,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -524,15 +364,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -548,15 +380,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -572,15 +396,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -596,15 +412,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -620,15 +428,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
             <integer>15</integer>
-            <key>Minute</key>
-            <integer>20</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -644,15 +444,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>2</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>15</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -668,7 +460,7 @@
             <key>Hour</key>
             <integer>16</integer>
             <key>Minute</key>
-            <integer>10</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>2</integer>
         </dict>
@@ -684,15 +476,7 @@
             <key>Hour</key>
             <integer>9</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>9</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -708,15 +492,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -732,15 +508,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -756,15 +524,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -780,15 +540,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -804,15 +556,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -828,15 +572,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -852,15 +588,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -876,15 +604,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -900,15 +620,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -924,15 +636,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -948,15 +652,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
             <integer>15</integer>
-            <key>Minute</key>
-            <integer>20</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -972,15 +668,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>3</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>15</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -996,7 +684,7 @@
             <key>Hour</key>
             <integer>16</integer>
             <key>Minute</key>
-            <integer>10</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>3</integer>
         </dict>
@@ -1012,15 +700,7 @@
             <key>Hour</key>
             <integer>9</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>9</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1036,15 +716,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1060,15 +732,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1084,15 +748,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1108,15 +764,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1132,15 +780,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1156,15 +796,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1180,15 +812,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1204,15 +828,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1228,15 +844,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1252,15 +860,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1276,15 +876,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
             <integer>15</integer>
-            <key>Minute</key>
-            <integer>20</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1300,15 +892,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>4</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>15</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1324,7 +908,7 @@
             <key>Hour</key>
             <integer>16</integer>
             <key>Minute</key>
-            <integer>10</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>4</integer>
         </dict>
@@ -1340,15 +924,7 @@
             <key>Hour</key>
             <integer>9</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>9</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1364,15 +940,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1388,15 +956,7 @@
             <key>Hour</key>
             <integer>10</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>10</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1412,15 +972,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1436,15 +988,7 @@
             <key>Hour</key>
             <integer>11</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>11</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1460,15 +1004,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1484,15 +1020,7 @@
             <key>Hour</key>
             <integer>12</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>12</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1508,15 +1036,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1532,15 +1052,7 @@
             <key>Hour</key>
             <integer>13</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>13</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1556,15 +1068,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>20</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1580,15 +1084,7 @@
             <key>Hour</key>
             <integer>14</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>14</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1604,15 +1100,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>10</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
             <integer>15</integer>
-            <key>Minute</key>
-            <integer>20</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1628,15 +1116,7 @@
             <key>Hour</key>
             <integer>15</integer>
             <key>Minute</key>
-            <integer>40</integer>
-            <key>Weekday</key>
-            <integer>5</integer>
-        </dict>
-        <dict>
-            <key>Hour</key>
-            <integer>15</integer>
-            <key>Minute</key>
-            <integer>50</integer>
+            <integer>45</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
@@ -1652,7 +1132,7 @@
             <key>Hour</key>
             <integer>16</integer>
             <key>Minute</key>
-            <integer>10</integer>
+            <integer>15</integer>
             <key>Weekday</key>
             <integer>5</integer>
         </dict>
