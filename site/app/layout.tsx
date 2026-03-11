@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { siteMetadata, siteStructuredData, siteViewport } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Radon Terminal | Reconstructing Market Structure",
-  description: "Radon Terminal is an institutional-grade instrument for reconstructing market structure from noisy signals. Built for technical traders.",
-};
+export const metadata = siteMetadata;
+export const viewport = siteViewport;
 
 export default function RootLayout({
   children,
@@ -16,6 +14,13 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
+        {siteStructuredData.map((item) => (
+          <script
+            key={item["@type"]}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+          />
+        ))}
         <Analytics />
       </body>
     </html>

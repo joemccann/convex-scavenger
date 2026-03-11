@@ -110,6 +110,11 @@ data/seasonality_cache/
 # Temp files
 tmp/
 /nanobanana-output/
+/.playwright-mcp/
+/regime-*.png
+
+# Local agent worktrees / scratch state
+/.claude/worktrees/
 
 # =============================================================================
 # Vendor (downloaded binaries, not checked in)

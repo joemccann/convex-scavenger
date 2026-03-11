@@ -1,0 +1,272 @@
+export type ProofItem = {
+  label: string;
+  value: string;
+  detail: string;
+  tone?: "core" | "strong" | "neutral";
+};
+
+export type StrategyItem = {
+  name: string;
+  description: string;
+  edge: string;
+  instruments: string;
+  holdPeriod: string;
+  winRate: string;
+  riskType: "Defined Risk" | "Undefined Risk" | "Overlay";
+  command: string;
+  tone?: "core" | "strong" | "warn" | "violet";
+};
+
+export type ExecutionItem = {
+  step: string;
+  summary: string;
+  metadata: string;
+};
+
+export type SurfaceItem = {
+  name: string;
+  headline: string;
+  metrics: Array<{ label: string; value: string }>;
+  details: string[];
+};
+
+export type AuditItem = {
+  title: string;
+  detail: string;
+};
+
+export const headerLinks = [
+  { href: "#strategies", label: "Strategies" },
+  { href: "#execution", label: "Execution" },
+  { href: "#surfaces", label: "Surfaces" },
+  { href: "#methodology", label: "Methodology" },
+];
+
+export const proofItems: ProofItem[] = [
+  {
+    label: "Active Strategies",
+    value: "6",
+    detail: "Defined, undefined, and overlay structures surfaced in one terminal.",
+    tone: "core",
+  },
+  {
+    label: "Execution Path",
+    value: "5-Step",
+    detail: "Evaluate, structure, Kelly, execute, and track with the same operator context.",
+    tone: "strong",
+  },
+  {
+    label: "Explainability",
+    value: "Full",
+    detail: "Metrics, methodology, and signal states stay inspectable instead of hidden.",
+    tone: "neutral",
+  },
+  {
+    label: "Control Surface",
+    value: "Open",
+    detail: "Source-visible workflows for traders who do not outsource conviction.",
+    tone: "core",
+  },
+];
+
+export const heroCommandItems = [
+  { label: "Dark Pool Flow", state: "Defined", command: "evaluate AAPL" },
+  { label: "LEAP IV Mispricing", state: "Defined", command: "leap-scan NVDA" },
+  { label: "Crash Risk Index", state: "Overlay", command: "cri-scan" },
+];
+
+export const heroMetrics = [
+  { label: "COR1M", value: "28.97", detail: "Implied correlation" },
+  { label: "VIX", value: "22.77", detail: "Volatility state" },
+  { label: "Kelly Cap", value: "7.5%", detail: "Sizing discipline" },
+  { label: "Signal Stack", value: "6", detail: "Deployable modules" },
+];
+
+export const strategies: StrategyItem[] = [
+  {
+    name: "Dark Pool Flow",
+    description:
+      "Institutional flow detection for passive accumulation or distribution that has not yet expressed through the lit market.",
+    edge: "Passive buying and selling in dark pools often precedes the visible price move by days to weeks.",
+    instruments:
+      "ATM and OTM calls or puts with 2 to 6 week expiry, often expressed through verticals.",
+    holdPeriod: "2 to 6 weeks",
+    winRate: "20 to 40%",
+    riskType: "Defined Risk",
+    command: "scan -> evaluate [TICKER]",
+    tone: "core",
+  },
+  {
+    name: "LEAP IV Mispricing",
+    description:
+      "Long-dated volatility dislocations where realized volatility exceeds LEAP IV and the market has not repriced the option yet.",
+    edge: "HV20 and HV60 exceed LEAP IV by at least 15 points while IV rank stays compressed.",
+    instruments: "6 to 18 month LEAP calls, usually 30 to 50 delta.",
+    holdPeriod: "Weeks to 9 months",
+    winRate: "40 to 55%",
+    riskType: "Defined Risk",
+    command: "leap-scan [TICKERS]",
+    tone: "strong",
+  },
+  {
+    name: "GARCH Convergence Spreads",
+    description:
+      "Cross-asset vega arbitrage when correlated assets reprice implied volatility at different speeds after a catalyst.",
+    edge: "Volatility lag between related assets creates measurable divergence from the 60-day mean.",
+    instruments: "30 to 40 delta calls on the lagger, usually 3 to 6 month expiry.",
+    holdPeriod: "2 to 8 weeks",
+    winRate: "50 to 65%",
+    riskType: "Defined Risk",
+    command: "garch-convergence [TICKERS]",
+    tone: "core",
+  },
+  {
+    name: "Risk Reversal",
+    description:
+      "Skew exploitation that sells the rich side of the surface to fund directional convexity on the cheap side.",
+    edge: "OTM puts often trade at materially higher implied volatility than equivalent-delta OTM calls.",
+    instruments: "Sell OTM put plus buy OTM call, generally 2 to 8 week expiry.",
+    holdPeriod: "2 to 8 weeks",
+    winRate: "30 to 50%",
+    riskType: "Undefined Risk",
+    command: "risk-reversal [TICKER]",
+    tone: "warn",
+  },
+  {
+    name: "Volatility-Credit Gap",
+    description:
+      "Portfolio hedge overlay when volatility reprices faster than cash credit and the gap becomes statistically dislocated.",
+    edge: "VVIX > 110 with stable credit plus a >2 sigma residual exposes artificial calm in HYG and JNK.",
+    instruments: "Short-dated HYG puts or bear put spreads.",
+    holdPeriod: "1 to 5 days",
+    winRate: "Overlay",
+    riskType: "Overlay",
+    command: "vcg",
+    tone: "violet",
+  },
+  {
+    name: "Crash Risk Index",
+    description:
+      "CTA deleveraging detector built from volatility, implied correlation, and momentum stress signals.",
+    edge: "VIX, VVIX, COR1M, and momentum convergence often precede forced systematic selling over 3 to 5 days.",
+    instruments: "SPY puts, bear put spreads, and tail hedges.",
+    holdPeriod: "3 to 5 days",
+    winRate: "Overlay",
+    riskType: "Overlay",
+    command: "cri-scan",
+    tone: "violet",
+  },
+];
+
+export const executionItems: ExecutionItem[] = [
+  {
+    step: "Evaluate",
+    summary:
+      "Every candidate is forced through a structured gate sequence instead of discretionary skipping.",
+    metadata: "Ticker, seasonality, analysts, dark pool, options, OI",
+  },
+  {
+    step: "Structure",
+    summary:
+      "Directional view is converted into a defined or explicitly managed options structure with convexity in mind.",
+    metadata: "Expiry, delta, spread width, max loss, target R:R",
+  },
+  {
+    step: "Kelly",
+    summary:
+      "Position size is bounded by bankroll logic so conviction does not outrun survivability.",
+    metadata: "Kelly sizing, caps, deployed capital, portfolio fit",
+  },
+  {
+    step: "Execute",
+    summary:
+      "Execution remains visible and operator-led, with source transparency instead of black-box routing mystique.",
+    metadata: "IB quotes, live pricing, fill path, trade log",
+  },
+  {
+    step: "Track",
+    summary:
+      "Performance, regime, and exposure stay linked after entry so the thesis can be audited under stress.",
+    metadata: "Portfolio state, YTD metrics, flow drift, regime overlay",
+  },
+];
+
+export const surfaceItems: SurfaceItem[] = [
+  {
+    name: "Radon Flow",
+    headline: "Detect non-random positioning before the lit move becomes obvious.",
+    metrics: [
+      { label: "Signal Classes", value: "3" },
+      { label: "Workflow", value: "Scan -> Evaluate" },
+    ],
+    details: [
+      "Dark pool flow scored against sustained direction and buy ratio.",
+      "Options flow and OI changes brought into the same decision surface.",
+      "Candidates ranked for action instead of dumped into a watchlist graveyard.",
+    ],
+  },
+  {
+    name: "Radon Performance",
+    headline: "Reconstruct the YTD equity curve and tie it back to current net liquidation.",
+    metrics: [
+      { label: "Metrics", value: "Institutional" },
+      { label: "Anchor", value: "Net Liq" },
+    ],
+    details: [
+      "Sharpe, Sortino, beta, drawdown, VaR, and benchmark-relative context.",
+      "Every core card exposes calculation logic in place.",
+      "Warnings surface when reconstruction assumptions or data gaps matter.",
+    ],
+  },
+  {
+    name: "Radon Structure",
+    headline: "Track regime pressure, implied correlation, and portfolio-level stress context.",
+    metrics: [
+      { label: "COR1M", value: "Integrated" },
+      { label: "CTA Model", value: "Visible" },
+    ],
+    details: [
+      "CRI overlays VIX, VVIX, COR1M, and momentum into a single stress lens.",
+      "Crash conditions are explicit rather than implied through vague sentiment.",
+      "Signal quality improves when regime context stays attached to execution.",
+    ],
+  },
+];
+
+export const auditItems: AuditItem[] = [
+  {
+    title: "Methodology Exposed",
+    detail: "Signal logic, performance formulas, and regime thresholds stay inspectable.",
+  },
+  {
+    title: "Source Transparency",
+    detail: "Data provenance remains visible so confidence and recency can be judged directly.",
+  },
+  {
+    title: "Operator Control",
+    detail: "The terminal helps the trader reason and execute. It does not ask for blind trust.",
+  },
+  {
+    title: "Open Architecture",
+    detail: "Workflows are auditable, extensible, and built for users who care how the system thinks.",
+  },
+];
+
+export const footerColumns = [
+  {
+    title: "Terminal",
+    links: [
+      { href: "#strategies", label: "Strategies" },
+      { href: "#execution", label: "Execution" },
+      { href: "#surfaces", label: "Surfaces" },
+    ],
+  },
+  {
+    title: "Protocol",
+    links: [
+      { href: "#methodology", label: "Methodology" },
+      { href: "https://github.com/joemccann/radon", label: "Source" },
+      { href: "https://github.com/joemccann/radon/blob/main/docs/strategies.md", label: "Registry" },
+    ],
+  },
+];

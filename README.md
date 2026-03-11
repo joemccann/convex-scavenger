@@ -207,6 +207,14 @@ npm run dev
 
 For Vercel, the project should use `site/` as the Root Directory. The site app includes an ignored-build step in [site/vercel.json](/Users/joemccann/dev/apps/finance/radon/site/vercel.json) so pushes only trigger a site deploy when files under `site/` changed.
 
+The marketing app is intentionally separate from `web/`: it carries the Radon landing-page narrative and its own deployment guardrails. To verify the site locally without colliding with another live Next.js process:
+
+```bash
+cd site
+npm run lint
+NEXT_DIST_DIR=.next-build npm run build
+```
+
 ## Example Workflow
 
 1. Run `scan` to surface dark pool and regime-aware candidates.
