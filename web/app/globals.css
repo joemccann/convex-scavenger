@@ -2375,7 +2375,8 @@ tr.leg-row td {
 .price-bar-value.negative { color: var(--negative); }
 
 /* Price chart */
-.price-chart-container { position: relative; height: 200px; width: 100%; border-bottom: 1px solid var(--border-dim); }
+.price-chart-panel { border-top: none; }
+.price-chart-container { position: relative; height: 200px; width: 100%; }
 .price-chart-mid-badge { position: absolute; top: 6px; left: 8px; z-index: 10; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warning); border: 1px solid var(--warning); padding: 2px 5px; line-height: 1; pointer-events: none; }
 
 /* Tabs */
@@ -3218,10 +3219,6 @@ tr {
   width: 100%;
 }
 
-.regime-relationship-section {
-  margin-top: 24px;
-}
-
 .regime-relationship-meta {
   display: flex;
   align-items: center;
@@ -3406,8 +3403,6 @@ tr {
 
 .regime-relationship-view {
   margin-top: 24px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-dim);
 }
 
 .regime-state-key {

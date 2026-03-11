@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import * as d3 from "d3";
 import InfoTooltip from "./InfoTooltip";
+import ChartLegend from "./charts/ChartLegend";
+import ChartPanel from "./charts/ChartPanel";
 import { SECTION_TOOLTIPS } from "@/lib/sectionTooltips";
 import {
   buildRegimeRelationshipEntries,
@@ -169,12 +171,15 @@ export default function RegimeRelationshipView({
   const quadrantColor = quadrantTone(summary.latestQuadrant);
 
   return (
-    <div className="regime-relationship-section regime-relationship-view" data-testid="regime-relationship-view">
-      <div className="section-header">
-        <div className="section-title">
+    <ChartPanel
+      family="analytical-time-series"
+      title={
+        <>
           <span>RVOL / COR1M RELATIONSHIP</span>
           <InfoTooltip text={SECTION_TOOLTIPS["RELATIONSHIP VIEW"]} />
-        </div>
+        </>
+      }
+      badge={
         <div className="regime-relationship-meta">
           <span className="regime-relationship-chip" style={{ color: spreadColor }}>
             {displaySpreadState(summary.spreadState)}
@@ -183,8 +188,11 @@ export default function RegimeRelationshipView({
             {summary.latestQuadrant}
           </span>
         </div>
-      </div>
-
+      }
+      className="chart-panel-inline regime-relationship-view"
+      contentClassName="regime-relationship-content"
+      dataTestId="regime-relationship-view"
+    >
       <div className="regime-relationship-grid">
         <section
           className="regime-relationship-panel regime-relationship-panel-wide"
@@ -544,18 +552,15 @@ export default function RegimeRelationshipView({
             </g>
           </svg>
 
-          <div className="regime-relationship-legend">
-            <span className="regime-relationship-legend-item">
-              <span className="regime-relationship-legend-swatch regime-relationship-legend-swatch-rvol" />
-              RVOL z-score
-            </span>
-            <span className="regime-relationship-legend-item">
-              <span className="regime-relationship-legend-swatch regime-relationship-legend-swatch-cor1m" />
-              COR1M z-score
-            </span>
-          </div>
+          <ChartLegend
+            className="regime-relationship-legend"
+            items={[
+              { label: "RVOL z-score", role: "caution" },
+              { label: "COR1M z-score", role: "dislocation" },
+            ]}
+          />
         </section>
       </div>
-    </div>
+    </ChartPanel>
   );
 }
