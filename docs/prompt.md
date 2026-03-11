@@ -14,7 +14,8 @@ Autonomous options trading via convex, edge-driven bets sized by fractional Kell
 2. **Edge**: Institutional dark pool / OTC flow detection ONLY
 3. **Position Size**: Max 2.5% bankroll per position
 4. **Kelly**: Use 0.25x-0.5x fractional Kelly
-5. **Undefined Risk**: NEVER (no naked options)
+5. **Undefined Risk**: NEVER (no naked options — Gate 4 enforced at UI, API, and post-sync)
+6. **Naked Short Protection**: No naked short stock, calls, futures, or bonds. Short calls must be fully covered (1 contract = 100 shares). System auto-cancels violations.
 6. **Fresh Data**: Every data-fetching milestone MUST fetch live data at execution time. Scan results are leads, not evidence. Re-fetch during evaluation.
 
 ## Deliverables (per evaluation)
@@ -32,13 +33,13 @@ Autonomous options trading via convex, edge-driven bets sized by fractional Kell
 - [ ] Structure proposal — **live option quotes** (if edge exists)
 - [ ] Convexity calculation (R:R ratio)
 - [ ] Kelly sizing (optimal % and position size)
-- [ ] Final decision with all three gates documented
+- [ ] Final decision with all four gates documented
 
 ## Done When
 An evaluation is complete when:
 1. Ticker identity is VERIFIED (not assumed)
 2. **All data-fetching milestones used FRESH data (fetched during this evaluation, not from a prior scan)**
-3. All three gates are evaluated in order
+3. All four gates are evaluated in order
 4. Failing gate stops evaluation (no rationalization)
 5. Decision is logged with full rationale
 6. If TRADE: logged to trade_log.json + position synced to portfolio.json

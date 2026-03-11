@@ -63,7 +63,7 @@ Signal strength:
 - Max concurrent convergence trades: 3
 
 **STEP 7: DECISION**
-- All three gates pass? → Generate Trade Specification HTML report
+- All four gates pass? → Generate Trade Specification HTML report
 - Any gate fails? → State which gate failed, log to docs/status.md
 - Present pair analysis table:
 

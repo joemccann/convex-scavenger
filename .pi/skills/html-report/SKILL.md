@@ -621,7 +621,7 @@ The trade specification template includes ALL sections needed for a complete eva
 7. **Structure & Kelly** — Position structure and Kelly sizing
 8. **Trade Specification** — Exact order details ready for execution
 9. **Thesis & Risk Factors** — Callouts with reasoning
-10. **Three Gates Summary** — Final gate check table
+10. **Four Gates Summary** — Final gate check table
 
 ### Template Variables
 
@@ -992,7 +992,7 @@ See: `scripts/scenario_report.py` (full report generation with narratives)
 9. [ ] Build structure & Kelly section with position details and Kelly math
 10. [ ] Build trade specification with exact order details (contracts, strike, expiry, limit price)
 11. [ ] Build thesis callout (positive) and risk factors callout (warning)
-12. [ ] Fill three gates summary table: `{{GATE1_ACTUAL}}`, `{{GATE2_ACTUAL}}`, `{{GATE3_ACTUAL}}` with pills and status
+12. [ ] Fill four gates summary table: `{{GATE1_ACTUAL}}`, `{{GATE2_ACTUAL}}`, `{{GATE3_ACTUAL}}`, `{{GATE4_ACTUAL}}` with pills and status
 13. [ ] For NO_TRADE: set `{{STATUS_CLASS}}` to `negative`, mark failed milestone, omit structure/Kelly/trade spec sections, add rejection callout
 14. [ ] Save to `reports/{ticker}-evaluation-{date}.html`
 15. [ ] Open in browser to verify all sections render correctly

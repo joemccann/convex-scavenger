@@ -24,5 +24,5 @@ Full trade evaluation for {{ticker}}:
 - Check portfolio.json: total exposure vs. avg Kelly → room for new position?
 
 **STEP 4: DECISION**
-- PASS all three gates? → Specify exact contracts, quantity, cost
+- PASS all four gates? → Specify exact contracts, quantity, cost
 - FAIL any gate? → State which gate failed and why. No trade.

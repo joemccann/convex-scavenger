@@ -1124,7 +1124,7 @@ reports/goog-evaluation-2026-03-04.html
 7. Structure & Kelly: position structure and Kelly sizing
 8. Trade Specification: exact order details ready for execution
 9. Thesis & Risk Factors callouts
-10. Three Gates Summary table
+10. Four Gates Summary table
 
 **Reference implementation:** `reports/goog-evaluation-2026-03-04.html`
 

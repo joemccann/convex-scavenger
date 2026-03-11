@@ -348,7 +348,7 @@ Output   : reports/{ticker}-evaluation-{YYYY-MM-DD}.html
 Reference: reports/goog-evaluation-2026-03-04.html
 ```
 
-**10 required sections:** Header + gate status | 6 Summary Metrics | Milestone pass/fail | Dark Pool Flow | Options Flow | Context (seasonality + ratings) | Structure & Kelly | Trade Spec (exact order) | Thesis & Risk | Three Gates table.
+**10 required sections:** Header + gate status | 6 Summary Metrics | Milestone pass/fail | Dark Pool Flow | Options Flow | Context (seasonality + ratings) | Structure & Kelly | Trade Spec (exact order) | Thesis & Risk | Four Gates table.
 
 **Workflow:**
 1. Complete milestones 1–6

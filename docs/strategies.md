@@ -329,17 +329,17 @@ OTM puts consistently trade at higher implied volatility than equivalent-delta O
 
 **The edge is skew, not direction.** The structural IV imbalance means you sell expensive vol and buy cheap vol. Direction is the operator's thesis; skew is the structural advantage.
 
-### ⚠️ Undefined Risk — Manager Override
+### ⚠️ Undefined Risk — Manager Override (Gate 4 Exception)
 
-This strategy involves selling naked options (short put for bullish, short call for bearish). This is an explicit **manager override** of the "NEVER sell naked options" constraint. The override is justified when:
+This strategy involves selling naked options (short put for bullish, short call for bearish). This is an explicit **manager override** of Gate 4 (Naked Short Protection). The override is justified when:
 
 1. The underlying is a **broad index ETF** (IWM, SPY, QQQ) — no single-name blowup risk
 2. The operator has an **explicit directional thesis** with supporting data (DP flow, technicals)
 3. Position is **sized to 2.5% margin** — same dollar risk discipline as defined-risk strategies
 4. A **hard stop loss** is set at trade entry (e.g., close if spread value reaches –$3.00)
-5. The manager **explicitly requests** the structure
+5. The manager **explicitly requests** the structure and acknowledges the Gate 4 override
 
-**This strategy is NEVER auto-triggered.** It requires the `risk-reversal` command with operator confirmation.
+**This strategy is NEVER auto-triggered.** It requires the `risk-reversal` command with operator confirmation. The Gate 4 naked short guard will flag the order — the operator must explicitly override it.
 
 ### Edge Source: IV Skew
 
