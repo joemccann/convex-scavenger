@@ -168,6 +168,8 @@ function PriceDisplay() {
 |-------|--------|-------------|
 | `/api/portfolio` | GET | Read portfolio.json |
 | `/api/portfolio` | POST | Trigger IB sync |
+| `/api/performance` | GET | Read cached YTD performance metrics and trigger background refresh when stale |
+| `/api/performance` | POST | Rebuild YTD performance metrics from the Python engine |
 | `/api/orders` | GET | Read open/executed orders |
 | `/api/orders` | POST | Sync orders from IB |
 | `/api/prices` | GET | Deprecated (real-time SSE removed) |

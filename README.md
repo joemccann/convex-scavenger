@@ -113,7 +113,7 @@ Exa / Research ---------/                                  v
 At a high level:
 
 - `scripts/` contains scanners, evaluators, pricing logic, reporting, and broker integrations
-- `web/` contains the Next.js terminal for portfolio, flow, orders, and AI-assisted workflows
+- `web/` contains the Next.js terminal for portfolio, performance, flow, orders, regime, and AI-assisted workflows
 - `site/` contains the standalone marketing website
 - `data/` holds runtime artifacts and scan outputs
 
@@ -189,6 +189,7 @@ Visit `http://localhost:3000`.
 
 - Real-time price streaming with live greeks
 - Multi-leg position monitoring and per-leg P&L
+- YTD portfolio performance analytics with reconstructed institutional metrics
 - Order management, including combo spread workflows
 - Flow analysis, regime views, and thesis checks
 - AI chat interface for command execution and analysis

@@ -37,7 +37,7 @@ export type PiResponse = {
   error?: string;
 };
 
-export type WorkspaceSection = "dashboard" | "flow-analysis" | "portfolio" | "orders" | "scanner" | "discover" | "journal" | "regime" | "cta";
+export type WorkspaceSection = "dashboard" | "flow-analysis" | "portfolio" | "performance" | "orders" | "scanner" | "discover" | "journal" | "regime" | "cta";
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
@@ -152,6 +152,81 @@ export type PortfolioData = {
   undefined_risk_count: number;
   avg_kelly_optimal: number | null;
   account_summary?: AccountSummary;
+};
+
+export type PerformanceSeriesPoint = {
+  date: string;
+  equity: number;
+  daily_return: number | null;
+  drawdown: number;
+  benchmark_close: number;
+  benchmark_return: number;
+};
+
+export type PerformanceSummary = {
+  starting_equity: number;
+  ending_equity: number;
+  pnl: number;
+  trading_days: number;
+  total_return: number;
+  annualized_return: number;
+  annualized_volatility: number;
+  downside_deviation: number;
+  sharpe_ratio: number;
+  sortino_ratio: number;
+  calmar_ratio: number;
+  max_drawdown: number;
+  current_drawdown: number;
+  max_drawdown_duration_days: number;
+  beta: number;
+  alpha: number;
+  correlation: number;
+  r_squared: number;
+  tracking_error: number;
+  information_ratio: number;
+  treynor_ratio: number;
+  upside_capture: number;
+  downside_capture: number;
+  var_95: number;
+  cvar_95: number;
+  tail_ratio: number;
+  ulcer_index: number;
+  skew: number;
+  kurtosis: number;
+  hit_rate: number;
+  positive_days: number;
+  negative_days: number;
+  flat_days: number;
+  best_day: number;
+  worst_day: number;
+  average_up_day: number;
+  average_down_day: number;
+  win_loss_ratio: number;
+};
+
+export type PerformanceData = {
+  as_of: string;
+  last_sync: string;
+  period_start: string;
+  period_end: string;
+  period_label: string;
+  benchmark: string;
+  benchmark_total_return: number;
+  trades_source: string;
+  price_sources: {
+    stocks: string;
+    options: string;
+  };
+  methodology: {
+    curve_type: string;
+    return_basis: string;
+    risk_free_rate: number;
+    library_strategy: string;
+  };
+  summary: PerformanceSummary;
+  warnings: string[];
+  contracts_missing_history: string[];
+  series: PerformanceSeriesPoint[];
 };
 
 // Trade journal types

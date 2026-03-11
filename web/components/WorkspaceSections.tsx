@@ -36,6 +36,7 @@ import CancelOrderDialog from "./CancelOrderDialog";
 import ModifyOrderModal from "./ModifyOrderModal";
 import RegimePanel from "./RegimePanel";
 import CtaPage from "./CtaPage";
+import PerformancePanel from "./PerformancePanel";
 import InfoTooltip from "./InfoTooltip";
 import SharePnlButton, { type SharePnlData } from "./SharePnlButton";
 import { SECTION_TOOLTIPS } from "@/lib/sectionTooltips";
@@ -1345,6 +1346,8 @@ export default function WorkspaceSections({ section, portfolio, orders, prices }
       return <FlowSections />;
     case "portfolio":
       return <PortfolioSections portfolio={portfolio ?? null} prices={prices} />;
+    case "performance":
+      return <PerformancePanel />;
     case "orders":
       return <OrdersSections orders={orders ?? null} prices={prices} portfolio={portfolio} />;
     case "scanner":

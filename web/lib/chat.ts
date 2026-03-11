@@ -195,6 +195,10 @@ export function resolveSectionFromPath(pathname: string | null, fallback: Worksp
     return "portfolio";
   }
 
+  if (pathname.startsWith("/performance")) {
+    return "performance";
+  }
+
   if (pathname.startsWith("/orders")) {
     return "orders";
   }

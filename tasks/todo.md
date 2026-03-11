@@ -1,5 +1,130 @@
 # TODO
 
+## Session: Performance Net Liq Reconciliation Fix (2026-03-11)
+
+### Dependency Graph
+- T1 (Inspect the current performance reconstruction engine, API freshness behavior, and existing tests to define exact failing cases) depends_on: []
+- T2 (Record the implementation plan for the reconciliation fix in `tasks/todo.md`) depends_on: [T1]
+- T3 (Add failing regression tests for Flex trade-date normalization, ending-equity anchoring, and stale `/api/performance` behavior) depends_on: [T1, T2]
+- T4 (Implement Python and route fixes so `/performance` reconciles to the current portfolio net liquidation snapshot) depends_on: [T3]
+- T5 (Add or update browser coverage for the user-visible reconciliation behavior on `/performance`) depends_on: [T4]
+- T6 (Run targeted verification, capture review notes, and summarize the root-cause fix) depends_on: [T4, T5]
+
+### Checklist
+- [x] T1 Inspect the current performance reconstruction engine, API freshness behavior, and existing tests to define exact failing cases
+- [x] T2 Record the implementation plan for the reconciliation fix in `tasks/todo.md`
+- [x] T3 Add failing regression tests for Flex trade-date normalization, ending-equity anchoring, and stale `/api/performance` behavior
+- [x] T4 Implement Python and route fixes so `/performance` reconciles to the current portfolio net liquidation snapshot
+- [x] T5 Add or update browser coverage for the user-visible reconciliation behavior on `/performance`
+- [x] T6 Run targeted verification, capture review notes, and summarize the root-cause fix
+
+### Review
+- Fixed the core reconstruction bug in [scripts/portfolio_performance.py](/Users/joemccann/dev/apps/finance/radon/scripts/portfolio_performance.py) by normalizing trade dates before parsing and replay, so raw Flex `YYYYMMDD` dates now align with the `YYYY-MM-DD` benchmark calendar used for the YTD curve.
+- Hardened the performance payload builder so option-history fetch failures no longer abort the entire sync; missing option marks are downgraded to warnings plus `contracts_missing_history`, allowing the ending equity to stay anchored to the current account snapshot.
+- Updated [web/app/api/performance/route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/performance/route.ts) so the route detects when cached performance is behind the current portfolio snapshot and refreshes the persisted payload before serving it, with cached fallback if the sync fails.
+- Expanded [scripts/tests/test_portfolio_performance.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_portfolio_performance.py), [web/tests/performance-route.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/performance-route.test.ts), and [web/e2e/performance-page.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/performance-page.spec.ts) to cover compact Flex dates, stale cache refresh, and the browser-visible ending-equity reconciliation behavior.
+- Verified the live reconstruction path after the fix: `python3 scripts/portfolio_performance.py --json` completed successfully and matched `data/portfolio.json` exactly with `ending_equity == account_summary.net_liquidation == 1308382.19`.
+
+## Session: Performance YTD Reconciliation Investigation (2026-03-11)
+
+### Dependency Graph
+- T1 (Inspect the performance engine, web route, and portfolio net liquidation source to map the current YTD calculation flow) depends_on: []
+- T2 (Record the investigation plan and the user correction in `tasks/todo.md` and `tasks/lessons.md`) depends_on: [T1]
+- T3 (Compare the live or cached `/performance` and `/portfolio` payloads to locate the source of the mismatch) depends_on: [T1]
+- T4 (Explain the exact YTD methodology and identify the most likely root cause of the discrepancy) depends_on: [T2, T3]
+
+### Checklist
+- [x] T1 Inspect the performance engine, web route, and portfolio net liquidation source to map the current YTD calculation flow
+- [x] T2 Record the investigation plan and the user correction in `tasks/todo.md` and `tasks/lessons.md`
+- [x] T3 Compare the live or cached `/performance` and `/portfolio` payloads to locate the source of the mismatch
+- [x] T4 Explain the exact YTD methodology and identify the most likely root cause of the discrepancy
+
+### Review
+- Confirmed the `/performance` page is a reconstructed close-to-close YTD curve built from trade cash flows plus daily marks, not a live account-equity history.
+- Confirmed the `/portfolio` page reads `data/portfolio.json` with a 60-second stale window, while `/performance` reads `data/performance.json` with a 15-minute stale window and serves the old cache immediately while refreshing in the background.
+- Observed a live mismatch between the two payloads during the investigation: `/api/performance` was still serving `as_of: 2026-03-10` with `ending_equity: 1063031.8637`, while `/api/portfolio` was serving `last_sync: 2026-03-11T06:37:14.669874` with `account_summary.net_liquidation: 1313112.03`.
+- Running `scripts/portfolio_performance.py --json` against the current portfolio snapshot still produced a mismatched ending equity, which shows the issue is not only cache staleness.
+- The most likely engine bug is trade-date normalization in `parse_flex_trade_rows()`: Flex trade dates are being consumed as `YYYYMMDD`, while the benchmark calendar uses `YYYY-MM-DD`. That breaks the day matching inside `reconstruct_equity_curve()` and can prevent fills from ever being applied on the intended dates.
+- A second degradation path is active as well: when IB Flex is rate-limited, the script falls back to `data/blotter.json`, which can lag the current portfolio and therefore cannot reliably explain the live holdings on `/portfolio`.
+
+## Session: Codex Skill YAML Fixes (2026-03-11)
+
+### Dependency Graph
+- T1 (Inspect the affected `SKILL.md` files under `~/.codex/skills` and identify the invalid YAML frontmatter) depends_on: []
+- T2 (Record the task plan and the user correction in `tasks/todo.md` and `tasks/lessons.md`) depends_on: [T1]
+- T3 (Patch the invalid `description` frontmatter fields so each skill manifest uses a string, not a sequence) depends_on: [T2]
+- T4 (Validate both skill manifests with a direct YAML/frontmatter parse check) depends_on: [T3]
+- T5 (Capture review notes and summarize which files were fixed) depends_on: [T4]
+
+### Checklist
+- [x] T1 Inspect the affected `SKILL.md` files under `~/.codex/skills` and identify the invalid YAML frontmatter
+- [x] T2 Record the task plan and the user correction in `tasks/todo.md` and `tasks/lessons.md`
+- [x] T3 Patch the invalid `description` frontmatter fields so each skill manifest uses a string, not a sequence
+- [x] T4 Validate both skill manifests with a direct YAML/frontmatter parse check
+- [x] T5 Capture review notes and summarize which files were fixed
+
+### Review
+- Inspected both reported skill manifests under `~/.codex/skills` and confirmed only `metal-macos-replatform/SKILL.md` was malformed; `metal-macos/SKILL.md` already had a valid string-valued `description`.
+- The root cause was YAML frontmatter using bracketed placeholder text after `description:` in `metal-macos-replatform/SKILL.md`, which YAML parses as a sequence instead of the string type expected by the Codex skill loader.
+- Rewrote that `description` field as a plain string while keeping the skill intent intact.
+- Validated both manifests with a direct frontmatter parse check using `yaml.safe_load`, confirming `description` resolves to `str` for both files.
+- Result: the repeated "invalid YAML: description: invalid type: sequence, expected a string" loader warning should stop on the next skill discovery/load cycle.
+
+## Session: Performance Page Explainer Report (2026-03-11)
+
+### Dependency Graph
+- T1 (Audit the live `/performance` page and backend metric engine to enumerate every rendered item) depends_on: []
+- T2 (Document the plan and output requirements for the HTML explainer report) depends_on: [T1]
+- T3 (Implement a generated HTML report that maps every displayed metric to its value, formula, and definition) depends_on: [T2]
+- T4 (Validate the report against current `data/performance.json` or live `/api/performance`, then open it locally) depends_on: [T3]
+- T5 (Capture review notes and final output path in the task log) depends_on: [T4]
+
+### Checklist
+- [x] T1 Audit the live `/performance` page and backend metric engine to enumerate every rendered item
+- [x] T2 Document the plan and output requirements for the HTML explainer report
+- [x] T3 Implement a generated HTML report that maps every displayed metric to its value, formula, and definition
+- [x] T4 Validate the report against current `data/performance.json` or live `/api/performance`, then open it locally
+- [x] T5 Capture review notes and final output path in the task log
+
+### Review
+- Added [performance_explainer_report.py](/Users/joemccann/dev/apps/finance/radon/scripts/performance_explainer_report.py), a reusable generator that reads the current `data/performance.json` payload and emits a standalone HTML explainer for every currently visible `/performance` item.
+- The report covers the hero banner, source/drawdown pills, all eight core performance cards, the chart header/legend/meta block, all tail/path-risk items, all distribution/capture items, methodology provenance, and each warning flag.
+- Each row in the report includes the page item's current display, the exact formula or provenance used to render it, and a plain-English institutional definition.
+- Generated output at [performance-page-explainer-2026-03-11.html](/Users/joemccann/dev/apps/finance/radon/reports/performance-page-explainer-2026-03-11.html) and opened it locally with the standard browser-open flow.
+- Verified the file exists, has content, and includes the expected sections: Hero Banner, Core Performance, Tail And Path Risk, Methodology, and Warnings.
+
+## Session: Portfolio Performance Route (2026-03-10)
+
+### Dependency Graph
+- T1 (Audit existing portfolio, blotter, benchmark, and web route plumbing for a new performance surface) depends_on: []
+- T2 (Define YTD performance methodology, institutional metric set, and library strategy from primary-source research) depends_on: [T1]
+- T3 (Add backend/unit tests for trade parsing, curve reconstruction, and metric calculations) depends_on: [T2]
+- T4 (Implement Python performance engine, cache artifact, and benchmark/price fetch path) depends_on: [T3]
+- T5 (Expose performance data through a new web API contract and shared types) depends_on: [T4]
+- T6 (Add the `/performance` route, section wiring, and branded performance panel UI) depends_on: [T5]
+- T7 (Add browser coverage for the new page and confirm rendered metrics against the API contract) depends_on: [T6]
+- T8 (Run verification, update relevant docs, and capture review notes/risks) depends_on: [T4, T5, T6, T7]
+
+### Checklist
+- [x] T1 Audit existing portfolio, blotter, benchmark, and web route plumbing for a new performance surface
+- [x] T2 Define YTD performance methodology, institutional metric set, and library strategy from primary-source research
+- [x] T3 Add backend/unit tests for trade parsing, curve reconstruction, and metric calculations
+- [x] T4 Implement Python performance engine, cache artifact, and benchmark/price fetch path
+- [x] T5 Expose performance data through a new web API contract and shared types
+- [x] T6 Add the `/performance` route, section wiring, and branded performance panel UI
+- [x] T7 Add browser coverage for the new page and confirm rendered metrics against the API contract
+- [x] T8 Run verification, update relevant docs, and capture review notes/risks
+
+### Review
+- Reused and completed the in-repo `scripts/portfolio_performance.py` engine instead of adding a new analytics dependency. The metric formulas stay local, align to `empyrical` / `quantstats` conventions, and compute a reconstructed YTD equity curve from IB Flex executions plus historical marks.
+- Added focused backend coverage in `scripts/tests/test_portfolio_performance.py` for OCC-style option ID formatting, option mark selection, curve replay, core institutional metrics, and the top-level payload contract that feeds the web route.
+- Refreshed `data/performance.json` from the live script so the existing `/api/performance` cache and the new UI load the same contract.
+- Wired the new `performance` workspace section into the Next.js terminal, added a dedicated `PerformancePanel`, and surfaced the institutional metrics stack: YTD return, ending equity, Sharpe, Sortino, max drawdown, beta, alpha, information ratio, VaR/CVaR, charted YTD equity vs benchmark, and methodology/warning panels.
+- Added targeted route metadata coverage in `web/tests/chat.test.ts`, `web/tests/data.test.ts`, and `web/tests/performance-route.test.ts`, plus mocked browser automation in `web/e2e/performance-page.spec.ts`.
+- Caught and fixed a payload-contract bug during final verification: `summary.trading_days` was being overwritten by return-count metrics. The payload now reports full YTD session count, and the refreshed cache plus live `/api/performance` route both return `46` series points with `46` trading days.
+- Verified `pytest scripts/tests/test_portfolio_performance.py -q`, `npx vitest run web/tests/chat.test.ts web/tests/data.test.ts web/tests/performance-route.test.ts`, `cd web && npx playwright test e2e/performance-page.spec.ts`, and `cd web && npm run build`.
+- Residual risk: the reconstructed curve is anchored to current net liquidation and assumes no unmodeled external cash flows inside the observed window; that caveat is exposed directly in the API warnings and rendered on the page.
+
 ## Session: Vercel Site Build Gate (2026-03-10)
 
 ### Dependency Graph

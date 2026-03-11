@@ -133,6 +133,7 @@ describe("navItems", () => {
     expect(routeMap.get("dashboard")).toBe("/dashboard");
     expect(routeMap.get("flow-analysis")).toBe("/flow-analysis");
     expect(routeMap.get("portfolio")).toBe("/portfolio");
+    expect(routeMap.get("performance")).toBe("/performance");
     expect(routeMap.get("orders")).toBe("/orders");
     expect(routeMap.get("scanner")).toBe("/scanner");
     expect(routeMap.get("discover")).toBe("/discover");
@@ -159,6 +160,7 @@ describe("quickPromptsBySection", () => {
     "dashboard",
     "flow-analysis",
     "portfolio",
+    "performance",
     "orders",
     "scanner",
     "discover",
@@ -206,6 +208,7 @@ describe("sectionDescription", () => {
     "dashboard",
     "flow-analysis",
     "portfolio",
+    "performance",
     "orders",
     "scanner",
     "discover",
