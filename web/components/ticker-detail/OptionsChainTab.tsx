@@ -41,6 +41,7 @@ function StrikeRow({
   onClickCall,
   onClickPut,
   atmRef,
+  sideFilter,
 }: {
   strike: number;
   callKey: string;
@@ -50,6 +51,7 @@ function StrikeRow({
   onClickCall: (strike: number, action: "BUY" | "SELL") => void;
   onClickPut: (strike: number, action: "BUY" | "SELL") => void;
   atmRef?: React.Ref<HTMLTableRowElement>;
+  sideFilter: "both" | "calls" | "puts";
 }) {
   const callData = prices[callKey] ?? null;
   const putData = prices[putKey] ?? null;
@@ -72,35 +74,41 @@ function StrikeRow({
   const putDelta = putData?.delta;
 
   const rowClass = `chain-row ${isAtm ? "chain-row-atm" : ""}`;
+  const showCalls = sideFilter !== "puts";
+  const showPuts = sideFilter !== "calls";
 
   return (
     <tr className={rowClass} ref={atmRef}>
       {/* Call side */}
-      <td className="chain-cell chain-greek">{callDelta != null ? callDelta.toFixed(2) : ""}</td>
-      <td className="chain-cell chain-iv">{callIV != null ? (callIV * 100).toFixed(1) : ""}</td>
-      <td className="chain-cell chain-vol">{callVol != null ? callVol.toLocaleString() : ""}</td>
-      <td
-        className="chain-cell chain-bid chain-clickable"
-        onClick={() => onClickCall(strike, "SELL")}
-        title="Sell call"
-      >
-        {callBid != null ? fmtPrice(callBid) : "---"}
-      </td>
-      <td
-        className="chain-cell chain-mid chain-clickable"
-        onClick={() => onClickCall(strike, "BUY")}
-        title="Buy call"
-      >
-        {callMid != null ? fmtPrice(callMid) : "---"}
-      </td>
-      <td
-        className="chain-cell chain-ask chain-clickable"
-        onClick={() => onClickCall(strike, "BUY")}
-        title="Buy call"
-      >
-        {callAsk != null ? fmtPrice(callAsk) : "---"}
-      </td>
-      <td className="chain-cell chain-last">{callLast != null ? fmtPrice(callLast) : ""}</td>
+      {showCalls && (
+        <>
+          <td className="chain-cell chain-greek">{callDelta != null ? callDelta.toFixed(2) : ""}</td>
+          <td className="chain-cell chain-iv">{callIV != null ? (callIV * 100).toFixed(1) : ""}</td>
+          <td className="chain-cell chain-vol">{callVol != null ? callVol.toLocaleString() : ""}</td>
+          <td
+            className="chain-cell chain-bid chain-clickable"
+            onClick={() => onClickCall(strike, "SELL")}
+            title="Sell call"
+          >
+            {callBid != null ? fmtPrice(callBid) : "---"}
+          </td>
+          <td
+            className="chain-cell chain-mid chain-clickable"
+            onClick={() => onClickCall(strike, "BUY")}
+            title="Buy call"
+          >
+            {callMid != null ? fmtPrice(callMid) : "---"}
+          </td>
+          <td
+            className="chain-cell chain-ask chain-clickable"
+            onClick={() => onClickCall(strike, "BUY")}
+            title="Buy call"
+          >
+            {callAsk != null ? fmtPrice(callAsk) : "---"}
+          </td>
+          <td className="chain-cell chain-last">{callLast != null ? fmtPrice(callLast) : ""}</td>
+        </>
+      )}
 
       {/* Strike */}
       <td className={`chain-cell chain-strike ${isAtm ? "chain-strike-atm" : ""}`}>
@@ -108,31 +116,35 @@ function StrikeRow({
       </td>
 
       {/* Put side */}
-      <td className="chain-cell chain-last">{putLast != null ? fmtPrice(putLast) : ""}</td>
-      <td
-        className="chain-cell chain-bid chain-clickable"
-        onClick={() => onClickPut(strike, "SELL")}
-        title="Sell put"
-      >
-        {putBid != null ? fmtPrice(putBid) : "---"}
-      </td>
-      <td
-        className="chain-cell chain-mid chain-clickable"
-        onClick={() => onClickPut(strike, "BUY")}
-        title="Buy put"
-      >
-        {putMid != null ? fmtPrice(putMid) : "---"}
-      </td>
-      <td
-        className="chain-cell chain-ask chain-clickable"
-        onClick={() => onClickPut(strike, "BUY")}
-        title="Buy put"
-      >
-        {putAsk != null ? fmtPrice(putAsk) : "---"}
-      </td>
-      <td className="chain-cell chain-vol">{putVol != null ? putVol.toLocaleString() : ""}</td>
-      <td className="chain-cell chain-iv">{putIV != null ? (putIV * 100).toFixed(1) : ""}</td>
-      <td className="chain-cell chain-greek">{putDelta != null ? putDelta.toFixed(2) : ""}</td>
+      {showPuts && (
+        <>
+          <td className="chain-cell chain-last">{putLast != null ? fmtPrice(putLast) : ""}</td>
+          <td
+            className="chain-cell chain-bid chain-clickable"
+            onClick={() => onClickPut(strike, "SELL")}
+            title="Sell put"
+          >
+            {putBid != null ? fmtPrice(putBid) : "---"}
+          </td>
+          <td
+            className="chain-cell chain-mid chain-clickable"
+            onClick={() => onClickPut(strike, "BUY")}
+            title="Buy put"
+          >
+            {putMid != null ? fmtPrice(putMid) : "---"}
+          </td>
+          <td
+            className="chain-cell chain-ask chain-clickable"
+            onClick={() => onClickPut(strike, "BUY")}
+            title="Buy put"
+          >
+            {putAsk != null ? fmtPrice(putAsk) : "---"}
+          </td>
+          <td className="chain-cell chain-vol">{putVol != null ? putVol.toLocaleString() : ""}</td>
+          <td className="chain-cell chain-iv">{putIV != null ? (putIV * 100).toFixed(1) : ""}</td>
+          <td className="chain-cell chain-greek">{putDelta != null ? putDelta.toFixed(2) : ""}</td>
+        </>
+      )}
     </tr>
   );
 }
@@ -422,6 +434,7 @@ export default function OptionsChainTab({
   const [error, setError] = useState<string | null>(null);
   const [orderLegs, setOrderLegs] = useState<OrderLeg[]>([]);
   const [strikesPerSide, setStrikesPerSide] = useState(15);
+  const [sideFilter, setSideFilter] = useState<"both" | "calls" | "puts">("both");
   const atmRef = useRef<HTMLTableRowElement>(null);
 
   // Background prefetch of all expirations for instant switching
@@ -664,7 +677,18 @@ export default function OptionsChainTab({
         <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-secondary)" }}>
           {currentPrice != null ? `Underlying: ${fmtPrice(currentPrice)}` : ""}
         </span>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "4px" }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="chain-side-toggle">
+            {(["both", "calls", "puts"] as const).map((val) => (
+              <button
+                key={val}
+                className={`chain-side-toggle-btn ${sideFilter === val ? "active" : ""}`}
+                onClick={() => setSideFilter(val)}
+              >
+                {val === "both" ? "ALL" : val.toUpperCase()}
+              </button>
+            ))}
+          </div>
           <label style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-secondary)" }}>
             STRIKES
           </label>
@@ -694,26 +718,34 @@ export default function OptionsChainTab({
           <table className="chain-grid">
             <thead>
               <tr>
-                <th className="chain-header">Δ</th>
-                <th className="chain-header">IV</th>
-                <th className="chain-header">Vol</th>
-                <th className="chain-header">Bid</th>
-                <th className="chain-header chain-header-mid">Mid</th>
-                <th className="chain-header">Ask</th>
-                <th className="chain-header">Last</th>
+                {sideFilter !== "puts" && (
+                  <>
+                    <th className="chain-header">Δ</th>
+                    <th className="chain-header">IV</th>
+                    <th className="chain-header">Vol</th>
+                    <th className="chain-header">Bid</th>
+                    <th className="chain-header chain-header-mid">Mid</th>
+                    <th className="chain-header">Ask</th>
+                    <th className="chain-header">Last</th>
+                  </>
+                )}
                 <th className="chain-header chain-header-strike">Strike</th>
-                <th className="chain-header">Last</th>
-                <th className="chain-header">Bid</th>
-                <th className="chain-header chain-header-mid">Mid</th>
-                <th className="chain-header">Ask</th>
-                <th className="chain-header">Vol</th>
-                <th className="chain-header">IV</th>
-                <th className="chain-header">Δ</th>
+                {sideFilter !== "calls" && (
+                  <>
+                    <th className="chain-header">Last</th>
+                    <th className="chain-header">Bid</th>
+                    <th className="chain-header chain-header-mid">Mid</th>
+                    <th className="chain-header">Ask</th>
+                    <th className="chain-header">Vol</th>
+                    <th className="chain-header">IV</th>
+                    <th className="chain-header">Δ</th>
+                  </>
+                )}
               </tr>
               <tr>
-                <th className="chain-side-label" colSpan={7}>CALLS</th>
+                {sideFilter !== "puts" && <th className="chain-side-label" colSpan={7}>CALLS</th>}
                 <th className="chain-side-label" />
-                <th className="chain-side-label" colSpan={7}>PUTS</th>
+                {sideFilter !== "calls" && <th className="chain-side-label" colSpan={7}>PUTS</th>}
               </tr>
             </thead>
             <tbody>
@@ -730,6 +762,7 @@ export default function OptionsChainTab({
                     onClickCall={handleCallClick}
                     onClickPut={handlePutClick}
                     atmRef={isAtm ? atmRef : undefined}
+                    sideFilter={sideFilter}
                   />
                 );
               })}

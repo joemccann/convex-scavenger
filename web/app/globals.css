@@ -1747,6 +1747,19 @@ tr.leg-row td {
   background: var(--banner-positive);
 }
 
+.connection-banner-error {
+  background: var(--banner-negative);
+}
+
+.connection-banner-warning {
+  background: var(--warning);
+  color: var(--bg-canvas);
+}
+
+.connection-banner-success {
+  background: var(--banner-positive);
+}
+
 @keyframes banner-slide-down {
   from {
     max-height: 0;
@@ -2363,12 +2376,17 @@ tr.leg-row td {
 
 .ticker-detail-content { display: flex; flex-direction: column; gap: 0; }
 
-.ticker-detail-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.ticker-detail-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+/* Hero row: telemetry + chart side-by-side */
+.ticker-detail-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.ticker-detail-hero-left { display: flex; flex-direction: column; min-width: 0; }
+.ticker-detail-hero-right { min-width: 0; }
 
 /* Price bar */
-.price-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 0; border-top: 1px solid var(--border-dim); border-bottom: 1px solid var(--border-dim); margin-bottom: 0; }
-.price-bar-empty { padding: 12px 0; border-top: 1px solid var(--border-dim); border-bottom: 1px solid var(--border-dim); margin-bottom: 0; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
-.price-bar-item { display: flex; flex-direction: column; gap: 2px; }
+.price-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px 0; border-top: 1px solid var(--border-dim); border-bottom: 1px solid var(--border-dim); margin-bottom: 0; }
+.price-bar-empty { padding: 8px 0; border-top: 1px solid var(--border-dim); border-bottom: 1px solid var(--border-dim); margin-bottom: 0; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
+.price-bar-item { display: flex; flex-direction: column; gap: 1px; }
 .price-bar-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 .price-bar-value { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
 .price-bar-value.positive { color: var(--positive); }
@@ -4080,13 +4098,10 @@ tr {
 
 .chain-grid {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-family: var(--font-mono);
   font-size: 11px;
-}
-
-.chain-grid thead {
-  z-index: 2;
 }
 
 .chain-header {
@@ -4182,6 +4197,24 @@ tr {
 .chain-iv { color: var(--text-secondary); font-size: 10px; }
 .chain-vol { color: var(--text-secondary); font-size: 10px; }
 .chain-last { color: var(--text-muted); }
+
+/* Side filter toggle */
+.chain-side-toggle { display: flex; gap: 0; border: 1px solid var(--line-grid); border-radius: 4px; overflow: hidden; }
+.chain-side-toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 100ms;
+}
+.chain-side-toggle-btn:not(:last-child) { border-right: 1px solid var(--line-grid); }
+.chain-side-toggle-btn:hover { color: var(--text-primary); }
+.chain-side-toggle-btn.active { background: var(--bg-panel-raised); color: var(--text-primary); }
 
 /* ─── Order Builder ─── */
 

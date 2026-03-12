@@ -118,18 +118,20 @@ export default function TickerDetailModal({ theme = "dark" }: { theme?: "dark" |
   return (
     <Modal open={true} onClose={closeTicker} title={activeTicker} className="ticker-detail-modal">
       <div className="ticker-detail-content">
-        {/* Position summary pill */}
-        <div className="ticker-detail-header">
-          <span className={`pill ${position ? "defined" : "neutral"}`} style={{ fontSize: "9px" }}>
-            {positionSummary}
-          </span>
+        {/* Hero row: telemetry (left) + chart (right) */}
+        <div className="ticker-detail-hero">
+          <div className="ticker-detail-hero-left">
+            <div className="ticker-detail-header">
+              <span className={`pill ${position ? "defined" : "neutral"}`} style={{ fontSize: "9px" }}>
+                {positionSummary}
+              </span>
+            </div>
+            <TickerQuoteTelemetry priceData={priceData} label={priceLabel} />
+          </div>
+          <div className="ticker-detail-hero-right">
+            <PriceChart ticker={activeTicker} prices={prices} priceKey={chartPriceKey} theme={theme} />
+          </div>
         </div>
-
-        {/* Quote telemetry */}
-        <TickerQuoteTelemetry priceData={priceData} label={priceLabel} />
-
-        {/* Price chart */}
-        <PriceChart ticker={activeTicker} prices={prices} priceKey={chartPriceKey} theme={theme} />
 
         {/* Tab bar */}
         <div className="ticker-tabs">
