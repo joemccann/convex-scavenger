@@ -12,10 +12,16 @@ Capture the `/regime` strip and relationship-view learnings in the repo docs, th
 - T4 (Push the commit, verify the pushed state, and capture the exact ship summary in the task log) depends_on: [T3]
 
 ### Checklist
-- [ ] T1 Inspect the current worktree and identify the operator-facing docs that should record the `/regime` responsive learnings
-- [ ] T2 Update the selected docs plus the task log with the final `/regime` responsive-strip and relationship-view learnings
-- [ ] T3 Stage only the relevant `/regime` UI, tests, task-log, and documentation files, then create a scoped commit
-- [ ] T4 Push the commit, verify the pushed state, and capture the exact ship summary in the task log
+- [x] T1 Inspect the current worktree and identify the operator-facing docs that should record the `/regime` responsive learnings
+- [x] T2 Update the selected docs plus the task log with the final `/regime` responsive-strip and relationship-view learnings
+- [x] T3 Stage only the relevant `/regime` UI, tests, task-log, and documentation files, then create a scoped commit
+- [x] T4 Push the commit, verify the pushed state, and capture the exact ship summary in the task log
+
+### Review
+- Updated the operator-facing summary in [README.md](/Users/joemccann/dev/apps/finance/radon/README.md) so the terminal docs now describe the shared `/regime` strip renderer and its responsive `5-up -> 3x2 -> stacked telemetry rail` contract.
+- Added a ship note in [docs/status.md](/Users/joemccann/dev/apps/finance/radon/docs/status.md) that captures the full `/regime` batch: shared strip renderer, earlier narrow-width detail-panel collapse, and actionable plus hoverable normalized-divergence guidance.
+- Created the scoped ship commit `13aadeb` (`fix: tighten regime operator telemetry`) from only the `/regime` UI, tests, docs, and task-log files, leaving unrelated runtime/cache/worktree files out of the batch.
+- Verified the shipped batch with `npx vitest run web/tests/regime-strip-responsive.test.ts web/tests/regime-detail-panels-responsive.test.ts web/tests/regime-relationship-tooltips.test.ts`, `cd web && npm run build`, and `cd web && npx playwright test e2e/regime-strip-responsive.spec.ts e2e/regime-detail-panels-responsive.spec.ts e2e/regime-relationship-view.spec.ts --config playwright.config.ts`.
 
 ## Session: Replace Centered Mobile Strip Rows With Anchored Telemetry Rails (2026-03-12)
 
