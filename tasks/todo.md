@@ -1,5 +1,45 @@
 # TODO
 
+## Session: Load And Verify CTA Launch Agent (2026-03-12)
+
+### Goal
+Bootstrap the installed `com.radon.cta-sync` launch agent into the live user `launchd` domain and verify that it is actually loaded, triggerable, and writing the expected logs.
+
+### Dependency Graph
+- T1 (Inspect the installed CTA launch agent state and record the load/verification plan) depends_on: []
+- T2 (Bootstrap or enable `com.radon.cta-sync` in the live `gui/501` launchd domain and trigger a verification run) depends_on: [T1]
+- T3 (Verify the live launchd record, recent logs, and resulting CTA sync status, then document the outcome) depends_on: [T2]
+
+### Checklist
+- [x] T1 Inspect the installed CTA launch agent state and record the load/verification plan
+- [x] T2 Bootstrap or enable `com.radon.cta-sync` in the live `gui/501` launchd domain and trigger a verification run
+- [x] T3 Verify the live launchd record, recent logs, and resulting CTA sync status, then document the outcome
+
+### Review
+- Bootstrapped the installed user agent with `launchctl bootstrap gui/501 ~/Library/LaunchAgents/com.radon.cta-sync.plist` and then forced an immediate verification run with `launchctl kickstart -k gui/501/com.radon.cta-sync`.
+- Verified the live launchd record with `launchctl print gui/501/com.radon.cta-sync`. The service is now loaded in the user GUI domain, has the expected `ProgramArguments` pointing at [scripts/run_cta_sync.sh](/Users/joemccann/dev/apps/finance/radon/scripts/run_cta_sync.sh), shows the calendar triggers, and reports `runs = 2` with `last exit code = 0`.
+- Verified the launchd registry with `launchctl list`, which now includes `com.radon.cta-sync` alongside `local.ibc-gateway` and `com.radon.monitor-daemon`.
+- Verified runtime behavior from [logs/cta-sync.out.log](/Users/joemccann/dev/apps/finance/radon/logs/cta-sync.out.log), [logs/cta-sync.err.log](/Users/joemccann/dev/apps/finance/radon/logs/cta-sync.err.log), [cta-sync-latest.json](/Users/joemccann/dev/apps/finance/radon/data/menthorq_cache/health/cta-sync-latest.json), and [cta-sync.json](/Users/joemccann/dev/apps/finance/radon/data/service_health/cta-sync.json). The current run is healthy and skipped correctly because `cta_2026-03-11.json` is already present; the older March 11 auth failure remains visible only as historical log output.
+
+## Session: Fix Modify-Order Spread Dollar Basis (2026-03-12)
+
+### Dependency Graph
+- T1 (Inspect the modify-order modal quote math and identify the intended spread basis from the current UI path) depends_on: []
+- T2 (Record the corrected plan and user-correction lesson in `tasks/todo.md` and `tasks/lessons.md`) depends_on: [T1]
+- T3 (Update unit and Playwright tests to the corrected modify-order spread contract and observe the red state) depends_on: [T1, T2]
+- T4 (Implement the minimal fix in `ModifyOrderModal` without regressing the shared ticker modal or instrument ticket behavior) depends_on: [T3]
+- T5 (Run targeted Vitest and Playwright verification, then capture review notes) depends_on: [T4]
+
+### Checklist
+- [ ] T1 Inspect the modify-order modal quote math and identify the intended spread basis from the current UI path
+- [x] T2 Record the corrected plan and user-correction lesson in `tasks/todo.md` and `tasks/lessons.md`
+- [ ] T3 Update unit and Playwright tests to the corrected modify-order spread contract and observe the red state
+- [ ] T4 Implement the minimal fix in `ModifyOrderModal` without regressing the shared ticker modal or instrument ticket behavior
+- [ ] T5 Run targeted Vitest and Playwright verification, then capture review notes
+
+### Review
+- Pending.
+
 ## Session: Separate Quote-Level And Order-Level Spread Notional (2026-03-12)
 
 ### Dependency Graph

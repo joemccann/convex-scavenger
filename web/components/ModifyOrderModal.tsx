@@ -5,7 +5,7 @@ import type { OpenOrder, PortfolioData } from "@/lib/types";
 import type { PriceData } from "@/lib/pricesProtocol";
 import { optionKey } from "@/lib/pricesProtocol";
 import Modal from "./Modal";
-import { fmtPrice, formatSpreadTelemetry, getQuoteMetrics, legPriceKey } from "@/lib/positionUtils";
+import { fmtPrice, formatExecutionSpreadTelemetry, getQuoteMetrics, legPriceKey } from "@/lib/positionUtils";
 
 type ModifyOrderModalProps = {
   order: OpenOrder | null;
@@ -125,11 +125,9 @@ export default function ModifyOrderModal({ order, loading, prices, portfolio, on
 
   const delta = isValid ? parsedNew - currentPrice : 0;
   const hasPriceData = priceData?.bid != null && priceData?.ask != null;
-  const quantityMultiplier = Math.abs(order.totalQuantity);
-  const spreadNotionalMultiplier = (order.contract.secType === "STK" ? 1 : 100) * quantityMultiplier;
 
   const { bid, mid, ask } = getQuoteMetrics(priceData);
-  const spreadLabel = formatSpreadTelemetry(priceData, spreadNotionalMultiplier);
+  const spreadLabel = formatExecutionSpreadTelemetry(priceData);
 
   return (
     <Modal open={!!order} onClose={onClose} title="Modify Order">

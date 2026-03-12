@@ -41,6 +41,17 @@ export function formatSpreadTelemetry(
   return `${fmtPrice(notionalSpread)} / ${spreadBps.toLocaleString("en-US")} bps`;
 }
 
+export function formatExecutionSpreadTelemetry(
+  priceData?: Pick<PriceData, "bid" | "ask"> | null,
+): string {
+  const { spread, mid } = getQuoteMetrics(priceData);
+  if (spread == null) return "---";
+  const executionSpread = roundQuoteValue(spread / 2);
+  if (mid == null || mid <= 0) return fmtPrice(executionSpread);
+  const executionSpreadBps = Math.round((executionSpread / mid) * 10_000);
+  return `${fmtPrice(executionSpread)} / ${executionSpreadBps.toLocaleString("en-US")} bps`;
+}
+
 /* ─── Position math ───────────────────────────────────────── */
 
 export function resolveMarketValue(pos: PortfolioPosition): number | null {

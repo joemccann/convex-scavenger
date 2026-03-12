@@ -1,18 +1,18 @@
 {
   "service": "cta-sync",
-  "run_id": "20260312T134445597241Z",
+  "run_id": "20260312T142911747916Z",
   "state": "healthy",
   "target_date": "2026-03-11",
   "latest_available_date": "2026-03-11",
-  "last_attempt_started_at": "2026-03-12T13:44:45.597241Z",
-  "last_attempt_finished_at": "2026-03-12T13:44:45.597927Z",
+  "last_attempt_started_at": "2026-03-12T14:29:11.747916Z",
+  "last_attempt_finished_at": "2026-03-12T14:29:11.759480Z",
   "last_successful_date": "2026-03-11",
-  "last_successful_at": "2026-03-12T13:44:45.597927Z",
+  "last_successful_at": "2026-03-12T14:29:11.759480Z",
   "last_cache_path": "/Users/joemccann/dev/apps/finance/radon/data/menthorq_cache/cta_2026-03-11.json",
   "attempt_count": 0,
   "last_error": null,
   "last_run_source": "launchd",
   "artifacts": {},
   "message": "CTA cache already fresh for target date",
-  "_checksum": "8729508dcfae01582f1d4cc71f7260d23dc0a9bdaef4aeb5121e3aac071996ba"
+  "_checksum": "23b53a952a33d580524c76aabb0544004de6a943699a1a5abff05fb7df233e3b"
 }

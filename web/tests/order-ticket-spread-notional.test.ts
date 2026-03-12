@@ -107,7 +107,7 @@ describe("order-ticket spread notional", () => {
     expect(html).toContain("$3,000.00 / 3,077 bps");
   });
 
-  it("uses order.totalQuantity in the modify-order spread notional", () => {
+  it("uses quote-level half-spread telemetry in the modify-order modal", () => {
     const html = renderToStaticMarkup(
       React.createElement(ModifyOrderModal, {
         order: openOrder,
@@ -119,6 +119,6 @@ describe("order-ticket spread notional", () => {
       }),
     );
 
-    expect(html).toContain("$3,000.00 / 3,077 bps");
+    expect(html).toContain("$0.60 / 1,538 bps");
   });
 });
