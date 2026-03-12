@@ -1,5 +1,14 @@
 # TODO
 
+## Session: Chain UX, IB Error Handling, Ticker Detail Layout (2026-03-12)
+
+### Completed
+- [x] Fix sticky chain headers (root cause: `border-collapse: collapse` breaks `position: sticky`)
+- [x] Add ALL/CALLS/PUTS side filter toggle to options chain
+- [x] Handle IB error code 200 (no security definition) silently in WS relay
+- [x] Layout ticker detail hero as 2x1 grid (telemetry + chart side-by-side)
+- [x] Fix order builder notional double-counting quantity (`computeNetPrice` already includes qty)
+
 ## Session: Remove Generic IB Reconnect Banner Regression (2026-03-12)
 
 ### Goal
