@@ -4106,6 +4106,11 @@ tr {
   font-size: 11px;
 }
 
+.chain-grid thead {
+  position: relative;
+  z-index: 10;
+}
+
 .chain-header {
   position: sticky;
   top: 0;
