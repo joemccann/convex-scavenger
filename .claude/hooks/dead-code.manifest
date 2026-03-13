@@ -5,6 +5,7 @@ scripts/__pycache__	__pycache__ directory
 scripts/monitor_daemon/__pycache__	__pycache__ directory
 scripts/monitor_daemon/handlers/__pycache__	__pycache__ directory
 scripts/clients/__pycache__/__init__.cpython-39.pyc	compiled .pyc file
+scripts/clients/__pycache__/uw_client.cpython-39.pyc	compiled .pyc file
 scripts/clients/__pycache__/menthorq_client.cpython-39.pyc	compiled .pyc file
 scripts/clients/__pycache__/uw_client.cpython-314.pyc	compiled .pyc file
 scripts/clients/__pycache__/ib_client.cpython-314.pyc	compiled .pyc file
