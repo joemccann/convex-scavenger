@@ -13,9 +13,16 @@ Update the operator-facing docs to reflect the stronger `/api/performance` ET-se
 
 ### Checklist
 - [x] T1 Confirm the active branch and identify the docs that should mention the route-level ET-session refresh contract
-- [ ] T2 Update the selected docs plus the task log for the route-refresh fix and the branch-state correction
-- [ ] T3 Create a scoped docs-only commit on top of the existing unpushed `main` commits
-- [ ] T4 Push `main` and confirm the worktree is clean
+- [x] T2 Update the selected docs plus the task log for the route-refresh fix and the branch-state correction
+- [x] T3 Create a scoped docs-only commit on top of the existing unpushed `main` commits
+- [x] T4 Push `main` and confirm the worktree is clean
+
+### Review
+- Confirmed the active checkout was already [main](/Users/joemccann/dev/apps/finance/radon/.git/HEAD), so there was no branch merge step to perform before shipping the two unpushed performance-fix commits.
+- Updated the repo-level product summary in [README.md](/Users/joemccann/dev/apps/finance/radon/README.md) so the `/performance` capability note now captures both halves of the fix: the UI-side portfolio-sync revalidation and the route-side ET-session guard.
+- Updated the API contract in [web/README.md](/Users/joemccann/dev/apps/finance/radon/web/README.md) to state that `GET /api/performance` can refresh `portfolio.json` through `ibSync` when the snapshot is behind the current ET session before rebuilding the YTD performance payload.
+- Updated [docs/status.md](/Users/joemccann/dev/apps/finance/radon/docs/status.md) with the new route-fix ship note and the current timestamp, and recorded the branch-state correction in [tasks/lessons.md](/Users/joemccann/dev/apps/finance/radon/tasks/lessons.md).
+- Shipped the stack from `main` by pushing the existing code commits plus the docs-only follow-up commit, then verified the worktree returned clean.
 
 ## Session: Refresh `/api/performance` Against The Current ET Session Before Rebuild (2026-03-13)
 
