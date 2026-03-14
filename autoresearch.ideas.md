@@ -1,18 +1,27 @@
 # IB Sync Latency — Ideas Backlog
 
-## Explored and exhausted
-- **Sleep tuning**: 2.5s is the floor with close fallback. Lower (2.0s, 1.5s) loses data.
-- **Adaptive polling**: Python-level checking overhead (0.1-0.25s per check) exceeds savings.
-- **Account summary → accountValues()**: 0ms cache read vs 200-700ms round-trip. Done, merged.
-- **Skip qualifyContracts**: exchange='SMART' for all contracts. Done, merged.
-- **Batch PnL Single**: bypass IBClient wrapper, call ib.reqPnLSingle directly. Done, merged.
-- **Overlap sleeps**: all subscriptions concurrent, one combined sleep. Done, merged.
-- **Snapshot market data**: Fails with delayed-frozen data (type 4) — only 8/26. Not robust.
-- **Phase 6 elimination**: Account PnL arrives during Phase 4 sleep. No fallback needed. Done, merged.
-- **Close price fallback**: Catches degraded gateway states (15+ positions saved). Done, merged.
-- **Import optimization**: ib_insync takes 121ms — unavoidable, it's a required dependency.
-- **Post-IB processing**: collapse <1ms, atomic_save ~1.4ms, display ~0.2ms — negligible.
-- **Sleep 2.0s/2.3s with close fallback**: Works but overfits to degraded gateway — close prices mask the fact that live data wouldn't arrive in time. Rejected for data quality reasons during market hours.
+## Status: EXHAUSTED — No actionable ideas remain.
 
-## Remaining (diminishing returns, not worth pursuing)
-- **Persistent connection pool**: Keep IB connection alive between syncs. Saves ~200ms connect. Needs daemon architecture change — beyond scope.
+All paths with meaningful impact have been explored and either applied or rejected.
+The optimization is at the theoretical floor (~2.9s) bounded by IB's 2.5s data streaming requirement.
+
+## Applied (merged to main)
+- Batch PnL Single (−13.6s)
+- Overlap all sleeps (−4.5s)
+- Skip qualifyContracts (−1.5s)
+- accountValues() cache read (−0.3s)
+- Phase 6 elimination (−0.3s)
+- Sleep 2.7→2.5s (−0.2s)
+- Close price fallback (data quality, no timing impact)
+
+## Explored and rejected
+- Adaptive polling (0.1s/0.25s): iteration overhead exceeds savings
+- Snapshot market data: broken with delayed-frozen (type 4)
+- Move account summary after subs: event loop backlog regression
+- Import optimization: ib_insync 121ms, unavoidable
+- Post-IB processing: <3ms total, negligible
+- Skip cancel calls: <2ms total, negligible
+- Sleep <2.5s: overfits to degraded gateway, loses live data during market hours
+
+## Not worth pursuing
+- Persistent connection pool: saves ~125ms connect, needs daemon architecture change — beyond scope
