@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState, useEffect, type MouseEvent } from "react";
 import { scaleLinear, scaleTime, type ScaleLinear } from "d3-scale";
 import { line, curveMonotoneX } from "d3-shape";
-import { extent, bisector } from "d3-array";
+import { extent, bisectLeft } from "@/lib/arrayUtils";
 import ChartPanel from "./charts/ChartPanel";
 
 const shortDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -93,7 +93,11 @@ export default function CriHistoryChart({
   // Scales
   const dates = useMemo(() => chartData.map((d) => new Date(d.date)), [chartData]);
   const xScale = useMemo(
-    () => scaleTime().domain(extent(dates) as [Date, Date]).range([0, innerW]),
+    () => {
+      if (dates.length === 0) return scaleTime().domain([new Date(), new Date()]).range([0, innerW]);
+      const sorted = dates.slice().sort((a, b) => a.getTime() - b.getTime());
+      return scaleTime().domain([sorted[0], sorted[sorted.length - 1]]).range([0, innerW]);
+    },
     [dates, innerW],
   );
 
@@ -154,8 +158,7 @@ export default function CriHistoryChart({
       const rect = svg.getBoundingClientRect();
       const mx = e.clientX - rect.left - MARGIN.left;
       const hoveredDate = xScale.invert(mx);
-      const bis = bisector((d: CriHistoryEntry) => new Date(d.date)).left;
-      let idx = bis(chartData, hoveredDate);
+      let idx = bisectLeft(chartData, hoveredDate, (d: CriHistoryEntry) => new Date(d.date));
       idx = Math.max(0, Math.min(chartData.length - 1, idx));
       if (idx > 0) {
         const tBefore = Math.abs(new Date(chartData[idx - 1].date).getTime() - hoveredDate.getTime());

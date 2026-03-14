@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { scaleLinear } from "d3-scale";
 import { line, curveMonotoneX } from "d3-shape";
-import { extent, mean } from "d3-array";
+import { extent, mean } from "@/lib/arrayUtils";
 import InfoTooltip from "./InfoTooltip";
 import ChartLegend from "./charts/ChartLegend";
 import ChartPanel from "./charts/ChartPanel";
