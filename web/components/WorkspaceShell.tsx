@@ -14,7 +14,7 @@ import { usePrices } from "@/lib/usePrices";
 import { useBlotter } from "@/lib/useBlotter";
 import { computeRealizedPnlFromFills } from "@/lib/realized-pnl";
 import { usePreviousClose } from "@/lib/usePreviousClose";
-import { type OptionContract, type IndexContract, optionKey, portfolioLegToContract } from "@/lib/pricesProtocol";
+import { type OptionContract, type IndexContract, portfolioLegToContract } from "@/lib/pricesProtocol";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import ChatPanel from "@/components/ChatPanel";
