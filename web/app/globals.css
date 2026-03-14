@@ -705,23 +705,7 @@ td.last-price-cell {
   color: var(--negative);
 }
 
-@keyframes last-price-flash-up {
-  0% {
-    background: rgba(34, 197, 94, 0.15);
-  }
-  100% {
-    background: transparent;
-  }
-}
 
-@keyframes last-price-flash-down {
-  0% {
-    background: rgba(239, 68, 68, 0.15);
-  }
-  100% {
-    background: transparent;
-  }
-}
 
 .pill {
   display: inline-block;
@@ -4141,5 +4125,3 @@ tr {
 .border-gray-800 { border-color: #1f2937; }
 .bg-gray-800 { background-color: #1f2937; }
 .bg-gray-800\/50 { background-color: rgb(31 41 55 / 0.5); }
-.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
