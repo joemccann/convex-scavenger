@@ -52,8 +52,8 @@ function L1OrderBook({
         {/* Bid side */}
         <div style={{ textAlign: "center" }}>
           <div
-            className="font-mono text-secondary"
-            style={{ fontSize: "10px", textTransform: "uppercase", marginBottom: "4px" }}
+            className="font-mono text-secondary uppercase"
+            style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             BID
           </div>
@@ -74,8 +74,8 @@ function L1OrderBook({
         {/* Spread */}
         <div style={{ textAlign: "center" }}>
           <div
-            className="font-mono text-secondary"
-            style={{ fontSize: "10px", textTransform: "uppercase", marginBottom: "4px" }}
+            className="font-mono text-secondary uppercase"
+            style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             SPREAD
           </div>
@@ -96,8 +96,8 @@ function L1OrderBook({
         {/* Ask side */}
         <div style={{ textAlign: "center" }}>
           <div
-            className="font-mono text-secondary"
-            style={{ fontSize: "10px", textTransform: "uppercase", marginBottom: "4px" }}
+            className="font-mono text-secondary uppercase"
+            style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             ASK
           </div>

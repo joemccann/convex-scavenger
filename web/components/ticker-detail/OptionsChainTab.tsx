@@ -244,10 +244,9 @@ function OrderBuilder({
     <div className="order-builder">
       <div className="order-builder-header">
         <span
-          className="text-secondary"
+          className="text-secondary uppercase"
           style={{
             fontSize: "11px",
-            textTransform: "uppercase",
             letterSpacing: "0.05em",
           }}
         >
@@ -647,10 +646,9 @@ export default function OptionsChainTab({
       {/* Expiry selector */}
       <div className="chain-expiry-bar">
         <label
-          className="font-mono text-secondary"
+          className="font-mono text-secondary uppercase"
           style={{
             fontSize: "10px",
-            textTransform: "uppercase",
             letterSpacing: "0.05em",
           }}
         >

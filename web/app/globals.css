@@ -4103,6 +4103,7 @@ tr {
 .font-mono { font-family: var(--font-mono); }
 .text-secondary { color: var(--text-secondary); }
 .text-muted { color: var(--text-muted); }
+.uppercase { text-transform: uppercase; }
 .book-section-header {
   font-family: var(--font-mono);
   font-size: 11px;

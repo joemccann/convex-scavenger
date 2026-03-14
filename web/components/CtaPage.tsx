@@ -97,7 +97,7 @@ export default function CtaPage() {
       {/* ── Vol-Targeting Model Panel ─────────────────── */}
       <div data-testid="vol-targeting-model" style={{ padding: "16px", borderBottom: "1px solid var(--border)" }}>
         <div
-          className="font-mono text-muted"
+          className="font-mono text-muted uppercase"
           style={{
             display: "flex",
             alignItems: "center",
@@ -105,7 +105,6 @@ export default function CtaPage() {
             fontSize: "10px",
             fontWeight: 700,
             letterSpacing: "0.10em",
-            textTransform: "uppercase",
             marginBottom: "12px",
           }}
         >
@@ -170,14 +169,13 @@ export default function CtaPage() {
       {/* ── MenthorQ CTA Positioning ──────────────────── */}
       <div className="w-full">
         <div
-          className="font-mono text-muted"
+          className="font-mono text-muted uppercase"
           style={{
             fontSize: "10px",
             fontWeight: 700,
             letterSpacing: "0.10em",
             padding: "12px 12px 8px",
             borderBottom: "1px solid var(--border)",
-            textTransform: "uppercase",
             display: "flex",
             alignItems: "baseline",
             gap: "8px",

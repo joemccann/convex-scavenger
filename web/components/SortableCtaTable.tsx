@@ -111,13 +111,12 @@ export default function SortableCtaTable({ sectionKey, rows }: SortableCtaTableP
   return (
     <div data-testid="sortable-cta-table" className="w-full">
       <div
-        className="font-mono text-muted"
+        className="font-mono text-muted uppercase"
         style={{
           fontSize: "10px",
           fontWeight: 700,
           letterSpacing: "0.10em",
           padding: "8px 12px 4px",
-          textTransform: "uppercase",
         }}
       >
         {SECTION_LABELS[sectionKey] ?? sectionKey.toUpperCase()}
