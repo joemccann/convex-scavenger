@@ -58,11 +58,8 @@ function overallRating(months: MonthData[]): { rating: Rating; favorable: number
 }
 
 /** Format decimal as percentage string: 0.0534 -> "+5.3%" */
-function fmtPct(val: number): string {
-  const pct = val * 100;
-  const sign = pct >= 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
-}
+import { fmtPct as _fmtPctShared } from "@/lib/format";
+function fmtPct(val: number): string { return _fmtPctShared(val, 1); }
 
 /** Format win rate: 0.6667 -> "66.7%" */
 function fmtWinRate(val: number): string {

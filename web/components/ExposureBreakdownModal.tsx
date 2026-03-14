@@ -55,14 +55,11 @@ const METRIC_CONFIG: Record<ExposureMetric, {
   },
 };
 
-import { fmtUsd, fmtSignedUsd, fmtDelta, fmtSpot } from "@/lib/format";
+import { fmtUsd, fmtSignedUsd, fmtDelta, fmtSpot, fmtSigned } from "@/lib/format";
 
 
 
-function fmtLegDelta(n: number | null): string {
-  if (n == null) return "---";
-  return n >= 0 ? `+${n.toFixed(4)}` : n.toFixed(4);
-}
+const fmtLegDelta = (n: number | null) => fmtSigned(n, 4);
 
 export default function ExposureBreakdownModal({ metric, exposure, bankroll, onClose }: Props) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
