@@ -220,13 +220,13 @@ function LegRow({
       <td></td>
       <td
         colSpan={3}
-        className={`cell-indent cell-muted ${onLegClick ? "leg-clickable" : ""}`}
+        className={`cell-indent cm ${onLegClick ? "leg-clickable" : ""}`}
         onClick={onLegClick ? () => onLegClick(leg) : undefined}
       >
         {leg.direction} {leg.contracts}x {leg.type}{leg.strike ? ` $${leg.strike}` : ""}
       </td>
       {showUnderlying && <td></td>}
-      <td className="right cell-muted">{fmtPrice(Math.abs(leg.avg_cost) / (leg.type === "Stock" ? 1 : 100))}</td>
+      <td className="right cm">{fmtPrice(Math.abs(leg.avg_cost) / (leg.type === "Stock" ? 1 : 100))}</td>
       <td className="right last-price-cell">
         {marketPrice != null ? fmtPriceOrCalculated(marketPrice, isCalculated) : "—"}
         {priceDirection === "up" && <ArrowUp size={11} className="pt-i ptu" aria-label="price up" />}
@@ -234,9 +234,9 @@ function LegRow({
       </td>
       <td></td>
       <td></td>
-      <td className="right cell-muted">{fmtPrice(legEc)}</td>
-      <td className="right cell-muted">{rtLast != null ? fmtUsd(rtLast * leg.contracts * mult) : leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
-      <td className={`right cell-muted ${legPnl != null ? (legPnl >= 0 ? "positive" : "negative") : ""}`}>
+      <td className="right cm">{fmtPrice(legEc)}</td>
+      <td className="right cm">{rtLast != null ? fmtUsd(rtLast * leg.contracts * mult) : leg.market_value != null ? fmtUsd(Math.abs(leg.market_value)) : "—"}</td>
+      <td className={`right cm ${legPnl != null ? (legPnl >= 0 ? "positive" : "negative") : ""}`}>
         {legPnl != null ? `${legPnl >= 0 ? "+" : "-"}${fmtUsd(Math.abs(legPnl))}` : "—"}
       </td>
       {showExpiry && <td></td>}

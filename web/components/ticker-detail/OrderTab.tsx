@@ -264,7 +264,7 @@ function NewOrderForm({
   }, [confirmStep, ticker, action, parsedQty, parsedPrice, tif, position, onOrderPlaced]);
 
   return (
-    <div className="order-form">
+    <div className="of">
       <div className="o-f">
         <label className="o-l">Action</label>
         <div className="o-ab">
@@ -286,7 +286,7 @@ function NewOrderForm({
       <div className="o-f">
         <label className="o-l">Quantity</label>
         <input
-          className="order-input"
+          className="oi"
           type="number"
           min="1"
           step="1"
@@ -328,7 +328,7 @@ function NewOrderForm({
       {error && <div className="order-error">{error}</div>}
       {success && <div className="order-success">{success}</div>}
 
-      <div className="order-submit">
+      <div className="os">
         {confirmStep ? (
           <div className="oc-r">
             <button className="bt-s" onClick={() => setConfirmStep(false)} disabled={loading}>Back</button>
@@ -473,7 +473,7 @@ function ComboOrderForm({
   }, [confirmStep, ticker, action, parsedQty, parsedPrice, tif, legsWithActions, position.structure, onOrderPlaced]);
 
   return (
-    <div className="order-form">
+    <div className="of">
       {/* Leg summary (read-only) */}
       <div className="o-f">
         <label className="o-l">Legs</label>
@@ -514,7 +514,7 @@ function ComboOrderForm({
       <div className="o-f">
         <label className="o-l">Quantity</label>
         <input
-          className="order-input"
+          className="oi"
           type="number"
           min="1"
           step="1"
@@ -565,7 +565,7 @@ function ComboOrderForm({
       {success && <div className="order-success">{success}</div>}
 
       {/* Submit / Confirm */}
-      <div className="order-submit">
+      <div className="os">
         {confirmStep ? (
           <div className="oc-r">
             <button className="bt-s" onClick={() => setConfirmStep(false)} disabled={loading}>Back</button>

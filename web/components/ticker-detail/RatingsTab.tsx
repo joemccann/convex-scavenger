@@ -63,8 +63,8 @@ type RatingsTabProps = {
 
 function gradePillClass(grade: string): string {
   const g = grade.toLowerCase();
-  if (g.includes("buy") || g.includes("outperform") || g.includes("overweight")) return "bullish";
-  if (g.includes("sell") || g.includes("underperform") || g.includes("underweight")) return "bearish";
+  if (g.includes("buy") || g.includes("outperform") || g.includes("overweight")) return "bu";
+  if (g.includes("sell") || g.includes("underperform") || g.includes("underweight")) return "be";
   return "neutral";
 }
 
@@ -104,7 +104,7 @@ export default function RatingsTab({ ticker, active, currentPrice }: RatingsTabP
   }, [active, fetched, fetchRatings]);
 
   if (loading) {
-    return <div className="tab-loading"><div className="tl-t">Loading ratings...</div></div>;
+    return <div className="tl"><div className="tl-t">Loading ratings...</div></div>;
   }
   if (error) {
     return <div className="tab-error">{error}</div>;
@@ -154,8 +154,8 @@ export default function RatingsTab({ ticker, active, currentPrice }: RatingsTabP
         )}
         <div className="ratings-summary">
           {analystCount > 0 && <span className="ratings-count">{analystCount} analysts</span>}
-          {buyPct != null && <span className="ratings-pct bullish">{buyPct}% buy</span>}
-          {sellPct != null && sellPct > 0 && <span className="ratings-pct bearish">{sellPct}% sell</span>}
+          {buyPct != null && <span className="ratings-pct bu">{buyPct}% buy</span>}
+          {sellPct != null && sellPct > 0 && <span className="ratings-pct be">{sellPct}% sell</span>}
         </div>
       </div>
 
@@ -185,37 +185,37 @@ export default function RatingsTab({ ticker, active, currentPrice }: RatingsTabP
           <div className="rt-t">Price Targets</div>
           <div className="ratings-targets-grid">
             {ptLow != null && (
-              <div className="pos-stat">
+              <div className="ps">
                 <span className="ps-l">Low</span>
                 <span className="ps-v">{fmtPrice(ptLow)}</span>
               </div>
             )}
             {ptMedian != null && (
-              <div className="pos-stat">
+              <div className="ps">
                 <span className="ps-l">Median</span>
                 <span className="ps-v">{fmtPrice(ptMedian)}</span>
               </div>
             )}
             {ptMean != null && (
-              <div className="pos-stat">
+              <div className="ps">
                 <span className="ps-l">Mean</span>
                 <span className="ps-v">{fmtPrice(ptMean)}</span>
               </div>
             )}
             {ptHigh != null && (
-              <div className="pos-stat">
+              <div className="ps">
                 <span className="ps-l">High</span>
                 <span className="ps-v">{fmtPrice(ptHigh)}</span>
               </div>
             )}
             {currentPrice != null && (
-              <div className="pos-stat">
+              <div className="ps">
                 <span className="ps-l">Current</span>
                 <span className="ps-v">{fmtPrice(currentPrice)}</span>
               </div>
             )}
             {upsideDownside != null && (
-              <div className="pos-stat">
+              <div className="ps">
                 <span className="ps-l">vs Mean</span>
                 <span className={`ps-v ${upsideDownside >= 0 ? "positive" : "negative"}`}>
                   {upsideDownside >= 0 ? "+" : ""}{upsideDownside.toFixed(1)}%
@@ -230,7 +230,7 @@ export default function RatingsTab({ ticker, active, currentPrice }: RatingsTabP
       {changes.length > 0 && (
         <div className="ratings-changes">
           <div className="rt-t">Recent Analyst Actions</div>
-          <table className="pos-legs-table">
+          <table className="plt">
             <thead>
               <tr>
                 <th>Date</th>

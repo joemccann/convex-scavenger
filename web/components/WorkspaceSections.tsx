@@ -279,7 +279,7 @@ function FlowSections() {
 
       {error && (
         <div className="section">
-          <div className="s-bd"><div className="a-i bearish">{error}</div></div>
+          <div className="s-bd"><div className="a-i be">{error}</div></div>
         </div>
       )}
 
@@ -483,9 +483,9 @@ function ScannerSections() {
   const { sorted, sort, toggle } = useSort(signals, scannerSigExtract);
 
   const signalClass = (signal: string) => {
-    if (signal === "STRONG") return "bullish";
+    if (signal === "STRONG") return "bu";
     if (signal === "MODERATE") return "neutral";
-    return "bearish";
+    return "be";
   };
 
   const dirClass = (dir: string) => {
@@ -514,7 +514,7 @@ function ScannerSections() {
             </span>
           </div>
         </div>
-        {error && <div className="s-bd"><div className="a-i bearish">{error}</div></div>}
+        {error && <div className="s-bd"><div className="a-i be">{error}</div></div>}
         {signals.length === 0 && !syncing && !error && (
           <div className="s-bd"><div className="a-i">No scanner signals. Waiting for initial scan...</div></div>
         )}
@@ -595,21 +595,21 @@ function DiscoverSections() {
   };
 
   const biasClass = (bias: string) => {
-    if (bias === "BULLISH" || bias === "CALLS") return "bullish";
-    if (bias === "BEARISH" || bias === "PUTS") return "bearish";
+    if (bias === "BULLISH" || bias === "CALLS") return "bu";
+    if (bias === "BEARISH" || bias === "PUTS") return "be";
     return "neutral";
   };
 
   const dpClass = (dir: string) => {
-    if (dir === "ACCUMULATION") return "bullish";
-    if (dir === "DISTRIBUTION") return "bearish";
+    if (dir === "ACCUMULATION") return "bu";
+    if (dir === "DISTRIBUTION") return "be";
     return "neutral";
   };
 
   const scoreClass = (score: number) => {
-    if (score >= 60) return "bullish";
+    if (score >= 60) return "bu";
     if (score >= 40) return "neutral";
-    return "bearish";
+    return "be";
   };
 
   return (
@@ -632,7 +632,7 @@ function DiscoverSections() {
             </span>
           </div>
         </div>
-        {error && <div className="s-bd"><div className="a-i bearish">{error}</div></div>}
+        {error && <div className="s-bd"><div className="a-i be">{error}</div></div>}
         {candidates.length === 0 && !syncing && !error && (
           <div className="s-bd"><div className="a-i">No candidates found. Waiting for initial scan...</div></div>
         )}
@@ -667,7 +667,7 @@ function DiscoverSections() {
                     <td className="right">{c.alerts}</td>
                     <td className="right">{fmtPremium(c.total_premium)}</td>
                     <td className="right">{c.sweeps}</td>
-                    <td className="cell-muted">{c.sector || c.issue_type || "—"}</td>
+                    <td className="cm">{c.sector || c.issue_type || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -704,16 +704,16 @@ function JournalSections() {
   };
 
   const decisionClass = (d: string) => {
-    if (d === "EXECUTED" || d === "OPEN") return "bullish";
+    if (d === "EXECUTED" || d === "OPEN") return "bu";
     if (d === "CLOSED") return "neutral";
     if (d === "FREED" || d === "CONVERTED") return "lean-bullish";
     if (d === "IB_AUTO_IMPORT") return "ib-import";
-    return "bearish";
+    return "be";
   };
 
   const pnlClass = (v: number | undefined | null) => {
     if (v == null) return "";
-    return v >= 0 ? "bullish" : "bearish";
+    return v >= 0 ? "bu" : "be";
   };
 
   return (
@@ -744,8 +744,8 @@ function JournalSections() {
             <span className="pill defined">{trades.length} TRADES</span>
           </div>
         </div>
-        {error && <div className="s-bd"><div className="a-i bearish">{error}</div></div>}
-        {syncError && <div className="s-bd"><div className="a-i bearish">IB Sync: {syncError}</div></div>}
+        {error && <div className="s-bd"><div className="a-i be">{error}</div></div>}
+        {syncError && <div className="s-bd"><div className="a-i be">IB Sync: {syncError}</div></div>}
         {loading && <div className="s-bd p-6"><TableSkeleton rows={4} columns={6} /></div>}
         {!loading && trades.length === 0 && !error && (
           <div className="s-bd"><div className="a-i">No trades in journal.</div></div>
@@ -775,7 +775,7 @@ function JournalSections() {
                   const cost = t.total_cost ?? t.entry_cost ?? null;
                   return (
                     <tr key={t.id}>
-                      <td className="cell-muted">{t.id}</td>
+                      <td className="cm">{t.id}</td>
                       <td>{t.date}</td>
                       <td><TickerLink ticker={t.ticker} /></td>
                       <td>{t.structure}</td>
@@ -785,8 +785,8 @@ function JournalSections() {
                       <td className="right">{fmtJournalUsd(t.max_risk)}</td>
                       <td className="right"><span className={pnlClass(t.realized_pnl)}>{fmtJournalUsd(t.realized_pnl)}</span></td>
                       <td className="right">{t.return_on_risk != null ? `${(t.return_on_risk * 100).toFixed(1)}%` : "—"}</td>
-                      <td className="cell-muted">{t.gates_passed?.join(", ") || t.gates_failed?.join(", ") || "—"}</td>
-                      <td className="cell-muted">{t.edge_analysis?.edge_type ?? "—"}</td>
+                      <td className="cm">{t.gates_passed?.join(", ") || t.gates_failed?.join(", ") || "—"}</td>
+                      <td className="cm">{t.edge_analysis?.edge_type ?? "—"}</td>
                     </tr>
                   );
                 })}
@@ -1248,7 +1248,7 @@ function HistoricalTradesSection() {
         </div>
       </div>
       <div className="s-bd">
-        {error && <div className="a-i section-message bearish">{error}</div>}
+        {error && <div className="a-i section-message be">{error}</div>}
         {loading && <div className="p-6"><TableSkeleton rows={5} columns={8} /></div>}
         {!loading && !hasData && !error && (
           <div className="a-i section-message">No historical trades. Click REFRESH to fetch from IB.</div>

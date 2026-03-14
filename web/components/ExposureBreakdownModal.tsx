@@ -87,7 +87,7 @@ export default function ExposureBreakdownModal({ metric, exposure, bankroll, onC
     >
       {/* Total value */}
       <div className="eb-total">
-        <span className="eb-total-value">{config.formatValue(totalValue)}</span>
+        <span className="etv">{config.formatValue(totalValue)}</span>
         {metric === "netExposure" && (
           <span className="eb-total-detail">
             {fmtUsd(exposure.netLong)} long - {fmtUsd(exposure.netShort)} short / {fmtUsd(bankroll)} bankroll
@@ -96,7 +96,7 @@ export default function ExposureBreakdownModal({ metric, exposure, bankroll, onC
       </div>
 
       {/* Formula */}
-      <div className="eb-formula">
+      <div className="ef">
         <code>{config.formula}</code>
       </div>
 

@@ -55,15 +55,15 @@ export default function InstrumentDetailModal({ leg, ticker, expiry, prices, onC
       <div className="ticker-detail-content">
         {/* Position summary pill */}
         <div className="instrument-summary-grid">
-          <div className="pos-stat">
+          <div className="ps">
             <span className="ps-l">DIRECTION</span>
             <span className="ps-v">{leg.direction} {leg.contracts}x</span>
           </div>
-          <div className="pos-stat">
+          <div className="ps">
             <span className="ps-l">AVG ENTRY</span>
             <span className="ps-v">{fmtPrice(avgEntry)}</span>
           </div>
-          <div className="pos-stat">
+          <div className="ps">
             <span className="ps-l">P&L</span>
             <span className={`ps-v ${legPnl != null ? (legPnl >= 0 ? "positive" : "negative") : ""}`}>
               {legPnl != null ? `${legPnl >= 0 ? "+" : ""}${fmtUsd(Math.abs(legPnl))}` : "---"}
@@ -172,7 +172,7 @@ function LegOrderForm({
   }, [confirmStep, ticker, action, parsedQty, parsedPrice, tif, expiryClean, leg.strike, right, strikeStr]);
 
   return (
-    <div className="order-form">
+    <div className="of">
       <div className="o-f">
         <label className="o-l">Action</label>
         <div className="o-ab">
@@ -194,7 +194,7 @@ function LegOrderForm({
       <div className="o-f">
         <label className="o-l">Quantity</label>
         <input
-          className="order-input"
+          className="oi"
           type="number"
           min="1"
           step="1"
@@ -242,7 +242,7 @@ function LegOrderForm({
       {error && <div className="order-error">{error}</div>}
       {success && <div className="order-success">{success}</div>}
 
-      <div className="order-submit">
+      <div className="os">
         {confirmStep ? (
           <div className="oc-r">
             <button className="bt-s" onClick={() => setConfirmStep(false)} disabled={loading}>Back</button>

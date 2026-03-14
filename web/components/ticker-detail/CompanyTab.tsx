@@ -74,7 +74,7 @@ export default function CompanyTab({ ticker, active, priceData, fundamentals }: 
   }, [active, fetched, fetchInfo]);
 
   if (loading) {
-    return <div className="tab-loading"><div className="tl-t">Loading company info...</div></div>;
+    return <div className="tl"><div className="tl-t">Loading company info...</div></div>;
   }
   if (error) {
     return <div className="tab-error">{error}</div>;
@@ -175,7 +175,7 @@ export default function CompanyTab({ ticker, active, priceData, fundamentals }: 
         {profileItems.length > 0 && (
           <div className="company-profile-grid">
             {profileItems.map((item) => (
-              <div key={item.label} className="pos-stat">
+              <div key={item.label} className="ps">
                 <span className="ps-l">{item.label}</span>
                 <span className="ps-v">{item.value}</span>
               </div>
@@ -189,7 +189,7 @@ export default function CompanyTab({ ticker, active, priceData, fundamentals }: 
         <div className="rt-t">Key Statistics</div>
         <div className="company-stats-grid">
           {statItems.map((item) => (
-            <div key={item.label} className="pos-stat">
+            <div key={item.label} className="ps">
               <span className="ps-l">{item.label}</span>
               <span className="ps-v">{item.value}</span>
             </div>

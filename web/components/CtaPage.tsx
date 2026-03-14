@@ -112,13 +112,13 @@ export default function CtaPage() {
         </div>
 
         <div className="regime-cta-rows">
-          <div className="regime-cta-row">
+          <div className="rcr">
             <span>Implied Exposure</span>
             <span className={exposurePct != null && exposurePct < 50 ? "text-negative" : ""}>
               {fmt(exposurePct, 1)}%
             </span>
           </div>
-          <div className="regime-cta-row">
+          <div className="rcr">
             <span>Forced Reduction</span>
             <span
               className={
@@ -130,7 +130,7 @@ export default function CtaPage() {
               {fmt(cta?.forced_reduction_pct, 1)}%
             </span>
           </div>
-          <div className="regime-cta-row">
+          <div className="rcr">
             <span>Est. CTA Selling</span>
             <span
               className={

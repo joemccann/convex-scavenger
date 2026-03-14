@@ -130,17 +130,17 @@ function PositionSummary({ position }: { position: PortfolioPosition }) {
         POSITION
       </div>
       <div className="instrument-summary-grid">
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">DIRECTION</span>
           <span className="ps-v">
             {position.direction} {position.contracts}x
           </span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">STRUCTURE</span>
           <span className="ps-v">{position.structure}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">AVG COST</span>
           <span className="ps-v">
             {position.entry_cost != null
@@ -152,7 +152,7 @@ function PositionSummary({ position }: { position: PortfolioPosition }) {
               : "---"}
           </span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">MKT VALUE</span>
           <span className="ps-v">
             {position.market_value != null
@@ -297,7 +297,7 @@ function StockOrderForm({
   }, [confirmStep, ticker, action, parsedQty, parsedPrice, tif, position]);
 
   return (
-    <div className="order-form" style={{ marginTop: "16px" }}>
+    <div className="of" style={{ marginTop: "16px" }}>
       <div
         className="book-s-hd"
       >
@@ -331,7 +331,7 @@ function StockOrderForm({
       <div className="o-f">
         <label className="o-l">Quantity</label>
         <input
-          className="order-input"
+          className="oi"
           type="number"
           min="1"
           step="1"
@@ -422,7 +422,7 @@ function StockOrderForm({
       {error && <div className="order-error">{error}</div>}
       {success && <div className="order-success">{success}</div>}
 
-      <div className="order-submit">
+      <div className="os">
         {confirmStep ? (
           <div className="oc-r">
             <button

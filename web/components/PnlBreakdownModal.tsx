@@ -46,7 +46,7 @@ export default function PnlBreakdownModal({
       </div>
 
       {/* Formula proof */}
-      <div className="eb-formula">
+      <div className="ef">
         <code>{formula}</code>
       </div>
 

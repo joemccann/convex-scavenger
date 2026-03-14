@@ -127,7 +127,7 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
 
   if (loading) {
     return (
-      <div className="tab-loading">
+      <div className="tl">
         <div className="tl-t">Loading seasonality...</div>
       </div>
     );
@@ -155,10 +155,10 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
           {rating}
         </span>
         <div className="seasonality-summary">
-          <span className="seasonality-stat">{favorable} favorable</span>
-          <span className="seasonality-stat">{unfavorable} unfavorable</span>
+          <span className="ss">{favorable} favorable</span>
+          <span className="ss">{unfavorable} unfavorable</span>
           {yearsAnalyzed > 0 && (
-            <span className="seasonality-stat">{yearsAnalyzed}y history</span>
+            <span className="ss">{yearsAnalyzed}y history</span>
           )}
           {source && source !== "uw" && (
             <span className="seasonality-source-badge">
@@ -215,7 +215,7 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
       {/* Detail table */}
       <div className="seasonality-detail">
         <div className="seasonality-detail-title">Monthly Detail</div>
-        <table className="pos-legs-table">
+        <table className="plt">
           <thead>
             <tr>
               <th>Month</th>

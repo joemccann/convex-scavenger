@@ -17,7 +17,7 @@ export default function MetricDefinitionModal({ open, title, value, definition, 
   return (
     <Modal open onClose={onClose} title={title} className="metric-definition-modal">
       <div className="eb-total">
-        <span className="eb-total-value neutral">{value}</span>
+        <span className="etv neutral">{value}</span>
       </div>
       <div className="metric-definition-copy">
         <span className="metric-definition-label">What It Is</span>
@@ -26,7 +26,7 @@ export default function MetricDefinitionModal({ open, title, value, definition, 
       <div className="metric-definition-copy">
         <span className="metric-definition-label">How It Is Calculated</span>
       </div>
-      <div className="eb-formula">
+      <div className="ef">
         <code>{formula}</code>
       </div>
     </Modal>

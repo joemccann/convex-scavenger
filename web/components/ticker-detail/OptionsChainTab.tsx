@@ -303,7 +303,7 @@ function OrderBuilder({
               </div>
               <div className="fc" style={{ gap: "4px" }}>
                 <input
-                  className="order-input"
+                  className="oi"
                   type="number"
                   min="1"
                   step="1"
@@ -383,7 +383,7 @@ function OrderBuilder({
       {success && <div className="order-success">{success}</div>}
 
       {/* Submit */}
-      <div className="order-submit" style={{ marginTop: "8px" }}>
+      <div className="os" style={{ marginTop: "8px" }}>
         {confirmStep ? (
           <div className="oc-r">
             <button

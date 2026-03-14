@@ -33,7 +33,7 @@ function LegsDisclosure({ position, prices }: { position: PortfolioPosition; pri
         <span className="pos-legs-title">Legs ({position.legs.length})</span>
       </button>
       {expanded && (
-        <table className="pos-legs-table">
+        <table className="plt">
           <thead>
             <tr>
               <th>Direction</th>
@@ -99,58 +99,58 @@ export default function PositionTab({ position, prices }: PositionTabProps) {
   return (
     <div className="position-tab">
       <div className="position-summary-grid">
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Structure</span>
           <span className="ps-v">{position.structure}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Direction</span>
           <span className="ps-v">{position.direction}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Qty</span>
           <span className="ps-v">{position.contracts}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Entry Date</span>
           <span className="ps-v">{position.entry_date || "---"}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Avg Entry</span>
           <span className="ps-v">{fmtPrice(avgEntry)}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Last Price</span>
           <span className="ps-v">{lastPrice != null ? fmtPrice(lastPrice) : "---"}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Entry Cost</span>
           <span className="ps-v">{fmtUsd(entryCost)}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Market Value</span>
           <span className="ps-v">{mv != null ? fmtUsd(mv) : "---"}</span>
         </div>
-        <div className="pos-stat">
+        <div className="ps">
           <span className="ps-l">Unrealized P&L</span>
           <span className={`ps-v ${pnl != null ? (pnl >= 0 ? "positive" : "negative") : ""}`}>
             {pnl != null ? `${pnl >= 0 ? "+" : ""}${fmtUsd(Math.abs(pnl))} (${pnlPct!.toFixed(1)}%)` : "---"}
           </span>
         </div>
         {position.expiry !== "N/A" && (
-          <div className="pos-stat">
+          <div className="ps">
             <span className="ps-l">Expiry</span>
             <span className="ps-v">{position.expiry}</span>
           </div>
         )}
         {position.target != null && (
-          <div className="pos-stat">
+          <div className="ps">
             <span className="ps-l">Target</span>
             <span className="ps-v">{fmtPrice(position.target)}</span>
           </div>
         )}
         {position.stop != null && (
-          <div className="pos-stat">
+          <div className="ps">
             <span className="ps-l">Stop</span>
             <span className="ps-v">{fmtPrice(position.stop)}</span>
           </div>
