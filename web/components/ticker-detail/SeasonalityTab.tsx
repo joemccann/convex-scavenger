@@ -248,7 +248,7 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
                       <td><span className={`seasonality-table-badge ${ratingClass(monthRating)}`}>{monthRating}</span></td>
                     </>
                   ) : (
-                    <td colSpan={6} style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No data</td>
+                    <td colSpan={6} className="text-muted" style={{ fontStyle: "italic" }}>No data</td>
                   )}
                 </tr>
               );

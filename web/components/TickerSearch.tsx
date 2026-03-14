@@ -335,11 +335,11 @@ const TickerSearch = forwardRef<HTMLInputElement, TickerSearchProps>(
           >
             {loading && results.length === 0 && (
               <div
+                className="text-muted"
                 style={{
                   padding: "12px 16px",
                   fontFamily: "Inter, sans-serif",
                   fontSize: "12px",
-                  color: "var(--text-muted)",
                 }}
               >
                 Searching...
@@ -348,11 +348,11 @@ const TickerSearch = forwardRef<HTMLInputElement, TickerSearchProps>(
 
             {!loading && results.length === 0 && (
               <div
+                className="text-muted"
                 style={{
                   padding: "12px 16px",
                   fontFamily: "Inter, sans-serif",
                   fontSize: "12px",
-                  color: "var(--text-muted)",
                 }}
               >
                 No results
@@ -399,11 +399,11 @@ const TickerSearch = forwardRef<HTMLInputElement, TickerSearchProps>(
 
                 {/* secType badge */}
                 <span
+                  className="text-muted"
                   style={{
                     fontFamily: "Inter, sans-serif",
                     fontSize: "10px",
                     fontWeight: 500,
-                    color: "var(--text-muted)",
                     textTransform: "uppercase",
                     letterSpacing: "0.5px",
                   }}
@@ -413,10 +413,10 @@ const TickerSearch = forwardRef<HTMLInputElement, TickerSearchProps>(
 
                 {/* Exchange */}
                 <span
+                  className="text-secondary"
                   style={{
                     fontFamily: "Inter, sans-serif",
                     fontSize: "11px",
-                    color: "var(--text-secondary)",
                     marginLeft: "auto",
                   }}
                 >

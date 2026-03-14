@@ -4100,6 +4100,19 @@ tr {
 }
 
 /* ── Utility classes (replacing Tailwind) ── */
+.font-mono { font-family: var(--font-mono); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.uppercase { text-transform: uppercase; }
+.book-section-header {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.w-full { width: 100%; }
 .flex { display: flex; }
 .grid { display: grid; }
 .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }

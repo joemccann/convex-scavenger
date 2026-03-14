@@ -233,6 +233,7 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
       {!marketOpen && (
         <div
           data-testid="market-closed-indicator"
+          className="font-mono"
           style={{
             display: "flex",
             alignItems: "center",
@@ -241,7 +242,6 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
             background: "rgba(245,166,35,0.12)",
             color: "var(--warning, #F5A623)",
             fontSize: "11px",
-            fontFamily: "var(--font-mono, monospace)",
             letterSpacing: "0.08em",
             fontWeight: 600,
             borderLeft: "2px solid var(--warning, #F5A623)",

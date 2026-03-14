@@ -38,14 +38,6 @@ function L1OrderBook({
     <div className="book-l1">
       <div
         className="book-section-header"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "11px",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-secondary)",
-          marginBottom: "8px",
-        }}
       >
         ORDER BOOK
       </div>
@@ -60,33 +52,20 @@ function L1OrderBook({
         {/* Bid side */}
         <div style={{ textAlign: "center" }}>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              textTransform: "uppercase",
-              color: "var(--text-secondary)",
-              marginBottom: "4px",
-            }}
+            className="font-mono text-secondary uppercase"
+            style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             BID
           </div>
           <div
-            className="positive"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "16px",
-              fontWeight: 600,
-            }}
+            className="positive font-mono"
+            style={{ fontSize: "16px", fontWeight: 600 }}
           >
             {bid != null ? fmtPrice(bid) : "---"}
           </div>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "11px",
-              color: "var(--text-secondary)",
-              marginTop: "2px",
-            }}
+            className="font-mono text-secondary"
+            style={{ fontSize: "11px", marginTop: "2px" }}
           >
             {bidSize != null ? bidSize : "---"}
           </div>
@@ -95,32 +74,20 @@ function L1OrderBook({
         {/* Spread */}
         <div style={{ textAlign: "center" }}>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              textTransform: "uppercase",
-              color: "var(--text-secondary)",
-              marginBottom: "4px",
-            }}
+            className="font-mono text-secondary uppercase"
+            style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             SPREAD
           </div>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "14px",
-              color: "var(--text-primary, #e2e8f0)",
-            }}
+            className="font-mono"
+            style={{ fontSize: "14px", color: "var(--text-primary, #e2e8f0)" }}
           >
             {spread != null ? spread.toFixed(2) : "---"}
           </div>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              color: "var(--text-secondary)",
-              marginTop: "2px",
-            }}
+            className="font-mono text-secondary"
+            style={{ fontSize: "10px", marginTop: "2px" }}
           >
             {last != null ? `LAST ${fmtPrice(last)}` : ""}
           </div>
@@ -129,33 +96,20 @@ function L1OrderBook({
         {/* Ask side */}
         <div style={{ textAlign: "center" }}>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              textTransform: "uppercase",
-              color: "var(--text-secondary)",
-              marginBottom: "4px",
-            }}
+            className="font-mono text-secondary uppercase"
+            style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             ASK
           </div>
           <div
-            className="negative"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "16px",
-              fontWeight: 600,
-            }}
+            className="negative font-mono"
+            style={{ fontSize: "16px", fontWeight: 600 }}
           >
             {ask != null ? fmtPrice(ask) : "---"}
           </div>
           <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "11px",
-              color: "var(--text-secondary)",
-              marginTop: "2px",
-            }}
+            className="font-mono text-secondary"
+            style={{ fontSize: "11px", marginTop: "2px" }}
           >
             {askSize != null ? askSize : "---"}
           </div>
@@ -172,14 +126,6 @@ function PositionSummary({ position }: { position: PortfolioPosition }) {
     <div style={{ marginTop: "16px" }}>
       <div
         className="book-section-header"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "11px",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-secondary)",
-          marginBottom: "8px",
-        }}
       >
         POSITION
       </div>
@@ -226,14 +172,6 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
     <div style={{ marginTop: "16px" }}>
       <div
         className="book-section-header"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "11px",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-secondary)",
-          marginBottom: "8px",
-        }}
       >
         OPEN ORDERS ({orders.length})
       </div>
@@ -247,13 +185,13 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
         return (
           <div
             key={o.permId || o.orderId || i}
+            className="font-mono"
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               padding: "6px 0",
               borderBottom: "1px solid var(--line-grid, #1e293b)",
-              fontFamily: "var(--font-mono)",
               fontSize: "12px",
             }}
           >
@@ -265,7 +203,7 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
                 {o.action}
               </span>
               <span>{desc}</span>
-              <span style={{ color: "var(--text-secondary)" }}>
+              <span className="text-secondary">
                 {o.totalQuantity}x
               </span>
             </div>
@@ -273,7 +211,7 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
               <span>
                 {o.limitPrice != null ? fmtPrice(o.limitPrice) : "MKT"}
               </span>
-              <span style={{ color: "var(--text-secondary)", fontSize: "10px" }}>
+              <span className="text-secondary" style={{ fontSize: "10px" }}>
                 {o.tif} / {o.status}
               </span>
             </div>
@@ -364,14 +302,6 @@ function StockOrderForm({
     <div className="order-form" style={{ marginTop: "16px" }}>
       <div
         className="book-section-header"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "11px",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-secondary)",
-          marginBottom: "8px",
-        }}
       >
         STOCK ORDER
       </div>
@@ -516,10 +446,9 @@ function StockOrderForm({
           </div>
         ) : (
           <button
-            className="btn-primary"
+            className="btn-primary w-full"
             onClick={handlePlace}
             disabled={!isValid || loading}
-            style={{ width: "100%" }}
           >
             Place Order
           </button>

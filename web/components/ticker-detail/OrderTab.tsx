@@ -341,7 +341,7 @@ function NewOrderForm({
             </button>
           </div>
         ) : (
-          <button className="btn-primary" onClick={handlePlace} disabled={!isValid || loading} style={{ width: "100%" }}>
+          <button className="btn-primary w-full" onClick={handlePlace} disabled={!isValid || loading}>
             Place Order
           </button>
         )}
@@ -578,7 +578,7 @@ function ComboOrderForm({
             </button>
           </div>
         ) : (
-          <button className="btn-primary" onClick={handlePlace} disabled={!isValid || loading} style={{ width: "100%" }}>
+          <button className="btn-primary w-full" onClick={handlePlace} disabled={!isValid || loading}>
             Place Combo Order
           </button>
         )}

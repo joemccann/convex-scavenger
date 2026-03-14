@@ -97,16 +97,14 @@ export default function CtaPage() {
       {/* ── Vol-Targeting Model Panel ─────────────────── */}
       <div data-testid="vol-targeting-model" style={{ padding: "16px", borderBottom: "1px solid var(--border)" }}>
         <div
+          className="font-mono text-muted uppercase"
           style={{
             display: "flex",
             alignItems: "center",
             gap: "6px",
-            fontFamily: "var(--font-mono, monospace)",
             fontSize: "10px",
             fontWeight: 700,
             letterSpacing: "0.10em",
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
             marginBottom: "12px",
           }}
         >
@@ -169,17 +167,15 @@ export default function CtaPage() {
       </div>
 
       {/* ── MenthorQ CTA Positioning ──────────────────── */}
-      <div style={{ width: "100%" }}>
+      <div className="w-full">
         <div
+          className="font-mono text-muted uppercase"
           style={{
-            fontFamily: "var(--font-mono, monospace)",
             fontSize: "10px",
             fontWeight: 700,
             letterSpacing: "0.10em",
-            color: "var(--text-muted)",
             padding: "12px 12px 8px",
             borderBottom: "1px solid var(--border)",
-            textTransform: "uppercase",
             display: "flex",
             alignItems: "baseline",
             gap: "8px",
@@ -188,7 +184,7 @@ export default function CtaPage() {
           MENTHORQ CTA POSITIONING — {ctaData?.date ?? "---"}{" "}
           <InfoTooltip text={SECTION_TOOLTIPS["MENTHORQ CTA POSITIONING"]} />
           {fetchLabel && (
-            <span style={{ fontWeight: 400, fontSize: "9px", color: "var(--text-muted)", letterSpacing: "0.06em" }}>
+            <span className="text-muted" style={{ fontWeight: 400, fontSize: "9px", letterSpacing: "0.06em" }}>
               · FETCHED {fetchLabel}
             </span>
           )}
@@ -204,8 +200,7 @@ export default function CtaPage() {
 
         {loading && (
           <div
-            className="cta-empty"
-            style={{ padding: "24px 16px", fontFamily: "var(--font-mono, monospace)", fontSize: "11px", color: "var(--text-muted)" }}
+            className="cta-empty font-mono text-muted" style={{ padding: "24px 16px", fontSize: "11px" }}
           >
             Loading CTA positioning data...
           </div>
@@ -213,8 +208,7 @@ export default function CtaPage() {
 
         {!loading && !ctaData?.tables && (
           <div
-            className="cta-empty"
-            style={{ padding: "24px 16px", fontFamily: "var(--font-mono, monospace)", fontSize: "11px", color: "var(--text-muted)" }}
+            className="cta-empty font-mono text-muted" style={{ padding: "24px 16px", fontSize: "11px" }}
           >
             No MenthorQ CTA data available. Run: <code>menthorq-cta</code>
           </div>
