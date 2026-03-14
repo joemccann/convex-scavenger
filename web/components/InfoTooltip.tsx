@@ -65,7 +65,7 @@ export default function InfoTooltip({ text, ariaLabel, triggerTestId, contentTes
       {rect && (
         <span
           data-testid={contentTestId}
-          className="font-mono"
+          className="fm"
           style={{
             position: "fixed",
             ...(flipBelow

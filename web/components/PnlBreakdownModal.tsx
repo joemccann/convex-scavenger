@@ -53,7 +53,7 @@ export default function PnlBreakdownModal({
       {rows.length === 0 ? (
         <div className="eb-empty">No position data available — sync portfolio from IB</div>
       ) : (
-        <table className="eb-table">
+        <table className="ej">
           <thead>
             <tr>
               <th>TICKER</th>
@@ -67,10 +67,10 @@ export default function PnlBreakdownModal({
           <tbody>
             {sorted.map((row) => (
               <tr key={row.id} className="eb-row">
-                <td className="eb-ticker">{row.ticker}</td>
+                <td className="ek">{row.ticker}</td>
                 <td className="es163">{row.structure}</td>
-                <td className="eb-mono">{row.col1}</td>
-                <td className="eb-mono">{row.col2}</td>
+                <td className="em">{row.col1}</td>
+                <td className="em">{row.col2}</td>
                 <td className={`eb-mono ${row.pnl >= 0 ? "positive" : "negative"}`}>
                   {fmtSigned(row.pnl, 2)}
                 </td>

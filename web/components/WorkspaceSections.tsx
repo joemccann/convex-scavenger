@@ -137,7 +137,7 @@ function SortTh<K extends string>({
     >
       <span className="so">
         {label}
-        <span className="sort-icon">
+        <span className="si">
           {active ? (
             direction === "asc" ? <ChevronUp size={10} /> : <ChevronDown size={10} />
           ) : (

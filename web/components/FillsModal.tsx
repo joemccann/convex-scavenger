@@ -33,7 +33,7 @@ export default function FillsModal({ open, fills, totalRealizedPnl, netLiquidati
     <div className="fills-modal mb135" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="mh165">
-          <span className="modal-title">TODAY&apos;S FILLS</span>
+          <span className="mt">TODAY&apos;S FILLS</span>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
@@ -81,10 +81,10 @@ export default function FillsModal({ open, fills, totalRealizedPnl, netLiquidati
                     <span className={f.realizedPNL! >= 0 ? "positive" : "negative"}>
                       {fmtPnl(f.realizedPNL)}
                     </span>
-                    <span className="fills-label"> ({f.symbol})</span>
+                    <span className="fl"> ({f.symbol})</span>
                   </span>
                 ))}
-                {fillsWithPnl.length === 0 && <span className="fills-label">No closed positions this session</span>}
+                {fillsWithPnl.length === 0 && <span className="fl">No closed positions this session</span>}
               </div>
               <div className="ft64">
                 <span className="fl93">REALIZED P&L</span>

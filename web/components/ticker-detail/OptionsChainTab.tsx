@@ -291,13 +291,13 @@ function OrderBuilder({
                 >
                   {leg.action}
                 </button>
-                <span className="font-mono" style={{ fontSize: "12px" }}>
+                <span className="fm" style={{ fontSize: "12px" }}>
                   {leg.quantity}x ${leg.strike} {leg.right === "C" ? "Call" : "Put"}
                 </span>
-                <span className="font-mono t-s" style={{ fontSize: "11px" }}>
+                <span className="fm t-s" style={{ fontSize: "11px" }}>
                   {formatExpiry(leg.expiry)}
                 </span>
-                <span className="font-mono t-s" style={{ fontSize: "11px", marginLeft: "auto" }}>
+                <span className="fm t-s" style={{ fontSize: "11px", marginLeft: "auto" }}>
                   {mid != null ? fmtPrice(mid) : "---"}
                 </span>
               </div>
@@ -342,11 +342,11 @@ function OrderBuilder({
 
       {/* Net price */}
       <div className="on98">
-        <span className="font-mono t-s" style={{ fontSize: "11px" }}>
+        <span className="fm t-s" style={{ fontSize: "11px" }}>
           NET {isDebit ? "DEBIT" : "CREDIT"}
         </span>
         <span
-          className="font-mono"
+          className="fm"
           style={{
             fontSize: "14px",
             fontWeight: 600,
@@ -355,7 +355,7 @@ function OrderBuilder({
         >
           {netPrice != null ? fmtPrice(Math.abs(netPrice)) : "---"}
         </span>
-        <span className="font-mono t-s" style={{ fontSize: "10px" }}>
+        <span className="fm t-s" style={{ fontSize: "10px" }}>
           {netPrice != null ? `(${fmtPrice(Math.abs(netPrice) * 100)} notional)` : ""}
         </span>
       </div>
@@ -365,13 +365,13 @@ function OrderBuilder({
         <label className="o-l">Time in Force</label>
         <div className="o-ab">
           <button
-            className={`${tif === "DAY" ? "oaa" : ""}`}
+            className={tif === "DAY" ? "oaa" : ""}
             onClick={() => setTif("DAY")}
           >
             DAY
           </button>
           <button
-            className={`${tif === "GTC" ? "oaa" : ""}`}
+            className={tif === "GTC" ? "oaa" : ""}
             onClick={() => setTif("GTC")}
           >
             GTC
@@ -624,7 +624,7 @@ export default function OptionsChainTab({
   if (loadingExpiries) {
     return (
       <div style={{ padding: "24px 0", textAlign: "center" }}>
-        <span className="font-mono t-s" style={{ fontSize: "12px" }}>
+        <span className="fm t-s" style={{ fontSize: "12px" }}>
           Loading expirations...
         </span>
       </div>
@@ -634,7 +634,7 @@ export default function OptionsChainTab({
   if (error && expirations.length === 0) {
     return (
       <div style={{ padding: "24px 0", textAlign: "center" }}>
-        <span className="font-mono" style={{ fontSize: "12px", color: "var(--fault)" }}>
+        <span className="fm" style={{ fontSize: "12px", color: "var(--fault)" }}>
           {error}
         </span>
       </div>
@@ -646,7 +646,7 @@ export default function OptionsChainTab({
       {/* Expiry selector */}
       <div className="cb107">
         <label
-          className="font-mono t-s uppercase"
+          className="fm t-s uppercase"
           style={{
             fontSize: "10px",
             letterSpacing: "0.05em",
@@ -668,7 +668,7 @@ export default function OptionsChainTab({
             </option>
           ))}
         </select>
-        <span className="font-mono t-s" style={{ fontSize: "11px" }}>
+        <span className="fm t-s" style={{ fontSize: "11px" }}>
           {currentPrice != null ? `Underlying: ${fmtPrice(currentPrice)}` : ""}
         </span>
         <div className="fc" style={{ marginLeft: "auto", gap: "8px" }}>
@@ -683,7 +683,7 @@ export default function OptionsChainTab({
               </button>
             ))}
           </div>
-          <label className="font-mono t-s" style={{ fontSize: "10px" }}>
+          <label className="fm t-s" style={{ fontSize: "10px" }}>
             STRIKES
           </label>
           <select
@@ -703,7 +703,7 @@ export default function OptionsChainTab({
       {/* Chain grid */}
       {loadingStrikes ? (
         <div style={{ padding: "24px 0", textAlign: "center" }}>
-          <span className="font-mono t-s" style={{ fontSize: "12px" }}>
+          <span className="fm t-s" style={{ fontSize: "12px" }}>
             Loading chain...
           </span>
         </div>

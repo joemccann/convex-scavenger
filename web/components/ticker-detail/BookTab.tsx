@@ -52,19 +52,19 @@ function L1OrderBook({
         {/* Bid side */}
         <div style={{ textAlign: "center" }}>
           <div
-            className="font-mono t-s uppercase"
+            className="fm t-s uppercase"
             style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             BID
           </div>
           <div
-            className="positive font-mono"
+            className="positive fm"
             style={{ fontSize: "16px", fontWeight: 600 }}
           >
             {bid != null ? fmtPrice(bid) : "---"}
           </div>
           <div
-            className="font-mono t-s"
+            className="fm t-s"
             style={{ fontSize: "11px", marginTop: "2px" }}
           >
             {bidSize != null ? bidSize : "---"}
@@ -74,19 +74,19 @@ function L1OrderBook({
         {/* Spread */}
         <div style={{ textAlign: "center" }}>
           <div
-            className="font-mono t-s uppercase"
+            className="fm t-s uppercase"
             style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             SPREAD
           </div>
           <div
-            className="font-mono"
+            className="fm"
             style={{ fontSize: "14px", color: "var(--text-primary, #e2e8f0)" }}
           >
             {spread != null ? spread.toFixed(2) : "---"}
           </div>
           <div
-            className="font-mono t-s"
+            className="fm t-s"
             style={{ fontSize: "10px", marginTop: "2px" }}
           >
             {last != null ? `LAST ${fmtPrice(last)}` : ""}
@@ -96,19 +96,19 @@ function L1OrderBook({
         {/* Ask side */}
         <div style={{ textAlign: "center" }}>
           <div
-            className="font-mono t-s uppercase"
+            className="fm t-s uppercase"
             style={{ fontSize: "10px", marginBottom: "4px" }}
           >
             ASK
           </div>
           <div
-            className="negative font-mono"
+            className="negative fm"
             style={{ fontSize: "16px", fontWeight: 600 }}
           >
             {ask != null ? fmtPrice(ask) : "---"}
           </div>
           <div
-            className="font-mono t-s"
+            className="fm t-s"
             style={{ fontSize: "11px", marginTop: "2px" }}
           >
             {askSize != null ? askSize : "---"}
@@ -185,7 +185,7 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
         return (
           <div
             key={o.permId || o.orderId || i}
-            className="font-mono fc"
+            className="fm fc"
             style={{
               justifyContent: "space-between",
               padding: "6px 0",
@@ -308,7 +308,7 @@ function StockOrderForm({
         <label className="o-l">Action</label>
         <div className="o-ab">
           <button
-            className={`${action === "BUY" ? "oaa oby" : ""}`}
+            className={action === "BUY" ? "oaa oby" : ""}
             onClick={() => {
               setAction("BUY");
               setConfirmStep(false);
@@ -317,7 +317,7 @@ function StockOrderForm({
             BUY
           </button>
           <button
-            className={`${action === "SELL" ? "oaa oas" : ""}`}
+            className={action === "SELL" ? "oaa oas" : ""}
             onClick={() => {
               setAction("SELL");
               setConfirmStep(false);
@@ -405,13 +405,13 @@ function StockOrderForm({
         <label className="o-l">Time in Force</label>
         <div className="o-ab">
           <button
-            className={`${tif === "DAY" ? "oaa" : ""}`}
+            className={tif === "DAY" ? "oaa" : ""}
             onClick={() => setTif("DAY")}
           >
             DAY
           </button>
           <button
-            className={`${tif === "GTC" ? "oaa" : ""}`}
+            className={tif === "GTC" ? "oaa" : ""}
             onClick={() => setTif("GTC")}
           >
             GTC

@@ -97,7 +97,7 @@ export default function CtaPage() {
       {/* ── Vol-Targeting Model Panel ─────────────────── */}
       <div data-testid="vol-targeting-model" style={{ padding: "16px", borderBottom: "1px solid var(--border)" }}>
         <div
-          className="font-mono tm uppercase fc"
+          className="fm tm uppercase fc"
           style={{
             gap: "6px",
             fontSize: "10px",
@@ -167,7 +167,7 @@ export default function CtaPage() {
       {/* ── MenthorQ CTA Positioning ──────────────────── */}
       <div className="wf">
         <div
-          className="font-mono tm uppercase"
+          className="fm tm uppercase"
           style={{
             fontSize: "10px",
             fontWeight: 700,
@@ -198,7 +198,7 @@ export default function CtaPage() {
 
         {loading && (
           <div
-            className="cta-empty font-mono tm" style={{ padding: "24px 16px", fontSize: "11px" }}
+            className="cta-empty fm tm" style={{ padding: "24px 16px", fontSize: "11px" }}
           >
             Loading CTA positioning data...
           </div>
@@ -206,7 +206,7 @@ export default function CtaPage() {
 
         {!loading && !ctaData?.tables && (
           <div
-            className="cta-empty font-mono tm" style={{ padding: "24px 16px", fontSize: "11px" }}
+            className="cta-empty fm tm" style={{ padding: "24px 16px", fontSize: "11px" }}
           >
             No MenthorQ CTA data available. Run: <code>menthorq-cta</code>
           </div>

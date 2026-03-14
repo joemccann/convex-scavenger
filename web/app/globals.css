@@ -325,7 +325,7 @@ body {
 .stb.sne,
 .rcr span:first-child,
 .fills-op,
-.fills-label,
+.fl,
 .chain-last,
 .tm { color: var(--text-muted); }
 
@@ -1048,7 +1048,7 @@ td.last-price-cell {
 
 .cm150 code,
 .rr-ql,
-.font-mono { font-family: var(--font-mono); }
+.fm { font-family: var(--font-mono); }
 
 .cc15 {
   font-size: 11px;
@@ -1403,7 +1403,7 @@ tr.leg-row td {
   justify-content: flex-end;
 }
 
-.sort-icon {
+.si {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
@@ -1542,7 +1542,7 @@ tr.leg-row td {
   border-bottom: 1px solid var(--border-dim);
 }
 
-.modal-title {
+.mt {
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
@@ -2247,11 +2247,11 @@ tr {
   white-space: pre-wrap;
 }
 
-.eb-table,
+.ej,
 .cta-table,
 .fills-table,
 .regime-history table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
-.eb-table th {
+.ej th {
   text-align: left;
   font-size: 9px;
   text-transform: uppercase;
@@ -2261,15 +2261,15 @@ tr {
   border-bottom: 1px solid var(--border-dim);
   font-weight: 500;
 }
-.eb-table td {
+.ej td {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border-dim);
   color: var(--text-secondary);
   vertical-align: top;
 }
-.eb-ticker { font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+.ek { font-weight: 600; color: var(--text-primary); white-space: nowrap; }
 .es163 { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eb-mono { text-align: right; font-variant-numeric: tabular-nums; }
+.em { text-align: right; font-variant-numeric: tabular-nums; }
 .eb-expand { font-size: 8px; margin-right: 4px; color: var(--text-muted); }
 
 .eb-source {
