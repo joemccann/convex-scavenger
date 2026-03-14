@@ -1,8 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap");
 
-/* @tailwind base; */
-/* @tailwind components; */
-/* @tailwind utilities; */
+/* ── Minimal reset (replaces Tailwind Preflight) ── */
+*, *::before, *::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: currentColor; }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+body { margin: 0; line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+p, blockquote, dl, dd, figure, pre { margin: 0; }
+ol, ul { list-style: none; margin: 0; padding: 0; }
+a { color: inherit; text-decoration: inherit; }
+button, input, optgroup, select, textarea { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+button, select { text-transform: none; }
+button, [type="button"], [type="reset"], [type="submit"] { -webkit-appearance: button; background-color: transparent; background-image: none; }
+img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
+img, video { max-width: 100%; height: auto; }
+[hidden] { display: none; }
+
+
 
 :root {
   --sidebar-width: 220px;
@@ -4105,3 +4118,28 @@ tr {
   margin-top: 8px;
   border-top: 1px solid var(--line-grid);
 }
+
+/* ── Utility classes (replacing Tailwind) ── */
+.flex { display: flex; }
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.space-x-4 > * + * { margin-left: 1rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+.w-full { width: 100%; }
+.w-\[100px\] { width: 100px; }
+.h-4 { height: 1rem; }
+.h-6 { height: 1.5rem; }
+.p-6 { padding: 1.5rem; }
+.text-right { text-align: right; }
+.border-b { border-bottom-width: 1px; border-bottom-style: solid; }
+.border-gray-800 { border-color: #1f2937; }
+.bg-gray-800 { background-color: #1f2937; }
+.bg-gray-800\/50 { background-color: rgb(31 41 55 / 0.5); }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
