@@ -370,9 +370,8 @@ const TickerSearch = forwardRef<HTMLInputElement, TickerSearchProps>(
                   handleSelect(r.symbol);
                 }}
                 onMouseEnter={() => setActiveIndex(i)}
+                className="flex-center"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
                   gap: "12px",
                   padding: "8px 16px",
                   cursor: "pointer",

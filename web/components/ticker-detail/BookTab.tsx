@@ -185,17 +185,15 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
         return (
           <div
             key={o.permId || o.orderId || i}
-            className="font-mono"
+            className="font-mono flex-center"
             style={{
-              display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
               padding: "6px 0",
               borderBottom: "1px solid var(--line-grid, #1e293b)",
               fontSize: "12px",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div className="flex-center" style={{ gap: "8px" }}>
               <span
                 className={`pill ${o.action === "BUY" ? "accum" : "distrib"}`}
                 style={{ fontSize: "9px" }}
@@ -207,7 +205,7 @@ function OpenOrdersList({ orders }: { orders: OpenOrder[] }) {
                 {o.totalQuantity}x
               </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div className="flex-center" style={{ gap: "12px" }}>
               <span>
                 {o.limitPrice != null ? fmtPrice(o.limitPrice) : "MKT"}
               </span>

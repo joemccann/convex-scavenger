@@ -290,7 +290,7 @@ function FlowSections() {
             Flow Supports Position
             <InfoTooltip text={SECTION_TOOLTIPS["Flow Supports Position"]} />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div className="flex-center" style={{ gap: "0.75rem" }}>
             {lastSync && (
               <span className="report-meta" style={{ margin: 0 }}>
                 {new Date(lastSync).toLocaleTimeString()}
@@ -503,7 +503,7 @@ function ScannerSections() {
             Scanner Signals
             <InfoTooltip text={SECTION_TOOLTIPS["Scanner Signals"]} />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div className="flex-center" style={{ gap: "0.75rem" }}>
             {lastSync && (
               <span className="report-meta" style={{ margin: 0 }}>
                 {new Date(lastSync).toLocaleTimeString()}
@@ -621,7 +621,7 @@ function DiscoverSections() {
             Discovery Candidates
             <InfoTooltip text={SECTION_TOOLTIPS["Discovery Candidates"]} />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div className="flex-center" style={{ gap: "0.75rem" }}>
             {lastSync && (
               <span className="report-meta" style={{ margin: 0 }}>
                 {new Date(lastSync).toLocaleTimeString()}
@@ -725,7 +725,7 @@ function JournalSections() {
             Trade Journal
             <InfoTooltip text={SECTION_TOOLTIPS["Trade Journal"]} />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="flex-center" style={{ gap: "8px" }}>
             <button
               className="btn-sync"
               onClick={handleSync}
@@ -1231,7 +1231,7 @@ function HistoricalTradesSection() {
           Historical Trades (30 Days)
           <InfoTooltip text={SECTION_TOOLTIPS["Historical Trades (30 Days)"]} />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div className="flex-center" style={{ gap: "0.75rem" }}>
           {data?.as_of && (
             <span className="report-meta" style={{ margin: 0, padding: 0, border: "none" }}>
               {new Date(data.as_of).toLocaleDateString()}

@@ -9,7 +9,7 @@ import ExposureBreakdownModal, { type ExposureMetric } from "./ExposureBreakdown
 import FillsModal from "./FillsModal";
 import PnlBreakdownModal, { type PnlBreakdownRow } from "./PnlBreakdownModal";
 import AccountMetricModal from "./AccountMetricModal";
-import { fmtUsd, fmtUsdExact, fmtSignedUsd, fmtSignedUsdExact, fmtPrice, toneClass } from "@/lib/format";
+import { fmtUsd, fmtUsdExact, fmtSignedUsd, fmtPrice, toneClass } from "@/lib/format";
 
 type MetricCardsProps = {
   portfolio: PortfolioData | null;

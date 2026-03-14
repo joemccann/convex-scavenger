@@ -4041,6 +4041,7 @@ tr {
 .text-secondary { color: var(--text-secondary); }
 .text-muted { color: var(--text-muted); }
 .uppercase { text-transform: uppercase; }
+.flex-center { display: flex; align-items: center; }
 .book-section-header {
   font-family: var(--font-mono);
   font-size: 11px;

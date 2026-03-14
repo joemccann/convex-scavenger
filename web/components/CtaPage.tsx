@@ -97,10 +97,8 @@ export default function CtaPage() {
       {/* ── Vol-Targeting Model Panel ─────────────────── */}
       <div data-testid="vol-targeting-model" style={{ padding: "16px", borderBottom: "1px solid var(--border)" }}>
         <div
-          className="font-mono text-muted uppercase"
+          className="font-mono text-muted uppercase flex-center"
           style={{
-            display: "flex",
-            alignItems: "center",
             gap: "6px",
             fontSize: "10px",
             fontWeight: 700,

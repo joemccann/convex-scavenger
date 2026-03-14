@@ -280,7 +280,7 @@ function OrderBuilder({
 
           return (
             <div key={leg.id} className="order-builder-leg">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+              <div className="flex-center" style={{ gap: "8px", flex: 1 }}>
                 <button
                   className={`order-action-btn order-action-active ${leg.action === "BUY" ? "order-action-buy" : "order-action-sell"}`}
                   onClick={() => {
@@ -301,7 +301,7 @@ function OrderBuilder({
                   {mid != null ? fmtPrice(mid) : "---"}
                 </span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <div className="flex-center" style={{ gap: "4px" }}>
                 <input
                   className="order-input"
                   type="number"
@@ -671,7 +671,7 @@ export default function OptionsChainTab({
         <span className="font-mono text-secondary" style={{ fontSize: "11px" }}>
           {currentPrice != null ? `Underlying: ${fmtPrice(currentPrice)}` : ""}
         </span>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="flex-center" style={{ marginLeft: "auto", gap: "8px" }}>
           <div className="chain-side-toggle">
             {(["both", "calls", "puts"] as const).map((val) => (
               <button
