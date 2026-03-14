@@ -67,5 +67,21 @@ Build a portfolio attribution engine that decomposes P&L into actionable dimensi
 Primary edge takes precedence when a trade has multiple signals (e.g., IV_MISPRICING + FLOW_CONFLUENCE → leap-iv-mispricing).
 
 ## What's Been Tried
-(Updated as experiments run)
+
+### Experiment 1: Full engine build (0 → 100/100) ✅
+Built all 10 milestones in a single pass:
+- Python engine: 41 tests covering classify, P&L, win rate, Kelly calibration, ticker, edge, risk
+- API route: `/api/attribution` spawns Python, returns JSON
+- UI panel: AttributionPanel with strategy table, edge/risk grids, ticker leaderboard, Kelly calibration
+- Integration: 7 vitest tests validating types compile and hold realistic data
+- Wired into PerformancePanel at bottom of existing content
+
+**Key finding**: 30/39 trades classify as "unclassified" because most were auto-imported from IB reconciliation without `edge_analysis` metadata. This is correct behavior — the attribution engine honestly reveals that most P&L comes from trades outside the formal evaluation pipeline. As more trades flow through `evaluate.py`, the strategy attribution will become more populated.
+
+**Real data output**:
+- Total: $126,927 realized P&L across 23 closed trades
+- Best ticker: AAOI (+$86,818), Worst: BRZE (-$23,285)
+- Risk reversals: 100% win rate (2/2 closed), +$15,889
+- LEAPs: 3 open, 0 closed (too early for attribution)
+- Dark pool flow: 1 open (GOOG), 0 closed
 
