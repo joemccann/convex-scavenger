@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
-import * as d3 from "d3";
+import { scaleLinear } from "d3-scale";
+import { line, curveMonotoneX } from "d3-shape";
+import { extent, mean } from "d3-array";
 import InfoTooltip from "./InfoTooltip";
 import ChartLegend from "./charts/ChartLegend";
 import ChartPanel from "./charts/ChartPanel";
@@ -125,7 +127,7 @@ export default function RegimeRelationshipView({
 
   const innerWidth = CHART_WIDTH - MARGIN.left - MARGIN.right;
   const innerHeight = CHART_HEIGHT - MARGIN.top - MARGIN.bottom;
-  const xScale = d3.scaleLinear().domain([0, entries.length - 1]).range([0, innerWidth]);
+  const xScale = scaleLinear().domain([0, entries.length - 1]).range([0, innerWidth]);
   const tickIndices = buildTickIndices(entries.length);
 
   const spreadMax = Math.max(
@@ -133,50 +135,43 @@ export default function RegimeRelationshipView({
     Math.abs(summary.meanSpread),
     1,
   );
-  const spreadScale = d3
-    .scaleLinear()
+  const spreadScale = scaleLinear()
     .domain([-(spreadMax * 1.15), spreadMax * 1.15])
     .range([innerHeight, 0]);
-  const spreadLine = d3
-    .line<(typeof entries)[number]>()
+  const spreadLine = line<(typeof entries)[number]>()
     .x((entry, index) => xScale(index))
     .y((entry) => spreadScale(entry.spread))
-    .curve(d3.curveMonotoneX)(entries);
+    .curve(curveMonotoneX)(entries);
 
-  const realizedExtent = d3.extent(entries, (entry) => entry.realizedVol) as [number, number];
-  const cor1mExtent = d3.extent(entries, (entry) => entry.cor1m) as [number, number];
+  const realizedExtent = extent(entries, (entry) => entry.realizedVol) as [number, number];
+  const cor1mExtent = extent(entries, (entry) => entry.cor1m) as [number, number];
   const realizedPad = (realizedExtent[1] - realizedExtent[0]) * 0.18 || 1;
   const cor1mPad = (cor1mExtent[1] - cor1mExtent[0]) * 0.18 || 1;
-  const scatterXScale = d3
-    .scaleLinear()
+  const scatterXScale = scaleLinear()
     .domain([realizedExtent[0] - realizedPad, realizedExtent[1] + realizedPad])
     .range([0, innerWidth]);
-  const scatterYScale = d3
-    .scaleLinear()
+  const scatterYScale = scaleLinear()
     .domain([cor1mExtent[0] - cor1mPad, cor1mExtent[1] + cor1mPad])
     .range([innerHeight, 0]);
-  const realizedMean = d3.mean(entries, (entry) => entry.realizedVol) ?? 0;
-  const cor1mMean = d3.mean(entries, (entry) => entry.cor1m) ?? 0;
+  const realizedMean = mean(entries, (entry) => entry.realizedVol) ?? 0;
+  const cor1mMean = mean(entries, (entry) => entry.cor1m) ?? 0;
 
   const zMax = Math.max(
     ...entries.map((entry) => Math.max(Math.abs(entry.realizedVolZ), Math.abs(entry.cor1mZ))),
     Math.abs(summary.latestDivergence),
     1,
   );
-  const zScale = d3
-    .scaleLinear()
+  const zScale = scaleLinear()
     .domain([-(zMax * 1.15), zMax * 1.15])
     .range([innerHeight, 0]);
-  const zRvolLine = d3
-    .line<(typeof entries)[number]>()
+  const zRvolLine = line<(typeof entries)[number]>()
     .x((entry, index) => xScale(index))
     .y((entry) => zScale(entry.realizedVolZ))
-    .curve(d3.curveMonotoneX)(entries);
-  const zCor1mLine = d3
-    .line<(typeof entries)[number]>()
+    .curve(curveMonotoneX)(entries);
+  const zCor1mLine = line<(typeof entries)[number]>()
     .x((entry, index) => xScale(index))
     .y((entry) => zScale(entry.cor1mZ))
-    .curve(d3.curveMonotoneX)(entries);
+    .curve(curveMonotoneX)(entries);
 
   const latest = entries[entries.length - 1];
   const spreadColor = spreadStateColor(summary.spreadState);

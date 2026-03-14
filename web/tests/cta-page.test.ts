@@ -111,7 +111,7 @@ describe("components/CriHistoryChart.tsx — D3 chart exists", () => {
   const src = read("components/CriHistoryChart.tsx");
 
   it("uses d3", () => {
-    expect(src).toMatch(/from ['"]d3['"]/);
+    expect(src).toMatch(/from ['"]d3(-[a-z]+)?['"]/);
   });
 
   it("exports CriHistoryChart", () => {

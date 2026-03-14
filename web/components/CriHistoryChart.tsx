@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import * as d3 from "d3";
+import { select, pointer } from "d3-selection";
+import { scaleLinear, scaleTime, type ScaleLinear } from "d3-scale";
+import { line, curveMonotoneX } from "d3-shape";
+import { timeFormat } from "d3-time-format";
+import { extent, bisector } from "d3-array";
+import { axisLeft, axisRight, axisBottom } from "d3-axis";
 import ChartPanel from "./charts/ChartPanel";
 
 export interface CriHistoryEntry {
@@ -96,7 +101,7 @@ export default function CriHistoryChart({
   const [leftSeries, rightSeries] = series;
 
   useEffect(() => {
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll("*").remove();
 
     if (!chartData || chartData.length < 2) return;
@@ -114,9 +119,8 @@ export default function CriHistoryChart({
     const dates = chartData.map((d) => new Date(d.date));
 
     // Scales
-    const xScale = d3
-      .scaleTime()
-      .domain(d3.extent(dates) as [Date, Date])
+    const xScale = scaleTime()
+      .domain(extent(dates) as [Date, Date])
       .range([0, innerW]);
 
     // Helper: build Y scale for a series
@@ -124,10 +128,10 @@ export default function CriHistoryChart({
       const vals = chartData
         .map((d) => d[s.key] as number | null | undefined)
         .filter((v): v is number => v != null && Number.isFinite(v));
-      if (vals.length === 0) return d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
-      const ext = d3.extent(vals) as [number, number];
+      if (vals.length === 0) return scaleLinear().domain([0, 100]).range([innerH, 0]);
+      const ext = extent(vals) as [number, number];
       const pad = (ext[1] - ext[0]) * 0.15 || 2;
-      return d3.scaleLinear().domain([ext[0] - pad, ext[1] + pad]).range([innerH, 0]);
+      return scaleLinear().domain([ext[0] - pad, ext[1] + pad]).range([innerH, 0]);
     }
 
     const yLeft = buildYScale(leftSeries);
@@ -150,25 +154,24 @@ export default function CriHistoryChart({
     // Draw a line series
     function drawLine(
       s: ChartSeries,
-      yScale: d3.ScaleLinear<number, number>,
+      yScale: ScaleLinear<number, number>,
     ) {
       const validData = chartData.filter(
         (d) => d[s.key] != null && Number.isFinite(d[s.key] as number),
       );
       if (validData.length < 2) return;
 
-      const line = d3
-        .line<CriHistoryEntry>()
+      const lineFn = line<CriHistoryEntry>()
         .x((d) => xScale(new Date(d.date)))
         .y((d) => yScale(d[s.key] as number))
-        .curve(d3.curveMonotoneX);
+        .curve(curveMonotoneX);
 
       g.append("path")
         .datum(validData)
         .attr("fill", "none")
         .attr("stroke", s.color)
         .attr("stroke-width", 2)
-        .attr("d", line);
+        .attr("d", lineFn);
 
       // Dots
       g.selectAll(`.dot-${s.key}`)
@@ -204,8 +207,7 @@ export default function CriHistoryChart({
     const leftFormat = leftSeries.format ?? defaultFormat;
     g.append("g")
       .call(
-        d3
-          .axisLeft(yLeft)
+        axisLeft(yLeft)
           .ticks(5)
           .tickFormat((d) => leftFormat(d as number)),
       )
@@ -224,8 +226,7 @@ export default function CriHistoryChart({
     g.append("g")
       .attr("transform", `translate(${innerW},0)`)
       .call(
-        d3
-          .axisRight(yRight)
+        axisRight(yRight)
           .ticks(5)
           .tickFormat((d) => rightFormat(d as number)),
       )
@@ -241,10 +242,9 @@ export default function CriHistoryChart({
 
     // X-axis
     const tickCount = Math.max(2, Math.min(chartData.length, Math.floor(innerW / 50)));
-    const xAxis = d3
-      .axisBottom(xScale)
+    const xAxis = axisBottom(xScale)
       .ticks(tickCount)
-      .tickFormat((d) => d3.timeFormat("%b %-d")(d as Date));
+      .tickFormat((d) => timeFormat("%b %-d")(d as Date));
 
     g.append("g")
       .attr("transform", `translate(0,${innerH})`)
@@ -265,9 +265,9 @@ export default function CriHistoryChart({
       .attr("height", innerH)
       .attr("fill", "transparent")
       .on("mousemove", function (event: MouseEvent) {
-        const [mx] = d3.pointer(event, this);
+        const [mx] = pointer(event, this);
         const hoveredDate = xScale.invert(mx);
-        const bisect = d3.bisector((d: CriHistoryEntry) => new Date(d.date)).left;
+        const bisect = bisector((d: CriHistoryEntry) => new Date(d.date)).left;
         let idx = bisect(chartData, hoveredDate);
         idx = Math.max(0, Math.min(chartData.length - 1, idx));
         if (idx > 0) {
