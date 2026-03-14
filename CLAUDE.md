@@ -127,6 +127,20 @@ Charts inject live WS values into today's data point for real-time updates. Heig
 
 Price trend arrows (↑↓) in `PositionTable.tsx` and `WorkspaceSections.tsx` must stay inline with values — never wrap to a new line. CSS: `td.last-price-cell { white-space: nowrap }`. Arrow icon class: `.price-trend-icon` with `margin-left: 4px`.
 
+### Options Chain Sticky Header
+
+The chain table (`OptionsChainTab.tsx`) uses a two-row sticky `<thead>`: row 1 = column headers (Δ, IV, Vol, Bid, Mid, Ask, Last, Strike), row 2 = CALLS/PUTS labels. Three CSS requirements prevent data rows from overlapping the header:
+
+| Requirement | CSS | Why |
+|-------------|-----|-----|
+| Opaque background | `background: var(--bg-panel-raised)` on `.chain-header` + `.chain-side-label` | Transparent headers let scrolling data show through |
+| Sticky cells | `position: sticky; top: 0` on `.chain-header`, `top: 24px` on `.chain-side-label` | Pins headers during scroll |
+| thead stacking context | `.chain-grid thead { position: relative; z-index: 10 }` | Elevates entire header group above tbody paint order |
+
+**Critical**: All three are required. Removing the thead stacking context or the `--bg-panel-raised` variable definition will re-introduce the overlap bug.
+
+**Tests**: `web/tests/chain-sticky-header.test.ts` (8 tests)
+
 ---
 
 ## Exposure Delta Sign Rule
@@ -663,6 +677,8 @@ Any change touching UI code (components, styles, layouts, modals, charts, empty 
 
 **Surfaces (dark):** `bg.canvas: #0a0f14` | `bg.panel: #0f1519` | `bg.panelRaised: #151c22` | `line.grid: #1e293b`
 **Surfaces (light):** `bg.canvas: #FFFFFF` | `bg.panel: #FFFFFF` | `bg.panelRaised: #F1F5F9` | `line.grid: #BBBFBF`
+
+**CSS surface variables:** `--bg-base`, `--bg-panel`, `--bg-panel-raised`, `--bg-hover`, `--border-dim`, `--line-grid` — defined in both `[data-theme="dark"]` and `[data-theme="light"]` blocks in `globals.css`.
 
 **CSS signal variables:** `--signal-core`, `--signal-strong`, `--signal-deep`, `--dislocation`, `--extreme`, `--fault`, `--neutral`, `--text-secondary` — all auto-adapt to dark/light theme via `globals.css`.
 
