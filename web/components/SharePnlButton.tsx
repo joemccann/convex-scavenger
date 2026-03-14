@@ -17,15 +17,10 @@ type SharePnlButtonProps = {
   size?: number;
 };
 
-function fmtDollar(v: number): string {
-  const abs = Math.abs(v);
-  const sign = v >= 0 ? "+" : "-";
-  return `${sign}$${abs.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
+import { fmtSignedUsdExact as fmtDollar, fmtPct as _fmtPct } from "@/lib/format";
 
 function fmtPct(v: number): string {
-  const sign = v >= 0 ? "+" : "";
-  return `${sign}${v.toFixed(2)}%`;
+  return _fmtPct(v, 2, true);
 }
 
 export function buildTweetText(

@@ -55,28 +55,11 @@ const METRIC_CONFIG: Record<ExposureMetric, {
   },
 };
 
-function fmtUsd(n: number): string {
-  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-}
+import { fmtUsd, fmtSignedUsd, fmtDelta, fmtSpot, fmtSigned } from "@/lib/format";
 
-function fmtSignedUsd(n: number): string {
-  return `${n >= 0 ? "+" : ""}${fmtUsd(Math.abs(n))}${n < 0 ? "" : ""}`.replace("+-", "-");
-}
 
-function fmtDelta(n: number): string {
-  return `${n >= 0 ? "+" : ""}${n.toFixed(0)}`;
-}
 
-function fmtSpot(n: number | null): string {
-  if (n == null) return "---";
-  return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function fmtLegDelta(n: number | null): string {
-  if (n == null) return "---";
-  return n >= 0 ? `+${n.toFixed(4)}` : n.toFixed(4);
-}
+const fmtLegDelta = (n: number | null) => fmtSigned(n, 4);
 
 export default function ExposureBreakdownModal({ metric, exposure, bankroll, onClose }: Props) {
   const [expandedId, setExpandedId] = useState<number | null>(null);

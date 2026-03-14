@@ -1,6 +1,7 @@
 "use client";
 
 import type { ExecutedOrder } from "@/lib/types";
+import { fmtSignedUsdExact, fmtPrice, fmtPct as fmtPctBase } from "@/lib/format";
 
 type Props = {
   open: boolean;
@@ -10,14 +11,7 @@ type Props = {
   onClose: () => void;
 };
 
-const fmtPnl = (n: number | null) => {
-  if (n == null) return "---";
-  const abs = Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return `${n >= 0 ? "+" : "-"}$${abs}`;
-};
-
-const fmtPrice = (n: number | null) =>
-  n == null ? "---" : `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtPnl = fmtSignedUsdExact;
 
 const fmtTime = (iso: string) => {
   try {
@@ -27,7 +21,7 @@ const fmtTime = (iso: string) => {
   }
 };
 
-const fmtPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
+const fmtPct = (n: number) => fmtPctBase(n, 2, true);
 
 export default function FillsModal({ open, fills, totalRealizedPnl, netLiquidation, onClose }: Props) {
   if (!open) return null;

@@ -52,6 +52,30 @@ export function fmt(v: number | null | undefined, decimals = 2): string {
   return v.toFixed(decimals);
 }
 
+/** Format as signed exact USD: "+$1,234.56" / "-$1,234.56" / "---" for null */
+export function fmtSignedUsdExact(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "---";
+  const abs = Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${n >= 0 ? "+" : "-"}$${abs}`;
+}
+
+/** Format nullable exact USD: "$1,234.56" / "---" */
+export function fmtPrice(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "---";
+  return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+/** Format delta: "+123" / "-45" */
+export function fmtDelta(n: number): string {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(0)}`;
+}
+
+/** Format nullable spot price: "$123.45" / "---" */
+export function fmtSpot(n: number | null | undefined): string {
+  if (n == null) return "---";
+  return fmtPrice(n);
+}
+
 /** Return CSS tone class for positive/negative/neutral values */
 export function toneClass(value: number): "positive" | "negative" | "neutral" {
   return value > 0 ? "positive" : value < 0 ? "negative" : "neutral";

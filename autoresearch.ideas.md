@@ -11,7 +11,7 @@
 - Remove 45+ dead CSS rules, 2 dead keyframe animations, unused CSS properties
 - Remove dead code: store.ts, useIBStatus.ts
 
-## Exhaustively explored and rejected (sessions 1–5)
+## Exhaustively explored and rejected (sessions 1–7)
 - Dynamic imports (ChatPanel, PriceChart, tabs): Turbopack adds +4-13KB chunk wrapper overhead
 - optimizePackageImports / modularizeImports: Turbopack already tree-shakes optimally
 - .browserslistrc modern browsers: Turbopack ignores — polyfills unchanged, app grew 6KB
@@ -27,6 +27,12 @@
 - Move Google Fonts @import to layout <head>: build crash (prerendering fails)
 - String/JSX pattern dedup: ~4.6KB theoretical, net <0.5KB after refactor overhead
 - reactStrictMode: false: no production effect
+
+## Session 7 additions
+- Kit page chunk analysis: 14.7KB separate chunk, but SHARED with production lucide/semantic code — can't eliminate
+- Polyfill chunk (112KB): confirmed client-loaded via HTML `<script>` tags on every page — server-generated, framework-controlled
+- Liveline 0.0.7: 318KB (larger than 0.0.6 at 316KB) — no savings
+- Next.js 16.1.6 is latest stable — no upgrade path
 
 ## True floor analysis (920KB)
 | Component | Size | Notes |

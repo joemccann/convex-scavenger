@@ -9,6 +9,7 @@ import ExposureBreakdownModal, { type ExposureMetric } from "./ExposureBreakdown
 import FillsModal from "./FillsModal";
 import PnlBreakdownModal, { type PnlBreakdownRow } from "./PnlBreakdownModal";
 import AccountMetricModal from "./AccountMetricModal";
+import { fmtUsd, fmtUsdExact, fmtSignedUsd, fmtSignedUsdExact, fmtPrice, toneClass } from "@/lib/format";
 
 type MetricCardsProps = {
   portfolio: PortfolioData | null;
@@ -18,21 +19,12 @@ type MetricCardsProps = {
   section?: string;
 };
 
-const fmt = (n: number) =>
-  n >= 1_000_000
-    ? `$${(n / 1_000_000).toFixed(2)}M`
-    : `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-
-const fmtSigned = (n: number) =>
-  `${n >= 0 ? "+" : ""}${fmt(Math.abs(n))}`;
-
-const fmtExact = (n: number) =>
-  `$${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
+const fmt = fmtUsd;
+const fmtSigned = (n: number) => fmtSignedUsd(n);
+const fmtExact = fmtUsdExact;
 const fmtSignedExact = (n: number) =>
   `${n >= 0 ? "+" : "-"}${fmtExact(n)}`;
-
-const tone = (n: number) => (n > 0 ? "positive" as const : n < 0 ? "negative" as const : "neutral" as const);
+const tone = toneClass;
 
 function resolveMarketValue(pos: PortfolioData["positions"][number]): number | null {
   if (pos.market_value != null) return pos.market_value;
@@ -52,8 +44,8 @@ function computeUnrealizedBreakdown(portfolio: PortfolioData): PnlBreakdownRow[]
       id: pos.id,
       ticker: pos.ticker,
       structure: pos.structure,
-      col1: `$${Math.abs(pos.entry_cost).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      col2: `$${Math.abs(mv).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      col1: fmtPrice(Math.abs(pos.entry_cost)),
+      col2: fmtPrice(Math.abs(mv)),
       pnl,
       pnlPct,
     }];
@@ -584,9 +576,9 @@ export default function MetricCards({ portfolio, prices, realizedPnl, executedOr
         title="Today's Total P&L"
         formula={
           `Total = Day Move + Realized\n` +
-          `      = ${unrealized >= 0 ? "+" : ""}$${Math.abs(unrealized).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (day move)` +
-          `  ${realized >= 0 ? "+" : "−"}  $${Math.abs(realized).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (fills)\n` +
-          `      = ${total >= 0 ? "+" : ""}$${Math.abs(total).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          `      = ${unrealized >= 0 ? "+" : ""}${fmtPrice(Math.abs(unrealized))} (day move)` +
+          `  ${realized >= 0 ? "+" : "−"}  ${fmtPrice(Math.abs(realized))} (fills)\n` +
+          `      = ${total >= 0 ? "+" : ""}${fmtPrice(Math.abs(total))}`
         }
         col1Header="COMPONENT"
         col2Header="SOURCE"
