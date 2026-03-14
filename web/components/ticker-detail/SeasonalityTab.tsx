@@ -40,9 +40,9 @@ function rateMonth(winRate: number, _avgReturn: number): Rating {
 }
 
 function ratingClass(rating: Rating): string {
-  if (rating === "FAVORABLE") return "seasonality-favorable";
-  if (rating === "UNFAVORABLE") return "seasonality-unfavorable";
-  return "seasonality-neutral";
+  if (rating === "FAVORABLE") return "sfa";
+  if (rating === "UNFAVORABLE") return "suf";
+  return "sne";
 }
 
 function overallRating(months: MonthData[]): { rating: Rating; favorable: number; unfavorable: number } {
@@ -179,7 +179,7 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
           return (
             <div
               key={m.month}
-              className={`seasonality-cell ${isCurrent ? "seasonality-cell-current" : ""} ${!hasData ? "seasonality-cell-nodata" : ""}`}
+              className={`seasonality-cell ${isCurrent ? "seasonality-cell-current" : ""} ${!hasData ? "scn" : ""}`}
             >
               <div className="seasonality-cell-month">
                 {MONTH_LABELS[m.month - 1]}
@@ -214,7 +214,7 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
 
       {/* Detail table */}
       <div className="seasonality-detail">
-        <div className="seasonality-detail-title">Monthly Detail</div>
+        <div className="sdt">Monthly Detail</div>
         <table className="plt">
           <thead>
             <tr>
@@ -260,13 +260,13 @@ export default function SeasonalityTab({ ticker, active }: SeasonalityTabProps) 
       {/* Legend */}
       <div className="seasonality-legend">
         <span className="sl-i">
-          <span className="sl-d seasonality-favorable" /> FAVORABLE: win rate &gt;60%
+          <span className="sl-d sfa" /> FAVORABLE: win rate &gt;60%
         </span>
         <span className="sl-i">
-          <span className="sl-d seasonality-neutral" /> NEUTRAL: 50-60% win rate
+          <span className="sl-d sne" /> NEUTRAL: 50-60% win rate
         </span>
         <span className="sl-i">
-          <span className="sl-d seasonality-unfavorable" /> UNFAVORABLE: win rate &lt;50%
+          <span className="sl-d suf" /> UNFAVORABLE: win rate &lt;50%
         </span>
       </div>
     </div>

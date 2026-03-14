@@ -221,8 +221,8 @@ export default function RegimePanel({ prices }: RegimePanelProps) {
             </span>
           )}
         </div>
-        <div className="regime-hero-bar">
-          <div className="regime-hero-bar-fill" style={{ width: `${cri.score}%`, background: color }} />
+        <div className="rhb">
+          <div className="rhf" style={{ width: `${cri.score}%`, background: color }} />
         </div>
         <div className="regime-hero-scale">
           <span>LOW</span><span>ELEVATED</span><span>HIGH</span><span>CRITICAL</span>

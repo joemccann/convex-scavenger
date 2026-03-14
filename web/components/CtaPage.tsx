@@ -86,10 +86,10 @@ export default function CtaPage() {
   }
 
   const statusBannerClass = syncState === "degraded" || error
-    ? "cta-status-banner cta-status-banner-error"
+    ? "csb cta-status-banner-error"
     : syncState === "syncing" || syncState === "running"
-      ? "cta-status-banner cta-status-banner-running"
-      : "cta-status-banner";
+      ? "csb csbr"
+      : "csb";
 
   return (
     <div data-testid="cta-page" style={{ width: "100%", display: "flex", flexDirection: "column", gap: "0" }}>
@@ -143,7 +143,7 @@ export default function CtaPage() {
         </div>
 
         {exposurePct != null && (
-          <div className="regime-cta-gauge" style={{ marginTop: "12px" }}>
+          <div className="rcg" style={{ marginTop: "12px" }}>
             <div className="regime-cta-gauge-label">EXPOSURE</div>
             <div className="rbt">
               <div

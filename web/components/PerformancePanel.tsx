@@ -353,7 +353,7 @@ export default function PerformancePanel({ portfolioLastSync = null }: { portfol
 
   return (
     <div className="performance-panel" data-testid="performance-panel">
-      <div className="section performance-hero">
+      <div className="section ph">
         <div className="s-bd performance-hero-body">
           <div>
             <div className="section-label-mono">RECONSTRUCTED {data.period_label}</div>
@@ -477,7 +477,7 @@ export default function PerformancePanel({ portfolioLastSync = null }: { portfol
             <span className="pill undefined">{data.warnings.length} FLAGS</span>
           </div>
           <div className="s-bd">
-            <ul className="performance-note-list">
+            <ul className="pnl2">
               {data.warnings.map((warning) => (
                 <li key={warning}>{warning}</li>
               ))}

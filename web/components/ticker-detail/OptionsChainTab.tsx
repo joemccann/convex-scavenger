@@ -267,7 +267,7 @@ function OrderBuilder({
       </div>
 
       {/* Legs list */}
-      <div className="order-builder-legs">
+      <div className="obl">
         {legs.map((leg) => {
           const key = optionKey({
             symbol: ticker,
@@ -282,7 +282,7 @@ function OrderBuilder({
             <div key={leg.id} className="order-builder-leg">
               <div className="fc" style={{ gap: "8px", flex: 1 }}>
                 <button
-                  className={`order-action-btn order-action-active ${leg.action === "BUY" ? "order-action-buy" : "order-action-sell"}`}
+                  className={`order-action-btn oaa ${leg.action === "BUY" ? "oby" : "oas"}`}
                   onClick={() => {
                     onUpdateLeg(leg.id, { action: leg.action === "BUY" ? "SELL" : "BUY" });
                     setConfirmStep(false);
@@ -365,13 +365,13 @@ function OrderBuilder({
         <label className="o-l">Time in Force</label>
         <div className="o-ab">
           <button
-            className={`order-action-btn ${tif === "DAY" ? "order-action-active" : ""}`}
+            className={`order-action-btn ${tif === "DAY" ? "oaa" : ""}`}
             onClick={() => setTif("DAY")}
           >
             DAY
           </button>
           <button
-            className={`order-action-btn ${tif === "GTC" ? "order-action-active" : ""}`}
+            className={`order-action-btn ${tif === "GTC" ? "oaa" : ""}`}
             onClick={() => setTif("GTC")}
           >
             GTC

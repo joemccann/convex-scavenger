@@ -22,8 +22,8 @@ function PnlBar({ value, max }: { value: number; max: number }) {
   const isPositive = value >= 0;
   return (
     <div
-      className="attribution-pnl-bar"
-      data-testid="attribution-pnl-bar"
+      className="apb"
+      data-testid="apb"
     >
       <div
         className={`attribution-pnl-fill ${isPositive ? "positive" : "negative"}`}
@@ -45,7 +45,7 @@ function StrategyTable({ strategies, maxPnl }: { strategies: StrategyAttribution
       </div>
       {strategies.map((s) => (
         <div key={s.strategy_id} className="at-r">
-          <span className="attribution-strategy-name">{s.strategy_name}</span>
+          <span className="asn">{s.strategy_name}</span>
           <span className="mono">{s.closed_count}/{s.trade_count}</span>
           <span className="mono">{fmtPct(s.win_rate)}</span>
           <span className={`mono ${toneClass(s.realized_pnl)}`}>{fmtUsd(s.realized_pnl)}</span>

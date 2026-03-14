@@ -74,15 +74,15 @@ function ExistingOrderRow({
 
   return (
     <div className={`existing-order ${isPendingCancel ? "existing-order-cancelling" : isPendingModify ? "existing-order-modifying" : ""}`}>
-      <div className="existing-order-header">
-        <div className="existing-order-info">
+      <div className="eoh">
+        <div className="eoi">
           <span className={`pill ${order.action === "BUY" ? "accum" : "distrib"}`} style={{ fontSize: "9px" }}>
             {order.action}
           </span>
           <span className="existing-order-desc">{desc}</span>
-          <span className="existing-order-qty">{order.totalQuantity}x</span>
+          <span className="eoq">{order.totalQuantity}x</span>
         </div>
-        <div className="existing-order-status">
+        <div className="eos">
           {isPending && <Loader2 size={12} className="cs" />}
           <span className="existing-order-status-text">
             {isPendingCancel ? "Cancelling..." : isPendingModify ? "Modifying..." : order.status}
@@ -269,13 +269,13 @@ function NewOrderForm({
         <label className="o-l">Action</label>
         <div className="o-ab">
           <button
-            className={`order-action-btn ${action === "BUY" ? "order-action-active order-action-buy" : ""}`}
+            className={`order-action-btn ${action === "BUY" ? "oaa oby" : ""}`}
             onClick={() => { setAction("BUY"); setConfirmStep(false); }}
           >
             BUY
           </button>
           <button
-            className={`order-action-btn ${action === "SELL" ? "order-action-active order-action-sell" : ""}`}
+            className={`order-action-btn ${action === "SELL" ? "oaa oas" : ""}`}
             onClick={() => { setAction("SELL"); setConfirmStep(false); }}
           >
             SELL
@@ -320,8 +320,8 @@ function NewOrderForm({
       <div className="o-f">
         <label className="o-l">Time in Force</label>
         <div className="o-ab">
-          <button className={`order-action-btn ${tif === "DAY" ? "order-action-active" : ""}`} onClick={() => setTif("DAY")}>DAY</button>
-          <button className={`order-action-btn ${tif === "GTC" ? "order-action-active" : ""}`} onClick={() => setTif("GTC")}>GTC</button>
+          <button className={`order-action-btn ${tif === "DAY" ? "oaa" : ""}`} onClick={() => setTif("DAY")}>DAY</button>
+          <button className={`order-action-btn ${tif === "GTC" ? "oaa" : ""}`} onClick={() => setTif("GTC")}>GTC</button>
         </div>
       </div>
 
@@ -496,13 +496,13 @@ function ComboOrderForm({
         <label className="o-l">Action</label>
         <div className="o-ab">
           <button
-            className={`order-action-btn ${action === "BUY" ? "order-action-active order-action-buy" : ""}`}
+            className={`order-action-btn ${action === "BUY" ? "oaa oby" : ""}`}
             onClick={() => { setAction("BUY"); setConfirmStep(false); }}
           >
             BUY
           </button>
           <button
-            className={`order-action-btn ${action === "SELL" ? "order-action-active order-action-sell" : ""}`}
+            className={`order-action-btn ${action === "SELL" ? "oaa oas" : ""}`}
             onClick={() => { setAction("SELL"); setConfirmStep(false); }}
           >
             SELL
@@ -556,8 +556,8 @@ function ComboOrderForm({
       <div className="o-f">
         <label className="o-l">Time in Force</label>
         <div className="o-ab">
-          <button className={`order-action-btn ${tif === "DAY" ? "order-action-active" : ""}`} onClick={() => setTif("DAY")}>DAY</button>
-          <button className={`order-action-btn ${tif === "GTC" ? "order-action-active" : ""}`} onClick={() => setTif("GTC")}>GTC</button>
+          <button className={`order-action-btn ${tif === "DAY" ? "oaa" : ""}`} onClick={() => setTif("DAY")}>DAY</button>
+          <button className={`order-action-btn ${tif === "GTC" ? "oaa" : ""}`} onClick={() => setTif("GTC")}>GTC</button>
         </div>
       </div>
 

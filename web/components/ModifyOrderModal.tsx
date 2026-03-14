@@ -199,7 +199,7 @@ export default function ModifyOrderModal({ order, loading, prices, portfolio, on
           </div>
 
           {/* Extended hours toggle */}
-          <label className="modify-rth-toggle">
+          <label className="mrt">
             <input
               type="checkbox"
               checked={outsideRth}

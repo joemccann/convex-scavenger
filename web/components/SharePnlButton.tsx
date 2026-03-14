@@ -23,7 +23,7 @@ function fmtPct(v: number): string {
   return _fmtPct(v, 2, true);
 }
 
-export function buildTweetText(
+function buildTweetText(
   description: string,
   pnl: number,
   pnlPct: number | null,
