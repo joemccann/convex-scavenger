@@ -1,5 +1,13 @@
 # Lessons
 
+## 2026-03-15
+
+- IB Gateway's CLOSE tick on weekends returns the penultimate session's close, not the last trading day's close (e.g. Wednesday's $106.19 instead of Friday's $96.81). Never use IB's `close` field as a reliable "previous close" for stocks; only cash indexes (VIX, VVIX) report their actual value via the CLOSE tick. Use the previous-close API (UW/Yahoo) instead.
+- The first FastAPI migration attempt (2026-03-12) failed because of three traps: dual-path spawn-fallback, file-writer scripts that don't fit JSON response model, and three-service startup fragility. The successful approach: no spawn fallback (serve cached on failure), subprocess execution for all IB scripts (avoids ib_insync event loop conflicts), and auto-restart IB Gateway on ECONNREFUSED.
+- When `ib_insync.IB.connect()` is called from `asyncio.to_thread()`, the thread has no event loop. Fix: create and set a new event loop in the thread before connecting (`asyncio.set_event_loop(asyncio.new_event_loop())`).
+- IB doesn't allow duplicate client IDs. When a connection pool holds client_ids 0/11/31, subprocess scripts must use different IDs (40/41) or they'll get ECONNREFUSED.
+- When reverting an optimization campaign that renamed CSS classes across 60+ files, identify which files were NEW features built during the campaign (keep them) vs. existing files that were modified (restore from pre-optimization). Use `git ls-tree` to check file existence at the target commit.
+
 ## 2026-03-13
 
 - Before a ship/push step, confirm whether the current checkout is already on `main`; do not talk about merge cleanup as if a worktree branch exists when the active checkout is already the main branch.

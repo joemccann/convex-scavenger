@@ -25,9 +25,10 @@ npm run dev
 # 4. Open http://localhost:3000
 ```
 
-The `npm run dev` command starts both:
+The `npm run dev` command starts three services:
 - Next.js dev server (port 3000)
 - IB real-time price server (port 8765)
+- FastAPI server (port 8321) — Python script execution, IB Gateway auto-restart
 
 ## Architecture
 
@@ -56,8 +57,9 @@ The `npm run dev` command starts both:
 
 | Component | Purpose | Update Frequency |
 |-----------|---------|------------------|
-| `ib_sync.py` | Portfolio positions, P&L, account values | Every 30 seconds |
+| `ib_sync.py` | Portfolio positions, P&L, account values | Every 60 seconds (via FastAPI) |
 | `ib_realtime_server.js` | Live bid/ask/last prices | Real-time (<1ms latency) |
+| `scripts/api/server.py` | FastAPI bridge — runs Python scripts as async subprocesses | On-demand (API calls) |
 
 ### Portfolio Price Table Indicators
 
@@ -224,14 +226,17 @@ python3 ../scripts/test_ib_realtime.py --ws-only
 ## Development
 
 ```bash
-# Start everything (Next.js + IB price server)
+# Start everything (Next.js + IB WS relay + FastAPI)
 npm run dev
 
-# Start Next.js only (no real-time prices)
+# Start Next.js only (no real-time prices, no FastAPI)
 npm run dev:next
 
 # Start IB price server only
 npm run dev:prices
+
+# Health check (FastAPI + IB Gateway status)
+curl http://localhost:8321/health
 
 # Build for production
 npm run build

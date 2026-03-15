@@ -159,6 +159,56 @@ The chain table (`OptionsChainTab.tsx`) uses a two-row sticky `<thead>`: row 1 =
 
 ---
 
+## FastAPI Server Architecture
+
+Next.js API routes call a local FastAPI server (`scripts/api/server.py` on `localhost:8321`) via `radonFetch()` (`web/lib/radonApi.ts`) instead of spawning Python processes. Eliminates per-request fork overhead (~200-500ms) and IB Gateway reconnection (~500ms-2s).
+
+### Three-Service Dev Stack
+
+```bash
+npm run dev   # starts all three:
+```
+
+| Service | Port | Process |
+|---------|------|---------|
+| Next.js | 3000 | `next dev` |
+| IB WS relay | 8765 | `ib_realtime_server.js` (real-time price streaming) |
+| FastAPI | 8321 | `uvicorn scripts.api.server:app` (Python script execution) |
+
+All `dev:verbose*` variants also include FastAPI.
+
+### FastAPI Server (`scripts/api/`)
+
+| File | Purpose |
+|------|---------|
+| `server.py` | FastAPI app — 17 endpoints, CORS, IB pool, health check, IB Gateway auto-restart |
+| `ib_pool.py` | Role-based IB connection pool (sync/orders/data) with auto-reconnect |
+| `ib_gateway.py` | IB Gateway health check + auto-restart via IBC launchd service |
+| `subprocess.py` | Async subprocess helper (`run_script`, `run_module`) |
+
+### Graceful Degradation
+
+| Scenario | GET behavior | POST behavior |
+|---|---|---|
+| FastAPI up + IB up | Normal | Normal |
+| FastAPI up + IB down | Cached data | Auto-restart Gateway, retry once, else 503 + cached |
+| FastAPI down | Cached data from disk | Cached data with `is_stale: true` |
+
+Next.js routes always try FastAPI first. On failure, they serve the last-known-good cached file. No spawn fallback.
+
+### IB Gateway Auto-Recovery
+
+On startup, FastAPI checks if port 4001 is listening. If not, runs `~/ibc/bin/restart-secure-ibc-service.sh` and polls for up to 45s. At runtime, IB-dependent endpoints (`/portfolio/sync`, `/orders/refresh`) detect `ECONNREFUSED` in subprocess output, auto-restart Gateway, reconnect pool, and retry once. Manual restart: `POST /ib/restart`.
+
+### Health Check
+
+```bash
+curl http://localhost:8321/health
+# Returns: ib_gateway (port_listening, service_state), ib_pool (sync, orders, data), uw
+```
+
+---
+
 ## High-Throughput Architecture
 
 Radon is optimized for 500+ symbol monitoring with <500ms signal-to-order latency.
@@ -267,6 +317,10 @@ All portfolio state writes use `scripts/utils/atomic_io.py`:
 
 | Script | Purpose |
 |--------|---------|
+| `scripts/api/server.py` | **FastAPI server** — 17 endpoints on `localhost:8321`. Replaces `spawn()` calls from Next.js. IB pool, auto-restart, health check |
+| `scripts/api/ib_pool.py` | **IB connection pool** — Role-based persistent connections (sync=0, orders=11, data=31) with auto-reconnect |
+| `scripts/api/ib_gateway.py` | **IB Gateway manager** — Health check, auto-restart via IBC launchd, port polling |
+| `scripts/api/subprocess.py` | **Async subprocess** — `run_script()`, `run_module()` with JSON extraction, timeout, error filtering |
 | `scripts/clients/ib_client.py` | **IBClient** — Primary IB API client (connection, orders, quotes, options, fills, flex). Includes resilient reconnection (subscription tracking, auto-restore), pacing violation handling (codes 162/366), invalid contract tracking (200/354) |
 | `scripts/clients/uw_client.py` | **UWClient** — Primary UW API client (dark pool, flow, chain, ratings, seasonality, 50+ endpoints) |
 | `scripts/clients/menthorq_client.py` | **MenthorQClient** — MenthorQ browser automation client. Constants: `DASHBOARD_COMMANDS` (8 commands), `TICKER_TAB_COMMANDS` (5), `DASHBOARD_TICKERS` (16), `SCREENER_SLUGS` (6 categories, 45 slugs), `SUMMARY_CATEGORIES` (2), `FOREX_CARD_SLUGS` (2). Methods: `get_cta()`, `get_eod()`, `get_dashboard_image()`, `get_forex_levels()`, `get_summary()`, `get_screener()`, `get_screener_category()`, `get_all_screener_data()`, `discover_screener_cards()`, `get_futures_list/detail/contracts()`, `get_forex_list/detail()`, `get_crypto_list/detail()`, `get_intraday()`. |
@@ -577,6 +631,8 @@ Full spec: `docs/unusual_whales_api.md` | `docs/unusual_whales_api_spec.yaml`
 
 ## IB Gateway & IBC
 
+**Auto-recovery:** FastAPI server (`scripts/api/ib_gateway.py`) detects when IB Gateway is down at startup and auto-restarts the IBC service. IB-dependent endpoints also auto-restart on `ECONNREFUSED` and retry once. Manual restart: `POST http://localhost:8321/ib/restart` or `curl -X POST http://localhost:8321/ib/restart`.
+
 **Troubleshooting:** `docs/ib-connection-troubleshooting.md` — full diagnostic runbook for connection failures, timeout budget, cached fallback behavior, and architecture diagram.
 
 IB Gateway is managed by a **machine-global secure IBC service** (`local.ibc-gateway`), shared with [market-data-warehouse](https://github.com/joemccann/market-data-warehouse). IBC install lives at `~/ibc-install/`, config and wrappers at `~/ibc/`.
@@ -613,10 +669,13 @@ IB Gateway is managed by a **machine-global secure IBC service** (`local.ibc-gat
 
 | Port | Connection |
 |------|-----------|
-| 7496 | TWS Live |
-| 7497 | TWS Paper (default) |
+| 3000 | Next.js dev server |
+| 8321 | FastAPI (Radon API — Python script execution) |
+| 8765 | IB WebSocket relay (real-time price streaming) |
 | 4001 | IB Gateway Live |
 | 4002 | IB Gateway Paper |
+| 7496 | TWS Live |
+| 7497 | TWS Paper (default) |
 | 7462 | IBC Command Server (stop/restart Gateway) |
 
 **Phase 1 remote access (working path):**
@@ -653,7 +712,9 @@ IB error `10358` = Reuters Fundamentals subscription inactive → auto-fallback 
 
 ## Startup Checklist
 
-- [ ] IB Gateway running (`~/ibc/bin/status-secure-ibc-service.sh`) — if not, approve 2FA on IBKR Mobile
+- [ ] `npm run dev` starts all 3 services (Next.js + IB WS relay + FastAPI)
+- [ ] FastAPI auto-restarts IB Gateway if down — approve 2FA on IBKR Mobile if cold start
+- [ ] Health check: `curl http://localhost:8321/health` — verify `ib_gateway.port_listening: true`
 - [ ] IB reconciliation auto-runs (`scripts/ib_reconcile.py`) — check `data/reconciliation.json`
 - [ ] Exit order service auto-runs — checks `PENDING_MANUAL` positions
 - [ ] CRI scan service running (`./scripts/setup_cri_service.sh status`) — 30-min intervals, premarket-close
