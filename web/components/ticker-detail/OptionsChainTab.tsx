@@ -243,7 +243,7 @@ function OrderBuilder({
               strike: l.strike,
               right: l.right === "C" ? "CALL" : "PUT",
               action: l.action,
-              ratio: l.quantity,
+              ratio: 1,
             })),
           }
         : {
