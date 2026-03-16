@@ -177,7 +177,9 @@ export function IBStatusProvider({ children }: { children: ReactNode }) {
       clearReconnectTimer();
       clearStalenessTimer();
       if (wsRef.current) {
-        wsRef.current.close();
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close();
+        }
         wsRef.current = null;
       }
     };

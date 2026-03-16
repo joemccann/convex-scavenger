@@ -151,7 +151,9 @@ const TickerSearch = forwardRef<HTMLInputElement, TickerSearchProps>(
         if (debounceRef.current) clearTimeout(debounceRef.current);
         if (wsRef.current) {
           wsRef.current.onclose = null; // prevent reconnect on unmount
-          wsRef.current.close();
+          if (wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.close();
+          }
           wsRef.current = null;
         }
       };

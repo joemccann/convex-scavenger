@@ -524,7 +524,9 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
       clearReconnectTimer();
       clearStalenessTimer();
       if (wsRef.current) {
-        wsRef.current.close();
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close();
+        }
         wsRef.current = null;
       }
       connStateRef.current = "idle";
@@ -538,7 +540,9 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
       clearReconnectTimer();
       clearStalenessTimer();
       if (wsRef.current) {
-        wsRef.current.close();
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close();
+        }
         wsRef.current = null;
       }
       connStateRef.current = "idle";
