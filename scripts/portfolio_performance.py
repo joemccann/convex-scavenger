@@ -362,6 +362,7 @@ def reconstruct_equity_curve(
 
     trade_map: Dict[str, List[TradeFill]] = {}
     first_date = calendar_list[0]
+    calendar_set = set(calendar_list)
     holdings: Dict[str, float] = {}
     cash = initial_cash
     for trade in trades:
@@ -370,7 +371,17 @@ def reconstruct_equity_curve(
             holdings[trade.contract_key] = holdings.get(trade.contract_key, 0.0) + trade.quantity
             cash += trade.net_cash
         else:
-            trade_map.setdefault(trade_date, []).append(trade)
+            # Snap weekend/holiday trade dates to the next valid calendar day
+            effective_date = trade_date
+            if effective_date not in calendar_set:
+                for cal_day in calendar_list:
+                    if cal_day >= effective_date:
+                        effective_date = cal_day
+                        break
+                else:
+                    # Trade after last calendar day — attach to last day
+                    effective_date = calendar_list[-1]
+            trade_map.setdefault(effective_date, []).append(trade)
 
     rows: List[dict] = []
     previous_equity: Optional[float] = None
