@@ -171,43 +171,50 @@ def detect_structure_type(legs: list) -> Tuple[str, str]:
     long_legs = [l for l in opt_legs if l['position'] > 0]
     short_legs = [l for l in opt_legs if l['position'] < 0]
     
+    # Helper: detect if leg contract counts differ (ratio position)
+    def _is_ratio(leg_a, leg_b):
+        return abs(leg_a['position']) != abs(leg_b['position'])
+
     # Synthetic or Risk Reversal: Short Put + Long Call (or vice versa)
     # Same strike = Synthetic Long/Short (behaves like stock)
     # Different strikes = Risk Reversal (directional bet with hedge)
     if len(puts) == 1 and len(calls) == 1:
         same_strike = puts[0].get('strike') == calls[0].get('strike')
-        
+        ratio_prefix = "Ratio " if _is_ratio(puts[0], calls[0]) else ""
+
         if puts[0]['position'] < 0 and calls[0]['position'] > 0:
             # Long Call + Short Put
             if same_strike:
-                return "Synthetic Long", "undefined"
-            return "Risk Reversal", "undefined"
+                return f"{ratio_prefix}Synthetic Long", "undefined"
+            return f"{ratio_prefix}Risk Reversal", "undefined"
         if puts[0]['position'] > 0 and calls[0]['position'] < 0:
             # Long Put + Short Call
             if same_strike:
-                return "Synthetic Short", "undefined"
-            return "Reverse Risk Reversal", "undefined"
+                return f"{ratio_prefix}Synthetic Short", "undefined"
+            return f"{ratio_prefix}Reverse Risk Reversal", "undefined"
         if puts[0]['position'] > 0 and calls[0]['position'] > 0:
             return "Strangle" if not same_strike else "Straddle", "defined"
-    
+
     # Vertical Spreads: Same type, different strikes, opposite directions
     if len(calls) == 2 and len(puts) == 0:
         if len(long_legs) == 1 and len(short_legs) == 1:
+            ratio_prefix = "Ratio " if _is_ratio(long_legs[0], short_legs[0]) else ""
             long_strike = long_legs[0].get('strike', 0)
             short_strike = short_legs[0].get('strike', 0)
             if long_strike < short_strike:
-                return "Bull Call Spread", "defined"
+                return f"{ratio_prefix}Bull Call Spread", "defined" if not ratio_prefix else "undefined"
             else:
-                return "Bear Call Spread", "defined"
-    
+                return f"{ratio_prefix}Bear Call Spread", "defined" if not ratio_prefix else "undefined"
+
     if len(puts) == 2 and len(calls) == 0:
         if len(long_legs) == 1 and len(short_legs) == 1:
+            ratio_prefix = "Ratio " if _is_ratio(long_legs[0], short_legs[0]) else ""
             long_strike = long_legs[0].get('strike', 0)
             short_strike = short_legs[0].get('strike', 0)
             if long_strike > short_strike:
-                return "Bear Put Spread", "defined"
+                return f"{ratio_prefix}Bear Put Spread", "defined" if not ratio_prefix else "undefined"
             else:
-                return "Bull Put Spread", "defined"
+                return f"{ratio_prefix}Bull Put Spread", "defined" if not ratio_prefix else "undefined"
     
     # ── All-long combos: fully defined risk ──
     # If every option leg is long (position > 0), max loss = total premium paid.
@@ -224,21 +231,40 @@ def detect_structure_type(legs: list) -> Tuple[str, str]:
     return f"Combo ({len(legs)} legs)", "complex"
 
 
+def _ratio_label(legs: list) -> str:
+    """Compute NxM ratio label from leg contract counts, e.g. '1x2'.
+
+    Returns empty string if legs have equal counts (not a ratio).
+    Reduces to smallest integer ratio via GCD.
+    """
+    if len(legs) != 2:
+        return ""
+    from math import gcd
+    a, b = abs(legs[0].get('position', legs[0].get('contracts', 0))), abs(legs[1].get('position', legs[1].get('contracts', 0)))
+    if a == b or a == 0 or b == 0:
+        return ""
+    g = gcd(a, b)
+    return f"{a // g}x{b // g}"
+
+
 def format_structure_description(structure_type: str, legs: list) -> str:
     """Create human-readable structure description with strikes"""
     if structure_type == "Stock":
         return legs[0]['structure']
-    
-    opt_legs = sorted([l for l in legs if l['secType'] == 'OPT'], 
+
+    opt_legs = sorted([l for l in legs if l['secType'] == 'OPT'],
                       key=lambda x: x.get('strike', 0))
-    
+
     if not opt_legs:
         return structure_type
-    
+
+    ratio = _ratio_label(opt_legs) if "Ratio" in structure_type else ""
+    ratio_suffix = f" {ratio}" if ratio else ""
+
     if "Spread" in structure_type:
         strikes = [l.get('strike') for l in opt_legs]
-        return f"{structure_type} ${min(strikes)}/${max(strikes)}"
-    
+        return f"{structure_type}{ratio_suffix} ${min(strikes)}/${max(strikes)}"
+
     if "Covered Call" in structure_type:
         call_legs = sorted([l for l in opt_legs if l.get('right') == 'C'], key=lambda x: x.get('strike', 0))
         stk_legs = [l for l in legs if l.get('secType') == 'STK' or l.get('type') == 'Stock']
@@ -247,22 +273,22 @@ def format_structure_description(structure_type: str, legs: list) -> str:
             strike = call_legs[0].get('strike', '?')
             return f"{structure_type} ${strike} ({int(shares)} shares)"
         return structure_type
-    
+
     if "Synthetic" in structure_type:
         strike = next((l.get('strike') for l in opt_legs if l.get('right') in ('C', 'P')), '?')
-        return f"{structure_type} ${strike}"
-    
+        return f"{structure_type}{ratio_suffix} ${strike}"
+
     if "Risk Reversal" in structure_type:
         put_strike = next((l.get('strike') for l in opt_legs if l.get('right') == 'P'), '?')
         call_strike = next((l.get('strike') for l in opt_legs if l.get('right') == 'C'), '?')
-        return f"{structure_type} (P${put_strike}/C${call_strike})"
-    
+        return f"{structure_type}{ratio_suffix} (P${put_strike}/C${call_strike})"
+
     if structure_type in ("Straddle", "Strangle"):
         strikes = [l.get('strike') for l in opt_legs]
         if len(set(strikes)) == 1:
             return f"{structure_type} ${strikes[0]}"
         return f"{structure_type} ${min(strikes)}/${max(strikes)}"
-    
+
     return structure_type
 
 
