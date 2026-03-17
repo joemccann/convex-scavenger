@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   optionKey,
   contractsKey,
+  normalizeOptionExpiry,
+  normalizeOptionContract,
+  uniqueOptionContracts,
   portfolioLegToContract,
   normalizeSymbolList,
   symbolKey,
@@ -52,6 +55,16 @@ describe("optionKey", () => {
     };
     expect(optionKey(contract)).toBe("TSLA_20260401_300_P");
   });
+
+  it("normalizes dashed expiries before building the key", () => {
+    const contract: OptionContract = {
+      symbol: "crm",
+      expiry: "2026-03-20",
+      strike: 200,
+      right: "C",
+    };
+    expect(optionKey(contract)).toBe("CRM_20260320_200_C");
+  });
 });
 
 // =============================================================================
@@ -84,6 +97,54 @@ describe("contractsKey", () => {
     const a: OptionContract = { symbol: "AAPL", expiry: "20260320", strike: 200, right: "C" };
     const b: OptionContract = { symbol: "GOOG", expiry: "20260320", strike: 175, right: "P" };
     expect(contractsKey([a, b])).toBe(contractsKey([b, a]));
+  });
+
+  it("deduplicates logically identical contracts across dashed and compact expiries", () => {
+    const contracts: OptionContract[] = [
+      { symbol: "CRM", expiry: "2026-03-20", strike: 200, right: "C" },
+      { symbol: "crm", expiry: "20260320", strike: 200, right: "C" },
+    ];
+    expect(contractsKey(contracts)).toBe("CRM_20260320_200_C");
+  });
+});
+
+// =============================================================================
+// normalizeOptionExpiry / normalizeOptionContract / uniqueOptionContracts
+// =============================================================================
+
+describe("option contract normalization helpers", () => {
+  it("normalizes YYYY-MM-DD expiries to YYYYMMDD", () => {
+    expect(normalizeOptionExpiry("2026-03-20")).toBe("20260320");
+  });
+
+  it("returns null for malformed expiries", () => {
+    expect(normalizeOptionExpiry("2026-3-2")).toBeNull();
+  });
+
+  it("normalizes the full option contract shape", () => {
+    expect(normalizeOptionContract({
+      symbol: "crm",
+      expiry: "2026-03-20",
+      strike: 197.5,
+      right: "C",
+    })).toEqual({
+      symbol: "CRM",
+      expiry: "20260320",
+      strike: 197.5,
+      right: "C",
+    });
+  });
+
+  it("deduplicates normalized option contracts", () => {
+    const contracts = uniqueOptionContracts([
+      { symbol: "CRM", expiry: "2026-03-20", strike: 197.5, right: "C" },
+      { symbol: "crm", expiry: "20260320", strike: 197.5, right: "C" },
+      { symbol: "CRM", expiry: "20260320", strike: 200, right: "C" },
+    ]);
+    expect(contracts).toEqual([
+      { symbol: "CRM", expiry: "20260320", strike: 197.5, right: "C" },
+      { symbol: "CRM", expiry: "20260320", strike: 200, right: "C" },
+    ]);
   });
 });
 

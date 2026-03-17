@@ -14,7 +14,7 @@ import { usePrices } from "@/lib/usePrices";
 import { useBlotter } from "@/lib/useBlotter";
 import { computeRealizedPnlFromFills } from "@/lib/realized-pnl";
 import { usePreviousClose } from "@/lib/usePreviousClose";
-import { type OptionContract, type IndexContract, optionKey, portfolioLegToContract } from "@/lib/pricesProtocol";
+import { type OptionContract, type IndexContract, optionKey, portfolioLegToContract, uniqueOptionContracts } from "@/lib/pricesProtocol";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import ChatPanel from "@/components/ChatPanel";
@@ -131,7 +131,7 @@ export default function WorkspaceShell({ section, tickerParam }: WorkspaceShellP
   const tickerDetail = useTickerDetail();
 
   const allContracts = useMemo(
-    () => [...portfolioContracts, ...orderContracts, ...tickerDetail.chainContracts],
+    () => uniqueOptionContracts([...portfolioContracts, ...orderContracts, ...tickerDetail.chainContracts]),
     [portfolioContracts, orderContracts, tickerDetail.chainContracts],
   );
 

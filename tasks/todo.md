@@ -1,5 +1,29 @@
 # TODO
 
+## Session: Fix Missing Chain Quotes For Held Option Legs (2026-03-17)
+
+### Goal
+Fix the ticker-detail chain page so option legs that are already held in the portfolio still show bid/mid/ask and builder pricing even when the options API returns dashed expiries. The chain page, order builder, and websocket subscription layer must all resolve those contracts to the same canonical option key.
+
+### Dependency Graph
+- T1 (Inspect the chain-tab contract key and subscription path for held position legs, including expiry formatting and duplicate contract handling across portfolio and chain subscriptions) depends_on: []
+- T2 (Add failing regression coverage for held position leg quotes on the chain page and the option contract normalization boundary) depends_on: [T1]
+- T3 (Implement the minimal fix so held option legs resolve to the same websocket contract keys as portfolio positions and chain/order-builder lookups) depends_on: [T2]
+- T4 (Run targeted Vitest and Playwright verification, then update task review and lessons) depends_on: [T3]
+
+### Checklist
+- [x] T1 Inspect the chain-tab contract key and subscription path for held position legs, including expiry formatting and duplicate contract handling across portfolio and chain subscriptions
+- [x] T2 Add failing regression coverage for held position leg quotes on the chain page and the option contract normalization boundary
+- [x] T3 Implement the minimal fix so held option legs resolve to the same websocket contract keys as portfolio positions and chain/order-builder lookups
+- [x] T4 Run targeted Vitest and Playwright verification, then update task review and lessons
+
+### Review
+- Root cause: the shared option-contract boundary was inconsistent. Portfolio legs were normalized to `YYYYMMDD`, but the chain page and websocket client could still carry dashed expiries from `/api/options/expirations`. That let held position legs end up with different logical identities depending on where the contract originated, so the chain/order-builder lookup path could miss quotes that were already present in the websocket store.
+- Tightened the protocol layer in [pricesProtocol.ts](/Users/joemccann/dev/apps/finance/radon/web/lib/pricesProtocol.ts) with `normalizeOptionExpiry()`, `normalizeOptionContract()`, and `uniqueOptionContracts()`. `optionKey()` now canonicalizes dashed expiries before building the composite key, and the contract list hash now deduplicates logically identical contracts instead of treating dashed and compact expiries as separate subscriptions.
+- Updated [usePrices.ts](/Users/joemccann/dev/apps/finance/radon/web/lib/usePrices.ts) and [WorkspaceShell.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/WorkspaceShell.tsx) so the websocket only sees canonical, deduplicated option contracts. That removes held-leg duplication between the portfolio contract set and the visible chain contract set.
+- Updated [OptionsChainTab.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/ticker-detail/OptionsChainTab.tsx) so placed option/combo payloads always send normalized expiries back to the order route, keeping the chain builder on the same raw IB contract format as the rest of the app.
+- Locked the fix with protocol/unit coverage in [pricesProtocol.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/pricesProtocol.test.ts) and a new mocked-websocket browser regression in [chain-held-leg-prices.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/chain-held-leg-prices.spec.ts). The new browser test proves a CRM held spread still shows bid/mid/ask on the chain page and in the order builder when the options API returns dashed expiries.
+
 ## Session: Fix Options-Chain Combo Ratio Pricing And Order Sizing (2026-03-17)
 
 ### Goal

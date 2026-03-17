@@ -9,6 +9,7 @@
 - When computing P&L % for a position group share card, use the aggregated OPT leg notional (avgPrice × qty × multiplier per leg), not the BAG envelope price. BAG fills have commission=0 and realizedPNL=0 — they're metadata, not execution data.
 - Combo net credit on open-order rows is quantity-aware: scale each leg by its effective ratio/size before summing quote values. Ignoring this turns 1x2 risk reversals (for example 25 short puts / 50 long calls) into incorrect net credit/debit values and can mislead execution/hedge decisions.
 - For options-chain combo entry, treat leg quantities as the operator's absolute desired contract counts at the UI boundary, then normalize them to `combo quantity + per-leg ratio` before computing net quotes or building the IB payload. If the UI prices raw counts but submits hardcoded `ratio: 1`, the displayed net credit and the actual order structure diverge.
+- Option expiries must be canonicalized at the shared contract layer, not ad hoc at individual call sites. If portfolio positions use `YYYYMMDD` but the chain page or websocket client keeps dashed expiries from `/api/options/expirations`, held option legs can miss quotes even though the same contract is already subscribed elsewhere in the app.
 
 ## 2026-03-16
 

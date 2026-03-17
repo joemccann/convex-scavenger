@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PriceData, OptionContract } from "@/lib/pricesProtocol";
-import { optionKey } from "@/lib/pricesProtocol";
+import { optionKey, normalizeOptionExpiry } from "@/lib/pricesProtocol";
 import { fmtPrice } from "@/lib/positionUtils";
 import { useTickerDetail } from "@/lib/TickerDetailContext";
 import { useChainPrefetch } from "@/lib/useChainPrefetch";
@@ -184,10 +184,17 @@ function OrderBuilder({
   const isDebit = netPrice != null && netPrice > 0;
   const totalQty = normalizedOrder?.quantity ?? (legs.length > 0 ? legs[0].quantity : 1);
 
+  // For BID/MID/ASK quote, always use ratio-normalized legs (quantity=1 for single leg)
+  // so the quote shows per-unit price, not aggregate (e.g. $1.46 not $73.00 for 50 contracts)
+  const quotingLegs = useMemo(() => {
+    if (legs.length === 0) return legs;
+    return normalizeComboOrder(legs).legs;
+  }, [legs]);
+
   // Compute net BID / ASK / MID from leg WS prices
   const netPrices = useMemo(() => {
-    return computeNetOptionQuote(pricingLegs, prices, ticker);
-  }, [pricingLegs, prices, ticker]);
+    return computeNetOptionQuote(quotingLegs, prices, ticker);
+  }, [quotingLegs, prices, ticker]);
 
   // Auto-populate limit price to mid when prices first become available
   useEffect(() => {
@@ -223,7 +230,7 @@ function OrderBuilder({
             legs: comboOrder.legs.map((l) => ({
               symbol: ticker,
               secType: "OPT",
-              expiry: l.expiry,
+              expiry: normalizeOptionExpiry(l.expiry) ?? l.expiry,
               strike: l.strike,
               right: l.right === "C" ? "CALL" : "PUT",
               action: l.action,
@@ -238,7 +245,7 @@ function OrderBuilder({
             quantity: legs[0].quantity,
             limitPrice: parsedPrice,
             tif,
-            expiry: legs[0].expiry,
+            expiry: normalizeOptionExpiry(legs[0].expiry) ?? legs[0].expiry,
             strike: legs[0].strike,
             right: legs[0].right === "C" ? "CALL" : "PUT",
           };

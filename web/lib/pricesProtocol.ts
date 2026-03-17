@@ -113,14 +113,51 @@ export type OptionContract = {
   right: "C" | "P";
 };
 
+export function normalizeOptionExpiry(expiry: string): string | null {
+  const compact = expiry.trim().replace(/-/g, "");
+  return compact.length === 8 ? compact : null;
+}
+
+export function normalizeOptionContract(contract: OptionContract): OptionContract | null {
+  const symbol = contract.symbol.trim().toUpperCase();
+  const expiry = normalizeOptionExpiry(contract.expiry);
+  if (!symbol || !expiry || !Number.isFinite(contract.strike) || contract.strike <= 0) {
+    return null;
+  }
+  return {
+    symbol,
+    expiry,
+    strike: contract.strike,
+    right: contract.right,
+  };
+}
+
 /** Build composite key for an option contract: SYMBOL_YYYYMMDD_STRIKE_RIGHT */
 export function optionKey(c: OptionContract): string {
-  return `${c.symbol}_${c.expiry}_${c.strike}_${c.right}`;
+  const normalized = normalizeOptionContract(c);
+  if (normalized) {
+    return `${normalized.symbol}_${normalized.expiry}_${normalized.strike}_${normalized.right}`;
+  }
+  return `${c.symbol.trim().toUpperCase()}_${c.expiry.trim()}_${c.strike}_${c.right}`;
+}
+
+export function uniqueOptionContracts(contracts: OptionContract[]): OptionContract[] {
+  const seen = new Set<string>();
+  const normalizedContracts: OptionContract[] = [];
+  for (const contract of contracts) {
+    const normalized = normalizeOptionContract(contract);
+    if (!normalized) continue;
+    const key = optionKey(normalized);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    normalizedContracts.push(normalized);
+  }
+  return normalizedContracts;
 }
 
 /** Stable hash for a list of option contracts (for memoization change detection) */
 export function contractsKey(contracts: OptionContract[]): string {
-  return contracts
+  return uniqueOptionContracts(contracts)
     .map(optionKey)
     .sort()
     .join(",");
@@ -142,16 +179,12 @@ export function portfolioLegToContract(
   const right = leg.type === "Call" ? "C" : leg.type === "Put" ? "P" : null;
   if (!right) return null;
 
-  // Convert YYYY-MM-DD → YYYYMMDD
-  const expiryClean = expiry.replace(/-/g, "");
-  if (expiryClean.length !== 8) return null;
-
-  return {
+  return normalizeOptionContract({
     symbol: ticker.toUpperCase(),
-    expiry: expiryClean,
+    expiry,
     strike: leg.strike,
     right,
-  };
+  });
 }
 
 /* ─── Index contract types ────────────────────────────── */

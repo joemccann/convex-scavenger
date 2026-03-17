@@ -8,6 +8,7 @@ import {
   type OptionContract,
   type IndexContract,
   normalizeSymbolList,
+  uniqueOptionContracts,
   symbolKey,
   contractsKey,
   optionKey,
@@ -128,7 +129,7 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
     [symbolHash],
   );
   const normalizedContracts = useMemo(
-    () => contracts,
+    () => uniqueOptionContracts(contracts),
     [contractHash],
   );
   const normalizedIndexes = useMemo(
