@@ -58,10 +58,10 @@ class IBContractError(IBError):
 # ---------------------------------------------------------------------------
 
 CLIENT_IDS: dict = {
-    "ib_order_manage": 0,
-    "ib_sync": 0,
-    "ib_orders": 11,
-    "ib_reconcile": 0,
+    "ib_order_manage": 42,
+    "ib_sync": 40,
+    "ib_orders": 41,
+    "ib_reconcile": 43,
     "ib_order": 2,
     "ib_execute": 25,
     "ib_fill_monitor": 52,
@@ -69,9 +69,11 @@ CLIENT_IDS: dict = {
     "fetch_analyst_ratings": 99,
     "ib_place_order": 26,
     "vcg_scanner": 30,
-    "cri_scanner": 31,
+    "cri_scanner": 44,
     "ib_realtime_server": 100,
 }
+# Pool holds persistent connections: sync=0, orders=11, data=31
+# Subprocess scripts MUST use different IDs to avoid conflicts
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_GATEWAY_PORT = 4001
