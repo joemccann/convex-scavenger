@@ -240,7 +240,7 @@ def _ratio_label(legs: list) -> str:
     if len(legs) != 2:
         return ""
     from math import gcd
-    a, b = abs(legs[0].get('position', legs[0].get('contracts', 0))), abs(legs[1].get('position', legs[1].get('contracts', 0)))
+    a, b = int(abs(legs[0].get('position', legs[0].get('contracts', 0)))), int(abs(legs[1].get('position', legs[1].get('contracts', 0))))
     if a == b or a == 0 or b == 0:
         return ""
     g = gcd(a, b)
