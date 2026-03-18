@@ -41,12 +41,12 @@
 | Feature | OrderTab (New) | OrderTab (Combo) | ChainBuilder | BookTab | InstrumentModal | ModifyModal |
 |---------|----------------|------------------|--------------|---------|-----------------|-------------|
 | **Price Display** |
-| Spread price strip | ❌ | ✅ NEW | ❌ | ❌ | ❌ | ✅ |
+| Spread price strip | ❌ | ✅ NEW | ✅ DONE | ❌ | ❌ | ✅ |
 | BID/MID/ASK buttons | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Price values in buttons | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
 | Spread width display | ❌ | ✅ NEW | ❌ | ❌ | ❌ | ❌ |
 | **Leg Display** |
-| Leg pills (colored) | N/A | ✅ NEW | ❌ | N/A | N/A | ❌ |
+| Leg pills (colored) | N/A | ✅ NEW | ✅ DONE | N/A | N/A | ❌ |
 | Leg list (vertical) | N/A | ❌ legacy | ✅ | N/A | N/A | ✅ |
 | Direction indicators | N/A | ✅ +/− | ✅ action | N/A | N/A | ✅ |
 | **Input Validation** |
