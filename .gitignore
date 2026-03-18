@@ -107,8 +107,10 @@ data/company_info_cache/
 data/cri_scheduled/
 data/menthorq_cache/
 data/seasonality_cache/
+data/price_history_cache/
 data/service_health/
 logs/menthorq_artifacts/
+web/data/
 
 # Temp files
 tmp/
