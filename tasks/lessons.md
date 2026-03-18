@@ -15,6 +15,9 @@
 ## 2026-03-18
 
 - When the backend already preserves descriptive order metadata, do not let the open-order display model throw it away for single rows. Trace the full path first: IB open orders -> sync serialization -> cached JSON -> API -> renderer. If the API already has `secType/right/strike/expiry`, build a frontend summary from that contract instead of rendering only the bare ticker.
+- For `/orders` modify flows, separate "mutate the existing order" from "change the structure of the order." Price and quantity can ride the IB modify path; combo leg edits cannot. If the operator needs to change BAG legs, the UI and API must switch to cancel-and-replace instead of pretending a price-only modify modal is sufficient.
+- When a modal graduates from a single-field dialog to a structured order editor, do not keep it inside the default narrow shell or reuse summary-row flex styles for input rows. Give it a dedicated modal width and field-grid layout as soon as it contains multiple logical sections, or the UI will become technically functional but operationally unusable.
+- When widening a modal for a new editor, do not stop at the shell width. Measure the usable width of each inner panel and compare it to the minimum width implied by the field grid. A modal can be “wide” and still clip badly if a nested grid keeps desktop-style column minimums that exceed the panel it lives in.
 
 ## 2026-03-16
 

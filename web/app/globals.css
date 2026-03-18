@@ -2028,18 +2028,58 @@ tr.leg-row td {
 
 /* ── Modify Dialog ── */
 
+.modify-order-modal .modal-content {
+  width: 560px;
+  max-width: 94vw;
+}
+
+.modify-order-modal-combo .modal-content {
+  width: 860px;
+  max-width: 95vw;
+  max-height: 90vh;
+}
+
 .modify-dialog {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+}
+
+.modify-dialog-combo {
+  gap: 18px;
 }
 
 .modify-order-info {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  row-gap: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
+}
+
+.modify-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modify-layout-combo {
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.modify-primary-panel,
+.modify-secondary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-base);
 }
 
 .modify-market-data {
@@ -2091,7 +2131,24 @@ tr.leg-row td {
 .modify-price-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+}
+
+.modify-field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.modify-field-grid-combo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modify-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .modify-price-label {
@@ -2139,6 +2196,12 @@ tr.leg-row td {
 
 .modify-quick-buttons {
   display: flex;
+  gap: 6px;
+}
+
+.modify-quick-section {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
@@ -2221,10 +2284,103 @@ tr.leg-row td {
   color: var(--negative);
 }
 
+.modify-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modify-section-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.modify-combo-legs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modify-combo-leg-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-panel);
+}
+
+.modify-combo-leg-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.modify-combo-leg-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
 .modify-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-dim);
+}
+
+@media (max-width: 960px) {
+  .modify-order-modal-combo .modal-content {
+    width: 94vw;
+  }
+
+  .modify-layout-combo {
+    grid-template-columns: 1fr;
+  }
+
+  .modify-combo-leg-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .modify-order-modal .modal-content,
+  .modify-order-modal-combo .modal-content {
+    width: 96vw;
+    max-width: 96vw;
+  }
+
+  .modify-primary-panel,
+  .modify-secondary-panel {
+    padding: 12px;
+  }
+
+  .modify-field-grid-combo,
+  .modify-combo-leg-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modify-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .modify-section-hint {
+    text-align: left;
+  }
+
+  .modify-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
 }
 
 /* ── Shared button styles ── */

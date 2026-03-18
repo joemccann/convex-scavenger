@@ -1,5 +1,85 @@
 # TODO
 
+## Session: Remove Combo Modify Modal Overflow On `/orders` (2026-03-18)
+
+### Goal
+Fix the combo modify modal so the desktop layout does not clip fields or force awkward horizontal overflow when editing spread legs. The final surface should keep the improved information hierarchy while fitting the actual available modal width for live AAPL/AAOI-style spreads.
+
+### Dependency Graph
+- T1 (Inspect the live combo modify modal and measure which panel or leg grid is overflowing the modal shell) depends_on: []
+- T2 (Add a failing browser regression that forbids horizontal overflow in the combo modify modal) depends_on: [T1]
+- T3 (Implement the layout correction so combo leg fields fit cleanly within the modal at desktop widths) depends_on: [T2]
+- T4 (Run focused verification in tests and the live browser, then update review notes and the UI lesson) depends_on: [T3]
+
+### Checklist
+- [x] T1 Inspect the live combo modify modal and measure which panel or leg grid is overflowing the modal shell
+- [x] T2 Add a failing browser regression that forbids horizontal overflow in the combo modify modal
+- [x] T3 Implement the layout correction so combo leg fields fit cleanly within the modal at desktop widths
+- [x] T4 Run focused verification in tests and the live browser, then update review notes and the UI lesson
+
+### Review
+- Root cause: widening the overall modal was not enough. The combo editor’s secondary panel only had about `465px` of usable width, but the five-column [modify-combo-leg-grid](/Users/joemccann/dev/apps/finance/radon/web/app/globals.css) still demanded roughly `694px` of horizontal space. That guaranteed clipping even inside the larger shell.
+- Tightened the browser regression in [modify-combo-order.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/modify-combo-order.spec.ts) so it now fails if the combo editor panel has horizontal overflow, not just if the shell is too narrow.
+- Fixed [globals.css](/Users/joemccann/dev/apps/finance/radon/web/app/globals.css) by giving the right-side editor slightly more space and collapsing each leg card to a two-column grid instead of five fields on one row. That keeps the same information density but makes the layout fit the actual panel width.
+- Verification passed with `cd web && npx playwright test e2e/modify-combo-order.spec.ts --config playwright.no-server.config.ts`.
+- Live Chrome/CDP verification against `http://127.0.0.1:3000/orders` confirmed the real AAPL combo modal now opens with `panelScrollWidth=504`, `panelClientWidth=504`, and `hasHorizontalOverflow=false`.
+
+## Session: Improve Combo Modify Modal UI On `/orders` (2026-03-18)
+
+### Goal
+Improve the `/orders` combo modify modal so the quantity, net price, and combo-leg controls are readable and usable at desktop widths without clipping or collapsing into an indistinct stack. The result should preserve the Radon visual language while making the modify flow feel like an intentional order-entry surface instead of a squeezed form.
+
+### Dependency Graph
+- T1 (Inspect the current combo modify modal layout, style hooks, and modal-shell constraints that are causing the clipped presentation) depends_on: []
+- T2 (Add a failing browser regression that proves the combo modify modal must present its key controls in a usable desktop layout) depends_on: [T1]
+- T3 (Implement the modal layout and styling improvements for combo order modification, including responsive structure and clearer control grouping) depends_on: [T2]
+- T4 (Run focused verification, review the live browser result, and record the UI lesson) depends_on: [T3]
+
+### Checklist
+- [x] T1 Inspect the current combo modify modal layout, style hooks, and modal-shell constraints that are causing the clipped presentation
+- [x] T2 Add a failing browser regression that proves the combo modify modal must present its key controls in a usable desktop layout
+- [x] T3 Implement the modal layout and styling improvements for combo order modification, including responsive structure and clearer control grouping
+- [x] T4 Run focused verification, review the live browser result, and record the UI lesson
+
+### Review
+- Root cause: the combo modify surface was still using the shared `420px` modal shell from [globals.css](/Users/joemccann/dev/apps/finance/radon/web/app/globals.css), and the combo-leg editor rows were reusing the compact [modify-order-info](/Users/joemccann/dev/apps/finance/radon/web/app/globals.css) flex styling originally meant for the tiny order-summary strip. Once quantity plus five leg fields were added, the content technically existed but the UI collapsed into an unreadable vertical stack.
+- Improved [ModifyOrderModal.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/ModifyOrderModal.tsx) by giving combo orders an intentional structure: a primary panel for quote telemetry and order-level inputs, and a secondary panel with labeled leg cards for `action`, `type`, `strike`, `expiry`, and `ratio`. The combo modal now passes a dedicated shell class to [Modal.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/Modal.tsx) without affecting the rest of the app’s dialogs.
+- Improved [globals.css](/Users/joemccann/dev/apps/finance/radon/web/app/globals.css) so combo modify modals expand to `860px` on desktop, use a two-column layout, and collapse back to one column cleanly on narrower widths. The new styles also add explicit field grouping, leg-card framing, section headings, and mobile-safe stacking for the action buttons and leg grid.
+- Locked the layout regression in [modify-combo-order.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/modify-combo-order.spec.ts) by asserting the combo modal opens wider than `720px`, shows the `Combo Legs` section, and keeps the critical fields visible before the edit/submit path runs.
+- Verification passed with `cd web && npx playwright test e2e/modify-combo-order.spec.ts --config playwright.no-server.config.ts`.
+- Live Chrome/CDP verification against `http://127.0.0.1:3000/orders` confirmed the real AAOI combo modify modal now opens at `860px` wide with visible quantity, net-price, strike, expiry, and ratio fields for both legs.
+
+## Session: Fix Combo Order Modify Flow On `/orders` (2026-03-18)
+
+### Goal
+Fix the `/orders` modify flow for combo orders so a risk-reversal order can be adjusted with the information and controls the operator actually needs. The trace must cover the live browser, the frontend modal, the orders API, the modify backend, and the IB integration so the root cause is explicit before the UI and backend behavior are corrected.
+
+### Dependency Graph
+- T1 (Inspect the live `/orders` combo modify flow in Chrome via CDP and capture the modal behavior plus the live `/api/orders` payload for the affected risk reversal) depends_on: []
+- T2 (Trace the modify path through the frontend modal, orders API, modify route, and IB integration to identify where quantity and leg-edit capability is blocked or dropped) depends_on: [T1]
+- T3 (Add failing regression coverage at the unit, API, and browser layers for combo modify so quantity and leg-edit support are enforced) depends_on: [T2]
+- T4 (Implement the minimal end-to-end fix or cancel/replace enhancement needed to let combo modifications change quantity and leg values correctly) depends_on: [T3]
+- T5 (Run focused verification, confirm the live browser behavior via Chrome/CDP, and capture review notes plus the prevention lesson) depends_on: [T4]
+
+### Checklist
+- [x] T1 Inspect the live `/orders` combo modify flow in Chrome via CDP and capture the modal behavior plus the live `/api/orders` payload for the affected risk reversal
+- [x] T2 Trace the modify path through the frontend modal, orders API, modify route, and IB integration to identify where quantity and leg-edit capability is blocked or dropped
+- [x] T3 Add failing regression coverage at the unit, API, and browser layers for combo modify so quantity and leg-edit support are enforced
+- [x] T4 Implement the minimal end-to-end fix or cancel/replace enhancement needed to let combo modifications change quantity and leg values correctly
+- [x] T5 Run focused verification, confirm the live browser behavior via Chrome/CDP, and capture review notes plus the prevention lesson
+
+### Review
+- Root cause trace:
+  - Third-party provider: Interactive Brokers already returned the AAOI risk-reversal order as a BAG with full `comboLegs` metadata through `reqAllOpenOrders()` / `openTrades()` in [ib_client.py](/Users/joemccann/dev/apps/finance/radon/scripts/clients/ib_client.py).
+  - Backend sync/API: [ib_orders.py](/Users/joemccann/dev/apps/finance/radon/scripts/ib_orders.py) preserved those legs into [orders.json](/Users/joemccann/dev/apps/finance/radon/data/orders.json), [route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/route.ts) served them unchanged, and the live `/api/orders` payload still contained both AAOI combo legs with strike/right/expiry intact.
+  - Frontend break: [ModifyOrderModal.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/ModifyOrderModal.tsx) only exposed `newPrice`, [OrderActionsContext.tsx](/Users/joemccann/dev/apps/finance/radon/web/lib/OrderActionsContext.tsx) only posted `newPrice`, and [web/app/api/orders/modify/route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/modify/route.ts), [server.py](/Users/joemccann/dev/apps/finance/radon/scripts/api/server.py), and [ib_order_manage.py](/Users/joemccann/dev/apps/finance/radon/scripts/ib_order_manage.py) only supported price mutation. The BAG leg data existed end to end, but the modify contract dropped it before the modal and backend could use it.
+  - Execution constraint: IB's existing modify path resubmits the same order envelope; it can update price/quantity on that order, but it cannot rewrite combo-leg identities through the current path. That made leg edits impossible without replacing the order.
+- Fixed the modify contract by adding shared request types in [orderModify.ts](/Users/joemccann/dev/apps/finance/radon/web/lib/orderModify.ts), extending [ModifyOrderModal.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/ModifyOrderModal.tsx) to expose quantity plus per-leg action/right/strike/expiry/ratio controls for BAG orders, and updating [WorkspaceSections.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/WorkspaceSections.tsx) and [OrderActionsContext.tsx](/Users/joemccann/dev/apps/finance/radon/web/lib/OrderActionsContext.tsx) to submit structured modify requests.
+- Fixed the server path so ordinary orders can modify quantity in place while combo leg edits use cancel-and-replace. [web/app/api/orders/modify/route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/modify/route.ts) now accepts `newQuantity` and `replaceOrder`; BAG replacements cancel the old order, place a new combo order, then refresh orders. [server.py](/Users/joemccann/dev/apps/finance/radon/scripts/api/server.py) forwards `newQuantity`, and [ib_order_manage.py](/Users/joemccann/dev/apps/finance/radon/scripts/ib_order_manage.py) now supports price and/or quantity modification under Python 3.9-safe typing.
+- Locked the regression with [orders-manage.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/orders-manage.test.ts), [api-routes-extended.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/api-routes-extended.test.ts), [test_ib_order_manage.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_ib_order_manage.py), and [modify-combo-order.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/modify-combo-order.spec.ts).
+- Verification passed with `npx vitest run web/tests/orders-manage.test.ts web/tests/api-routes-extended.test.ts`, `python3 -m pytest scripts/tests/test_ib_order_manage.py -q`, and `cd web && npx playwright test e2e/modify-combo-order.spec.ts --config playwright.no-server.config.ts`.
+- Live Chrome/CDP verification against `http://127.0.0.1:3000/orders` confirmed the real AAOI BAG row now opens a modify modal with `quantity=50`, `price=0.05`, and populated combo-leg fields: `SELL P 90 2026-03-27 x1` and `BUY C 98 2026-03-27 x1`.
+
 ## Session: Fix Missing Detail On Single Open Orders (2026-03-18)
 
 ### Goal
