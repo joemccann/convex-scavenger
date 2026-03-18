@@ -8,6 +8,22 @@
 4. **95% test coverage target.** Every change includes corresponding tests.
 5. **API keys** in `.env` files (see Credentials below). Fallback: `~/.zshrc`.
 
+## Combo / BAG Order Guardrails
+
+1. **Never map combo `Order.action` from debit vs credit.**
+   - In IB, combo leg actions define the intended structure.
+   - A `SELL` BAG envelope reverses the legs.
+   - For entry/open chain combos, keep the envelope on `BUY` and preserve per-leg actions.
+2. **When the order-builder structure changes, clear stale top-level manual net pricing.**
+   - Single-leg → combo transitions must invalidate the previous manual limit price.
+   - Recompute the limit field from the normalized combo quote for the current structure.
+3. **Required regressions for combo-entry bugs:**
+   - unit test for combo action/ratio/net-price semantics
+   - browser test for displayed combo net price and submitted payload
+4. **Trace the full path before fixing:**
+   - chain builder → `/api/orders/place` → FastAPI bridge → `scripts/ib_place_order.py`
+   - verify whether the bug is UI state, payload semantics, or IB combo behavior before patching
+
 ## Identity
 
 **Radon** — market structure reconstruction system. Surfaces convex opportunities from dark pool/OTC flow, vol surfaces, cross-asset positioning. Detects institutional positioning, constructs convex options structures, sizes with fractional Kelly. **Flow signal or nothing.**

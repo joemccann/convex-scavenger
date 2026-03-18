@@ -36,6 +36,23 @@
 3. Confirm the test turns GREEN
 4. For UI bugs: add a Playwright E2E test — unit tests alone are not sufficient confirmation
 
+## ⚠️ Options Chain Combo Entry Rules — Mandatory
+
+**For IB combo/BAG orders entered from the options chain or any order builder:**
+
+1. **Do not derive BAG `Order.action` from net debit vs net credit.**
+   - IB combo leg actions define the structure.
+   - A `SELL` BAG envelope reverses the spread legs.
+   - For entry/open combo orders from the chain builder, keep the combo envelope on `BUY` and preserve the intended per-leg `BUY`/`SELL` actions.
+2. **Reset top-level manual net price state when the combo structure changes.**
+   - Adding a second leg, removing a leg, flipping a leg action, or otherwise changing the structure must invalidate stale top-level manual net pricing.
+   - The limit field must re-base to the normalized combo quote for the current structure.
+3. **Regression coverage is required at two levels.**
+   - Unit coverage for payload semantics: combo action, ratio normalization, and net-price math.
+   - Browser coverage for the rendered net price and submitted payload after a structure change.
+4. **Trace combo-order bugs through the full placement path before patching.**
+   - Inspect the frontend builder, Next route, FastAPI bridge, and `scripts/ib_place_order.py` so IB semantics are not misdiagnosed as a UI-only issue.
+
 ---
 
 ## ⚠️ Data Fetching Priority (ALWAYS follow this order)

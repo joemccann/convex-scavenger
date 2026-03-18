@@ -114,3 +114,10 @@
 - When a generated output directory appears in the worktree and should not be versioned, add an explicit root `.gitignore` entry immediately instead of leaving it as recurring untracked noise.
 - When collaborating on parallel changes in this repo, treat any file the user says they already changed as reserved unless a direct integration change is unavoidable; design around the declared contract first to avoid stomping concurrent work.
 - When fixing Codex skill manifests, validate the YAML frontmatter types directly; bracketed placeholder text after `description:` becomes a YAML sequence and the loader expects a plain string.
+
+## 2026-03-18
+
+- For IB combo entry from the options chain, do not derive the BAG `Order.action` from whether the combo is a debit or credit; the chain builder must keep the combo envelope on `BUY` for entry orders and let the leg actions define the structure, or IB will reverse the spread.
+- When a chain order builder transitions from a single-leg state to a combo, do not preserve a stale manual net-price override; reset the top-level manual-price flag on structural leg changes so the limit field re-bases to the combo quote.
+- For ticker-chain Playwright coverage, do not rely on ad hoc `ws-price` custom events to drive option quotes; use a mocked WebSocket subscription path when the page logic consumes live prices through `usePrices` rather than DOM events.
+- When a user asks to harden process memory after a regression, propagate the rule to every instruction surface in the repo (`AGENTS.md`, `CLAUDE.md`, `.pi/AGENTS.md`, structured memory facts, and `tasks/lessons.md`) in the same change; do not stop at the lesson log alone.

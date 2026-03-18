@@ -2138,3 +2138,78 @@ Composite key scheme: stock prices keyed by ticker (`"AAPL"`), option prices by 
 - The private web controller is the best Phase 3 UX improvement because it keeps the canonical service surface intact while removing the need for shell interaction on the phone.
 - The cloud track should be treated as a pilot until a burn-in validates restart behavior, Sunday re-auth handling, and recovery procedures.
 - If the cloud pilot remains operationally weaker than the local Mac because of IBKR auth friction, keep the local deployment as primary and treat cloud as a secondary or recovery path.
+
+---
+
+## Session: Fix Risk-Reversal Chain Entry Net Credit And Combo Direction (2026-03-18)
+
+### Dependency Graph
+- T1 Trace the chain risk-reversal path from builder through Next route, FastAPI bridge, and IB combo placement depends_on: []
+- T2 Add regressions for combo entry action semantics and stale net-price carryover when a second leg is added depends_on: [T1]
+- T3 Patch the chain builder so combo entries preserve leg direction and reset stale manual net pricing when the structure changes depends_on: [T2]
+- T4 Verify focused unit/browser coverage and a live Chrome CDP repro on the running chain page depends_on: [T3]
+
+### Checklist
+- [x] T1 Trace the chain risk-reversal path from builder through Next route, FastAPI bridge, and IB combo placement
+  - depends_on: []
+  - Success criteria:
+    - The incorrect combo envelope action is traced from `OptionsChainTab.tsx` into `/api/orders/place`, `scripts/api/server.py`, and `scripts/ib_place_order.py`.
+    - The price-path issue is isolated to chain-builder state instead of the backend placement stack.
+
+- [x] T2 Add regressions for combo entry action semantics and stale net-price carryover when a second leg is added
+  - depends_on: [T1]
+  - Success criteria:
+    - A focused unit regression fails when combo entries do not preserve BUY envelope semantics.
+    - A Playwright chain regression fails when a stale single-leg limit price survives after the second leg is added.
+
+- [x] T3 Patch the chain builder so combo entries preserve leg direction and reset stale manual net pricing when the structure changes
+  - depends_on: [T2]
+  - Success criteria:
+    - Adding a second combo leg clears the stale manual net price override and re-bases the limit field to the combo quote.
+    - The combo payload always sends a BUY envelope while preserving per-leg BUY/SELL intent.
+
+- [x] T4 Verify focused unit/browser coverage and a live Chrome CDP repro on the running chain page
+  - depends_on: [T3]
+  - Success criteria:
+    - `web/tests/chain-combo-ratio.test.ts` passes.
+    - `web/e2e/ticker-search-chain.spec.ts` passes for the ratio combo and risk-reversal regressions.
+    - A live CDP-driven EWY chain check shows the limit field snapping from a forced `8.88` stale value back to the combo `MID`.
+
+### Review
+- Root cause 1 was in the frontend chain builder: `OptionsChainTab.tsx` derived combo `action` from debit/credit, which sent `SELL` BAG envelopes for net-credit risk reversals and let IB reverse the legs on placement.
+- Root cause 2 was also frontend state: the builder kept a stale manual net-price override when the leg structure changed from one leg to a combo, so the top-level limit field could stay pinned to the first leg instead of the recomputed combo quote.
+- The backend and provider path were not the bug: `/api/orders/place`, `scripts/api/server.py`, and `scripts/ib_place_order.py` passed the combo payload through faithfully, and IB’s BAG semantics were already encoded correctly downstream.
+- Regression coverage now includes a unit contract for combo entry action plus a Playwright browser flow that forces a stale single-leg price, adds the second leg, and asserts both the corrected combo quote and the BUY combo envelope.
+- Live Chrome CDP verification on the running EWY chain page confirmed the UI reset: after forcing the limit field to `8.88`, adding the second leg changed the live builder to `MID 9.45` with `limitValue: 9.45`.
+
+---
+
+## Session: Propagate Combo Entry Guardrails To Repo Instructions (2026-03-18)
+
+### Dependency Graph
+- T1 Identify every canonical instruction and memory surface that should carry the combo-entry rule depends_on: []
+- T2 Update repo instructions and memory artifacts with explicit BAG-action and stale-net-price guardrails depends_on: [T1]
+- T3 Commit the scoped docs-only change and push it to origin/main depends_on: [T2]
+
+### Checklist
+- [x] T1 Identify every canonical instruction and memory surface that should carry the combo-entry rule
+  - depends_on: []
+  - Success criteria:
+    - Canonical repo-level instruction files are identified.
+    - Durable markdown and structured memory surfaces are identified.
+
+- [x] T2 Update repo instructions and memory artifacts with explicit BAG-action and stale-net-price guardrails
+  - depends_on: [T1]
+  - Success criteria:
+    - `AGENTS.md`, `.pi/AGENTS.md`, and `CLAUDE.md` all carry the same combo-entry guardrails.
+    - `tasks/lessons.md` and a structured memory fact capture the regression-prevention rule.
+
+- [x] T3 Commit the scoped docs-only change and push it to origin/main
+  - depends_on: [T2]
+  - Success criteria:
+    - The docs-only change is committed with a scoped message.
+    - The commit is pushed to `origin/main`.
+
+### Review
+- This pass codifies the exact failure mode that caused the regression: using net debit/credit to choose BAG `Order.action`, and carrying stale manual net-price state across structure changes.
+- The rule now exists in both operator-facing markdown instructions and machine-readable memory so future agents can pick it up from either surface.
