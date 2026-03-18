@@ -1,9 +1,10 @@
 # Status & Decision Log
 
 ## Last Updated
-2026-03-18T08:30:00-07:00
+2026-03-18T10:56:00-07:00
 
 ## Recent Commits
+- 2026-03-18 — **fix: Correct natural market bid/ask for combo orders + intraday DP interpolation.** `computeNetOptionQuote` was computing mid-to-mid spread instead of true marketable bid/ask. Now correctly calculates: BUY spread = pay ASK on long legs, receive BID on short legs; SELL spread = receive BID on long legs, pay ASK on short legs. Verified end-to-end in options chain UI (bear call spread shows BID < MID < ASK). Also added intraday dark pool interpolation for partial-day data. **95 new order tests** (44 reliability, 25 E2E, 26 unit).
 - 2026-03-18 — **fix: Share PnL entry/exit data for multi-day trades.** `positionGroupShareData()` now falls back to portfolio position data when opening fills aren't in today's executed orders (position opened on prior day). Entry price from `leg.avg_cost`, entry time from `entry_date`. Share image now correctly shows ENTRY/EXIT with PST times, no commission. 8 unit tests + 5 E2E tests.
 - 2026-03-17 — **fix: Normalize open-order combo net credit by leg size for ratio spreads.** 1x2 risk-reversal entries (for example, short puts + long calls) now compute true weighted net credit in the combo last-price cell; added regression coverage in `web/tests/open-order-combos.test.ts`.
 - 2026-03-17 — **ui: Update share PnL defaults and card emphasis.** X/share card rendering now scales single-value hero text larger (`$` or `%` only) while default share toggle state is now `%` only for cleaner default image output.
