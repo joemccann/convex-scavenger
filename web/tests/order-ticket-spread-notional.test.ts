@@ -104,10 +104,17 @@ describe("order-ticket spread telemetry", () => {
       }),
     );
 
+    // InstrumentDetailModal shows raw market spread (no resting limit overlay)
+    // bid=3.3, ask=4.5, spread=1.2, mid=3.9, pct=30.77%
     expect(html).toContain("$1.20 / 30.77%");
   });
 
-  it("uses raw spread dollars and percent in the modify-order modal", () => {
+  it("applies resting limit overlay in the modify-order modal", () => {
+    // Order is BUY at limit $3.9, market bid=$3.3, ask=$4.5
+    // applyRestingLimitToQuote raises bid to max(3.3, 3.9) = 3.9
+    // New spread: ask - bid = 4.5 - 3.9 = 0.6
+    // New mid: (3.9 + 4.5) / 2 = 4.2
+    // Spread %: 0.6 / 4.2 = 14.29%
     const html = renderToStaticMarkup(
       React.createElement(ModifyOrderModal, {
         order: openOrder,
@@ -119,6 +126,6 @@ describe("order-ticket spread telemetry", () => {
       }),
     );
 
-    expect(html).toContain("$1.20 / 30.77%");
+    expect(html).toContain("$0.60 / 14.29%");
   });
 });
