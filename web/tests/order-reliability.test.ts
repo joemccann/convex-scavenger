@@ -25,6 +25,54 @@ describe("POST /api/orders/place validation", () => {
     placePOST = mod.POST;
   });
 
+  it("rejects zero limitPrice", async () => {
+    const req = new NextRequest("http://localhost/api/orders/place", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: "AAPL", action: "BUY", quantity: 10, limitPrice: 0 }),
+    });
+    const res = await placePOST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain("limitPrice");
+  });
+
+  it("rejects negative limitPrice", async () => {
+    const req = new NextRequest("http://localhost/api/orders/place", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: "AAPL", action: "BUY", quantity: 10, limitPrice: -5 }),
+    });
+    const res = await placePOST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain("limitPrice");
+  });
+
+  it("rejects zero quantity", async () => {
+    const req = new NextRequest("http://localhost/api/orders/place", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: "AAPL", action: "BUY", quantity: 0, limitPrice: 100 }),
+    });
+    const res = await placePOST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain("quantity");
+  });
+
+  it("rejects negative quantity", async () => {
+    const req = new NextRequest("http://localhost/api/orders/place", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol: "AAPL", action: "BUY", quantity: -10, limitPrice: 100 }),
+    });
+    const res = await placePOST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain("quantity");
+  });
+
   it("rejects missing symbol", async () => {
     const req = new NextRequest("http://localhost/api/orders/place", {
       method: "POST",

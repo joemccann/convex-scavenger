@@ -31,9 +31,26 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as PlaceBody;
 
-    if (!body.symbol || !body.action || !body.quantity || !body.limitPrice) {
+    // Required fields
+    if (!body.symbol || !body.action) {
       return NextResponse.json(
         { error: "Required: symbol, action, quantity, limitPrice" },
+        { status: 400 },
+      );
+    }
+
+    // Validate quantity: must be positive integer
+    if (body.quantity == null || body.quantity <= 0 || !Number.isFinite(body.quantity)) {
+      return NextResponse.json(
+        { error: "quantity must be a positive number" },
+        { status: 400 },
+      );
+    }
+
+    // Validate limitPrice: must be positive number
+    if (body.limitPrice == null || body.limitPrice <= 0 || !Number.isFinite(body.limitPrice)) {
+      return NextResponse.json(
+        { error: "limitPrice must be a positive number" },
         { status: 400 },
       );
     }
