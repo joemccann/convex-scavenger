@@ -2213,3 +2213,37 @@ Composite key scheme: stock prices keyed by ticker (`"AAPL"`), option prices by 
 ### Review
 - This pass codifies the exact failure mode that caused the regression: using net debit/credit to choose BAG `Order.action`, and carrying stale manual net-price state across structure changes.
 - The rule now exists in both operator-facing markdown instructions and machine-readable memory so future agents can pick it up from either surface.
+
+---
+
+## Session: Port Claude Guardrails Into Codex Instructions (2026-03-18)
+
+### Dependency Graph
+- T1 Compare Claude-specific guardrails against Codex instruction surfaces and identify missing rules depends_on: []
+- T2 Port missing browser-verification and coverage rules into Codex-native docs depends_on: [T1]
+- T3 Verify the Codex docs now contain the intended rules and record any runtime capability gaps depends_on: [T2]
+
+### Checklist
+- [x] T1 Compare Claude-specific guardrails against Codex instruction surfaces and identify missing rules
+  - depends_on: []
+  - Success criteria:
+    - The gaps between `CLAUDE.md` and `AGENTS.md`/`.pi/AGENTS.md` are explicit.
+    - Any capability mismatch is identified before patching docs.
+
+- [x] T2 Port missing browser-verification and coverage rules into Codex-native docs
+  - depends_on: [T1]
+  - Success criteria:
+    - Codex instructions include UI browser verification guidance in Codex-native wording.
+    - Codex instructions include the touched-surface coverage expectation without breaking existing AGENTS formatting.
+    - Structured memory captures the Codex parity rule.
+
+- [x] T3 Verify the Codex docs now contain the intended rules and record any runtime capability gaps
+  - depends_on: [T2]
+  - Success criteria:
+    - Repo grep confirms the new Codex instruction sections exist.
+    - The documented capability gap, if any, is explicit.
+
+### Review
+- The combo-order guardrails were already ported to Codex surfaces.
+- The actual parity gap was Claude’s stronger browser-verification and coverage wording, which is now mirrored in Codex-native form under `AGENTS.md`/`.pi/AGENTS.md`.
+- The only meaningful capability caveat is `chrome-cdp` availability: Codex supports it in this session, but unlike markdown policy, skill availability is runtime-dependent, so the Codex docs now explicitly require Playwright fallback instead of assuming `chrome-cdp` always exists.

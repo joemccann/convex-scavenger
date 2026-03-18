@@ -36,6 +36,26 @@
 3. Confirm the test turns GREEN
 4. For UI bugs: add a Playwright E2E test — unit tests alone are not sufficient confirmation
 
+## ⚠️ Browser Verification — Mandatory
+
+**For UI work in Codex instruction surfaces:**
+
+1. **Visually verify rendered UI before calling the change done.**
+   - Do not assume code changes produced the intended result.
+   - Confirm the actual browser rendering after the patch.
+2. **Preferred verification order:**
+   - Primary: `chrome-cdp` when the skill is available in the current Codex runtime.
+   - Fallback: Playwright using the repo configs in `web/`.
+3. **If `chrome-cdp` is unavailable in the current runtime, Codex must fall back to Playwright.**
+   - Do not write instructions that assume `chrome-cdp` exists in every host environment.
+
+## ⚠️ Coverage Expectation — Mandatory
+
+1. **Every change includes corresponding tests.**
+2. **Target 95% coverage on the touched surface when practical.**
+   - This is a project expectation, not a reason to pad changes with irrelevant tests.
+   - The required bar is strong regression coverage for the behavior that changed.
+
 ## ⚠️ Options Chain Combo Entry Rules — Mandatory
 
 **For IB combo/BAG orders entered from the options chain or any order builder:**
