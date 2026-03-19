@@ -16,6 +16,7 @@ export function useBlotter(active = false): UseBlotterReturn {
     {
       endpoint: "/api/blotter",
       extractTimestamp: (data) => data.as_of || null,
+      showBackgroundError: true,
     },
     active,
   );

@@ -30,20 +30,7 @@ const FRESH_BLOTTER = {
 };
 
 describe("useBlotter", () => {
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const method = String(init?.method ?? "GET").toUpperCase();
-    if (method === "POST") {
-      return new Response(JSON.stringify(FRESH_BLOTTER), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify(STALE_BLOTTER), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  });
+  const fetchMock = vi.fn();
 
   beforeEach(() => {
     vi.stubGlobal("fetch", fetchMock);
@@ -55,14 +42,53 @@ describe("useBlotter", () => {
   });
 
   it("auto-refreshes from the live blotter route when active", async () => {
+    fetchMock.mockImplementation(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "POST") {
+        return new Response(JSON.stringify(FRESH_BLOTTER), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify(STALE_BLOTTER), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+
+    const { result } = renderHook(() => useBlotter(true));
+
+    await waitFor(() => {
+      expect(result.current.data?.summary.closed_trades).toBe(2);
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/blotter", { method: "GET" });
+    expect(fetchMock).toHaveBeenCalledWith("/api/blotter", { method: "POST" });
+  });
+
+  it("keeps cached history visible but surfaces the sync error when live refresh fails", async () => {
+    fetchMock.mockImplementation(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const method = String(init?.method ?? "GET").toUpperCase();
+      if (method === "POST") {
+        return new Response(JSON.stringify({ error: "Flex Query request failed: Service account is inactive. (code: 1011)" }), {
+          status: 502,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify(STALE_BLOTTER), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+
     const { result } = renderHook(() => useBlotter(true));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
-      expect(result.current.data?.summary.closed_trades).toBe(2);
+      expect(result.current.data?.summary.closed_trades).toBe(1);
+      expect(result.current.error).toContain("Service account is inactive");
     });
-
-    expect(fetchMock).toHaveBeenCalledWith("/api/blotter");
-    expect(fetchMock).toHaveBeenCalledWith("/api/blotter", { method: "POST" });
   });
 });

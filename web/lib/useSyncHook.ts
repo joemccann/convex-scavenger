@@ -13,6 +13,7 @@ type UseSyncConfig<T> = {
   shouldRetry?: (data: T) => boolean;
   retryIntervalMs?: number;
   retryMethod?: RetryMethod;
+  showBackgroundError?: boolean;
 };
 
 export type UseSyncReturn<T> = {
@@ -33,6 +34,7 @@ export function useSyncHook<T>(config: UseSyncConfig<T>, active: boolean): UseSy
     shouldRetry,
     retryIntervalMs = 0,
     retryMethod = "POST",
+    showBackgroundError = false,
   } = config;
 
   const [data, setData] = useState<T | null>(null);
@@ -76,9 +78,11 @@ export function useSyncHook<T>(config: UseSyncConfig<T>, active: boolean): UseSy
       }
     } catch (err) {
       // Only show error if we don't already have valid cached data —
-      // a failed background sync shouldn't clobber a working display
+      // unless the caller explicitly wants the stale view marked as degraded.
       setData((prev) => {
-        if (!prev) setError(err instanceof Error ? err.message : "Sync failed");
+        if (!prev || showBackgroundError) {
+          setError(err instanceof Error ? err.message : "Sync failed");
+        }
         return prev;
       });
     } finally {
@@ -86,7 +90,7 @@ export function useSyncHook<T>(config: UseSyncConfig<T>, active: boolean): UseSy
         setSyncing(false);
       }
     }
-  }, [active, clearRetry, endpoint, extractTimestamp, retryIntervalMs, retryMethod, shouldRetry]);
+  }, [active, clearRetry, endpoint, extractTimestamp, retryIntervalMs, retryMethod, shouldRetry, showBackgroundError]);
 
   requestRef.current = executeRequest;
 

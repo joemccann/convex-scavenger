@@ -18,6 +18,21 @@ SCRIPTS_DIR = Path(__file__).parent.parent
 PROJECT_ROOT = SCRIPTS_DIR.parent
 
 
+def _extract_error_message(stdout: str, stderr: str, default: str) -> str:
+    """Prefer the last meaningful stderr line, then stdout, then the default."""
+    for stream in (stderr, stdout):
+        lines = [
+            l for l in stream.strip().split("\n")
+            if l and "warnings.warn(" not in l and "NotOpenSSLWarning" not in l
+        ]
+        if lines:
+            err_msg = lines[-1]
+            if len(err_msg) > 300:
+                err_msg = err_msg[:300] + "..."
+            return err_msg
+    return default
+
+
 @dataclass
 class ScriptResult:
     ok: bool
@@ -69,14 +84,11 @@ async def run_script(
         stderr = stderr_bytes.decode("utf-8", errors="replace")
 
         if proc.returncode != 0:
-            # Filter noise from stderr (same as scanner route.ts)
-            lines = [
-                l for l in stderr.strip().split("\n")
-                if "warnings.warn(" not in l and "NotOpenSSLWarning" not in l
-            ]
-            err_msg = lines[-1] if lines else f"Script exited with code {proc.returncode}"
-            if len(err_msg) > 300:
-                err_msg = err_msg[:300] + "..."
+            err_msg = _extract_error_message(
+                stdout,
+                stderr,
+                f"Script exited with code {proc.returncode}",
+            )
             logger.warning("Script %s failed (code %d): %s", script, proc.returncode, err_msg)
             return ScriptResult(ok=False, error=err_msg, exit_code=proc.returncode)
 
@@ -134,11 +146,11 @@ async def run_module(
         stderr = stderr_bytes.decode("utf-8", errors="replace")
 
         if proc.returncode != 0:
-            lines = [
-                l for l in stderr.strip().split("\n")
-                if "warnings.warn(" not in l and "NotOpenSSLWarning" not in l
-            ]
-            err_msg = lines[-1] if lines else f"Module exited with code {proc.returncode}"
+            err_msg = _extract_error_message(
+                stdout,
+                stderr,
+                f"Module exited with code {proc.returncode}",
+            )
             return ScriptResult(ok=False, error=err_msg, exit_code=proc.returncode)
 
         json_start = stdout.find("{")

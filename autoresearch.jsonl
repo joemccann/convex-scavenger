@@ -8,3 +8,4 @@
 {"run":46,"commit":"798cda1","metric":4064,"metrics":{"per_ticker_ms":213},"status":"keep","description":"Verification run — 4s when not rate limited","timestamp":1773928374190,"segment":1}
 {"run":47,"commit":"b6f59d8","metric":7843,"metrics":{"per_ticker_ms":412},"status":"keep","description":"Session verification — 8s typical, optimization complete","timestamp":1773928461887,"segment":1}
 {"run":48,"commit":"e9788ca","metric":29801,"metrics":{"per_ticker_ms":1568},"status":"keep","description":"Reverted to 5 days for signal accuracy — still 42% improvement from other optimizations","timestamp":1773928745781,"segment":1}
+{"run":49,"commit":"4f2961b","metric":29801,"metrics":{"per_ticker_ms":1568},"status":"keep","description":"Documentation updated — 42% improvement is final (signal accuracy preserved)","timestamp":1773928779928,"segment":1}
