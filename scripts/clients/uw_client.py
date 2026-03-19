@@ -29,6 +29,13 @@ from typing import Any, Dict, Optional
 import requests
 from requests.exceptions import ConnectionError as ReqConnectionError, Timeout as ReqTimeout
 
+# Optional in-memory cache for request deduplication
+try:
+    from utils.uw_cache import get_cached, set_cached, make_key
+    _USE_CACHE = True
+except ImportError:
+    _USE_CACHE = False
+
 logger = logging.getLogger(__name__)
 
 # ══════════════════════════════════════════════════════════════════════
@@ -154,6 +161,13 @@ class UWClient:
         endpoint = endpoint.lstrip("/")
         url = f"{self._base_url}/{endpoint}"
 
+        # Check cache first (60s TTL)
+        if _USE_CACHE:
+            cache_key = make_key(endpoint, params)
+            cached = get_cached(cache_key)
+            if cached is not None:
+                return cached
+
         last_exc: Optional[Exception] = None
 
         for attempt in range(1 + self._max_retries):
@@ -169,7 +183,11 @@ class UWClient:
             status = resp.status_code
 
             if status == 200:
-                return resp.json()
+                data = resp.json()
+                # Cache successful response
+                if _USE_CACHE:
+                    set_cached(cache_key, data)
+                return data
 
             # ── classify error ──
             body = self._safe_json(resp)
