@@ -1,2 +1,3 @@
 {"type":"config","name":"Evaluate Command Speed Optimization","metricName":"total_ms","metricUnit":"ms","bestDirection":"lower"}
 {"run":1,"commit":"99a442a","metric":14501,"metrics":{"single_ms":2814},"status":"keep","description":"Baseline: 5 tickers sequential, fix datetime mock in test","timestamp":1773887665123,"segment":0}
+{"run":2,"commit":"d51a364","metric":5388,"metrics":{"single_ms":2500},"status":"keep","description":"IB connection pooling: single connection for all tickers, parallel eval threads","timestamp":1773887805485,"segment":0}

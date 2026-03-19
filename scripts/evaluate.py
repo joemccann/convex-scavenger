@@ -299,7 +299,7 @@ def determine_edge(
     # Determine dominant direction from aggregate
     agg_direction = agg.get("flow_direction", "NEUTRAL")
     agg_strength = float(agg.get("flow_strength", 0))
-    agg_buy_ratio = float(agg.get("dp_buy_ratio", 0.5))
+    agg_buy_ratio = float(agg.get("dp_buy_ratio") or 0.5)
 
     # Sustained days from most recent
     sustained = compute_sustained_days(daily, direction=agg_direction)
@@ -559,25 +559,22 @@ def run_evaluations(
 ) -> List[EvaluationResult]:
     """Run evaluations for multiple tickers with IB connection pooling.
 
-    Fetches price data for ALL tickers using a single IB connection (saves ~1.8s
-    per additional ticker), then runs the rest of the evaluation in parallel.
+    For single ticker: uses standard flow (IB fetch inside run_evaluation).
+    For multiple tickers: batches IB fetch, then runs UW milestones sequentially.
     """
+    if len(tickers) == 1:
+        # Single ticker — standard flow, no batch overhead
+        return [run_evaluation(tickers[0], bankroll=bankroll)]
+
     # Batch fetch all price data with a single IB connection
     price_cache = _fetch_all_prices(tickers)
 
-    # Run evaluations in parallel threads
-    results = []
-    with ThreadPoolExecutor(max_workers=len(tickers)) as pool:
-        futures = {
-            pool.submit(_run_single_eval, t, bankroll, price_cache.get(t, [])): t
-            for t in tickers
-        }
-        for future in as_completed(futures):
-            results.append(future.result())
-
-    # Sort by original ticker order
-    ticker_order = {t: i for i, t in enumerate(tickers)}
-    results.sort(key=lambda r: ticker_order.get(r.ticker, 999))
+    # Process tickers sequentially (each has internal parallelism for UW calls)
+    # This avoids 35 concurrent UW requests (5 tickers × 7 milestones)
+    results = [
+        run_evaluation(t, bankroll=bankroll, price_history=price_cache.get(t, []))
+        for t in tickers
+    ]
     return results
 
 
