@@ -1,59 +1,40 @@
-# Autoresearch Ideas — Evaluate Speed Optimization
+# Autoresearch Ideas — Scan Command Speed Optimization
 
-## Status: ✅ COMPLETE (57% improvement achieved)
+## Status: 🔄 IN PROGRESS
 
-Best result: 6,213ms for 5 tickers (from 14,501ms baseline)
+## Promising Ideas
+
+### 1. Leverage Existing UW Cache
+- Scanner uses fetch_flow.py which should already use the 60s TTL cache
+- Verify cache is being hit during scans
+- May already be benefiting from evaluate.py optimizations
+
+### 2. Reduce Days of Darkpool Data
+- Currently fetches 5 days per ticker
+- For scanning/ranking, 3 days may be sufficient
+- Edge determination still needs 5 days (but that's in evaluate.py)
+
+### 3. Skip Flow Alerts for Scanning
+- Scanner only uses darkpool data for ranking
+- Flow alerts are fetched but may not be used
+- Remove unnecessary API call
+
+### 4. Batch Darkpool Fetching
+- UW may support fetching multiple tickers in one call
+- Check `/api/darkpool/recent` endpoint
+
+### 5. Reduce Worker Count
+- 15 workers may cause more rate limiting
+- Try 5-8 workers for more consistent throughput
+
+### 6. Add Scanner-Specific Cache
+- Cache scan results for short period (5 min)
+- Useful for repeated scans during same session
+
+## From Evaluate Optimization (Already Applied)
+- UW request cache (60s TTL) — should help scanner
+- M2/M3 flow_alerts params aligned — scanner uses same fetch_flow
 
 ## Tried and Failed
+(Updated as experiments accumulate)
 
-### 1. Intelligent Request Throttling ❌
-- Attempted: Added adaptive delay based on 429 responses
-- Result: 110s (worse) — backoff delays compound, don't help
-- UW rate limiting is server-side and unpredictable
-
-### 2. Reduced Backoff Factor ❌
-- Attempted: Changed backoff from 1.0s to 0.5s
-- Result: No consistent improvement (still 8-35s range)
-- Rate limiting variability dominates
-
-### 3. Reduced Max Retries ❌
-- Attempted: Changed max retries from 3 to 1
-- Result: No consistent improvement (7-17s range)
-- Fails faster but doesn't help with rate limiting
-
-### 4. Token Bucket Rate Limiter ❌
-- Attempted: Global rate limiter with 15 token bucket, 10 req/s refill
-- Result: No improvement — UW rate limiting is account-level and persists
-- The limiter adds latency without eliminating 429 errors
-
-## Remaining Ideas (Not Pursued - Diminishing Returns)
-
-### 4. UW Request Deduplication Between M1 and M2
-- M1 and M2 both fetch overlapping darkpool data
-- Cache already handles this (60s TTL)
-- Estimated savings: ~0.2s/ticker (not worth complexity)
-
-### 5. Pre-Warming Cache
-- Pre-fetch data for known watchlist tickers
-- Would help but changes evaluation semantics
-- Not worth complexity for marginal gains
-
-### 6. Parallel UW Fetching with Semaphore
-- Already using 7-worker parallelism per ticker
-- More parallelism causes more rate limiting
-- Sequential per-ticker is optimal
-
-## Completed Optimizations
-1. IB connection pooling — saves 1.8s × (N-1) tickers
-2. --fast flag — skips IB price history entirely
-3. Analyst ratings cache — reuses cached ratings
-4. UW request cache (60s TTL) — deduplicates within session
-5. M1 validation reduced to 1 day — saves 2 API calls/ticker
-6. Multi-ticker CLI support — batch evaluation in single command
-7. M1 uses stock_info API instead of darkpool — saves 1 API call/ticker
-8. M2/M3 flow_alerts params aligned — enables cache hits between milestones
-
-## Conclusion
-The remaining performance variability (6-50s) is due to UW API rate limiting,
-which is server-side and cannot be optimized client-side. We've achieved the
-maximum practical improvement of 57% for the typical (non-rate-limited) case.

@@ -5,80 +5,80 @@
     "CDE",
     "HL",
     "CMC",
-    "SSRM",
     "BCPC",
+    "SSRM",
     "KNF",
     "HCC",
-    "SXT",
     "CBT",
-    "NG",
+    "SXT",
     "CSTM",
-    "AVNT",
     "PRM",
-    "FUL",
+    "AVNT",
     "CENX",
     "MTRN",
-    "HWKN",
-    "PPTA",
     "CC",
+    "FUL",
+    "HWKN",
+    "NG",
+    "PPTA",
     "NGVT",
     "AMR",
     "MTX",
     "KALU",
-    "USAR",
-    "OI",
     "KWR",
     "GEF",
     "IOSP",
+    "USAR",
+    "OI",
     "SLVM",
-    "IE",
-    "USLM",
     "ECVT",
+    "USLM",
+    "IE",
     "UAMY",
     "TRS",
     "WS",
-    "RYZ",
     "SCL",
+    "RYZ",
     "TROX",
+    "LXU",
     "CMP",
     "MYE",
-    "LXU",
     "RYAM",
-    "PCT",
     "KOP",
+    "PCT",
     "METC",
     "AMBP",
-    "GSM",
+    "ASIX",
     "MTUS",
+    "SXC",
+    "NB",
+    "GSM",
+    "MATV",
     "DC",
     "IDR",
-    "NB",
-    "ASPI",
-    "SXC",
-    "MATV",
-    "ASIX",
     "IPI",
+    "ASPI",
     "CRML",
     "CMCL",
     "GEFB",
-    "ABAT",
     "TTAM",
+    "ABAT",
     "MAGN",
     "VOXR",
-    "CTGO",
     "OEC",
     "FTK",
-    "USAU",
+    "CTGO",
     "ASPN",
-    "CLW",
     "TG",
-    "PACK",
+    "CLW",
+    "USAU",
     "CMT",
-    "LZM",
+    "PACK",
     "KRO",
-    "AVD",
-    "SMID",
+    "LZM",
     "FRD",
+    "SMID",
+    "AVD",
     "ACNT",
     "ARQ",
     "VHI",
@@ -92,38 +92,38 @@
     ],
     [
       "CMC",
-      "SSRM"
+      "BCPC"
     ],
     [
-      "BCPC",
+      "SSRM",
       "KNF"
     ],
     [
       "HCC",
-      "SXT"
+      "CBT"
     ],
     [
-      "CBT",
-      "NG"
-    ],
-    [
-      "CSTM",
-      "AVNT"
+      "SXT",
+      "CSTM"
     ],
     [
       "PRM",
-      "FUL"
+      "AVNT"
     ],
     [
       "CENX",
       "MTRN"
     ],
     [
-      "HWKN",
-      "PPTA"
+      "CC",
+      "FUL"
     ],
     [
-      "CC",
+      "HWKN",
+      "NG"
+    ],
+    [
+      "PPTA",
       "NGVT"
     ],
     [
@@ -132,10 +132,6 @@
     ],
     [
       "KALU",
-      "USAR"
-    ],
-    [
-      "OI",
       "KWR"
     ],
     [
@@ -143,12 +139,16 @@
       "IOSP"
     ],
     [
+      "USAR",
+      "OI"
+    ],
+    [
       "SLVM",
-      "IE"
+      "ECVT"
     ],
     [
       "USLM",
-      "ECVT"
+      "IE"
     ],
     [
       "UAMY",
@@ -156,47 +156,47 @@
     ],
     [
       "WS",
-      "RYZ"
+      "SCL"
     ],
     [
-      "SCL",
+      "RYZ",
       "TROX"
     ],
     [
-      "CMP",
-      "MYE"
+      "LXU",
+      "CMP"
     ],
     [
-      "LXU",
+      "MYE",
       "RYAM"
     ],
     [
-      "PCT",
-      "KOP"
+      "KOP",
+      "PCT"
     ],
     [
       "METC",
       "AMBP"
     ],
     [
-      "GSM",
+      "ASIX",
       "MTUS"
+    ],
+    [
+      "SXC",
+      "NB"
+    ],
+    [
+      "GSM",
+      "MATV"
     ],
     [
       "DC",
       "IDR"
     ],
     [
-      "NB",
+      "IPI",
       "ASPI"
-    ],
-    [
-      "SXC",
-      "MATV"
-    ],
-    [
-      "ASIX",
-      "IPI"
     ],
     [
       "CRML",
@@ -204,42 +204,42 @@
     ],
     [
       "GEFB",
-      "ABAT"
+      "TTAM"
     ],
     [
-      "TTAM",
+      "ABAT",
       "MAGN"
     ],
     [
       "VOXR",
+      "OEC"
+    ],
+    [
+      "FTK",
       "CTGO"
     ],
     [
-      "OEC",
-      "FTK"
-    ],
-    [
-      "USAU",
-      "ASPN"
-    ],
-    [
-      "CLW",
+      "ASPN",
       "TG"
     ],
     [
-      "PACK",
-      "CMT"
+      "CLW",
+      "USAU"
     ],
     [
-      "LZM",
-      "KRO"
+      "CMT",
+      "PACK"
     ],
     [
-      "AVD",
-      "SMID"
+      "KRO",
+      "LZM"
     ],
     [
       "FRD",
+      "SMID"
+    ],
+    [
+      "AVD",
       "ACNT"
     ],
     [

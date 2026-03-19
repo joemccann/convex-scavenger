@@ -1,5 +1,25 @@
 # TODO
 
+## Session: Fix Incorrect Positive Day Move On Account Dashboard (2026-03-19)
+
+### Goal
+Trace why the account dashboard's Day Move can render as positive when the underlying day P&L is clearly negative, following the full path from third-party market/account data providers through the backend price/account shaping code into the frontend calculation. Reproduce the bug, drive it red with regression coverage, implement the minimal root-cause fix, and verify the corrected browser rendering with Chrome/CDP.
+
+### Dependency Graph
+- T1 (Trace the live Day Move data path across provider fields, backend shaping, and frontend calculation to reproduce the incorrect positive sign) depends_on: []
+- T2 (Add failing regression coverage for the broken Day Move semantics at the smallest useful unit and browser layers) depends_on: [T1]
+- T3 (Implement the root-cause fix so Day Move preserves the correct sign and source semantics end to end) depends_on: [T2]
+- T4 (Run focused and full verification, confirm the corrected rendering in Chrome/CDP, and document the review notes) depends_on: [T3]
+
+### Checklist
+- [ ] T1 Trace the live Day Move data path across provider fields, backend shaping, and frontend calculation to reproduce the incorrect positive sign
+- [ ] T2 Add failing regression coverage for the broken Day Move semantics at the smallest useful unit and browser layers
+- [ ] T3 Implement the root-cause fix so Day Move preserves the correct sign and source semantics end to end
+- [ ] T4 Run focused and full verification, confirm the corrected rendering in Chrome/CDP, and document the review notes
+
+### Review
+- Pending
+
 ## Session: Fix False Modify Confirmation On `/orders` (2026-03-18)
 
 ### Goal

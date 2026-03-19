@@ -8,8 +8,8 @@
     "MZTI",
     "COCO",
     "UNFI",
-    "CHEF",
     "ANDE",
+    "CHEF",
     "SPB",
     "IPAR",
     "HLF",
@@ -17,30 +17,30 @@
     "CENTA",
     "FDP",
     "SMPL",
-    "JJSF",
     "UVV",
     "IMKTA",
     "DOLE",
+    "JJSF",
     "ENR",
     "EPC",
-    "FIZZ",
     "WMK",
+    "FIZZ",
     "TR",
     "SENEA",
-    "ODC",
     "STKL",
-    "VITL",
+    "ODC",
     "JBSS",
+    "UTZ",
     "GO",
     "MAMA",
     "AVO",
-    "UTZ",
+    "VITL",
     "CVGW",
     "NATR",
     "BGS",
+    "VLGEA",
     "CENT",
     "NUS",
-    "VLGEA",
     "NGVC",
     "BYND",
     "HNST",
@@ -60,8 +60,8 @@
     "HAIN",
     "WALD",
     "LFVN",
-    "FTLF",
     "ISPR",
+    "FTLF",
     "AFRI"
   ],
   "pairs": [
@@ -78,8 +78,8 @@
       "UNFI"
     ],
     [
-      "CHEF",
-      "ANDE"
+      "ANDE",
+      "CHEF"
     ],
     [
       "SPB",
@@ -95,34 +95,34 @@
     ],
     [
       "SMPL",
-      "JJSF"
+      "UVV"
     ],
     [
-      "UVV",
-      "IMKTA"
+      "IMKTA",
+      "DOLE"
     ],
     [
-      "DOLE",
+      "JJSF",
       "ENR"
     ],
     [
       "EPC",
-      "FIZZ"
+      "WMK"
     ],
     [
-      "WMK",
+      "FIZZ",
       "TR"
     ],
     [
       "SENEA",
-      "ODC"
+      "STKL"
     ],
     [
-      "STKL",
-      "VITL"
+      "ODC",
+      "JBSS"
     ],
     [
-      "JBSS",
+      "UTZ",
       "GO"
     ],
     [
@@ -130,7 +130,7 @@
       "AVO"
     ],
     [
-      "UTZ",
+      "VITL",
       "CVGW"
     ],
     [
@@ -138,11 +138,11 @@
       "BGS"
     ],
     [
-      "CENT",
-      "NUS"
+      "VLGEA",
+      "CENT"
     ],
     [
-      "VLGEA",
+      "NUS",
       "NGVC"
     ],
     [
@@ -182,8 +182,8 @@
       "LFVN"
     ],
     [
-      "FTLF",
-      "ISPR"
+      "ISPR",
+      "FTLF"
     ],
     [
       "AFRI",

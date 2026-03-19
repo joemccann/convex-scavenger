@@ -8,20 +8,20 @@
     "TGNA",
     "SPHR",
     "GSAT",
-    "CNK",
     "CARG",
+    "CNK",
     "MSGE",
     "LION",
     "BATRK",
     "MGNI",
-    "IMAX",
     "ZD",
-    "YELP",
+    "IMAX",
     "WLY",
+    "YELP",
     "UNIT",
     "TRIP",
-    "CCOI",
     "LILAK",
+    "CCOI",
     "TDAY",
     "IDT",
     "SHEN",
@@ -29,54 +29,54 @@
     "SCHL",
     "QNST",
     "RUM",
-    "CABO",
     "AMC",
     "SBGI",
+    "CABO",
     "EVER",
-    "GTN",
     "BAND",
-    "ATEX",
     "CARS",
-    "OPTU",
+    "ATEX",
     "SSTK",
-    "FUBO",
+    "GTN",
     "GRND",
+    "FUBO",
     "BATRA",
+    "IBTA",
+    "OPTU",
     "MCS",
     "GOGO",
-    "IHRT",
-    "NXDR",
     "MAX",
     "NMAX",
+    "NXDR",
+    "IHRT",
     "PUBM",
-    "IBTA",
+    "BMBL",
     "ANGI",
-    "SSP",
+    "ATNI",
     "BOC",
     "NEXN",
-    "AMCX",
-    "ATNI",
-    "NCMI",
     "LILA",
+    "NCMI",
+    "SSP",
+    "AMCX",
     "SPOK",
-    "BMBL",
-    "RSVR",
-    "STRZ",
-    "ZIP",
     "EVC",
-    "WBTN",
+    "RSVR",
+    "ZIP",
     "PLTK",
+    "WBTN",
+    "STRZ",
     "CURI",
-    "THRY",
     "TTGT",
+    "THRY",
     "GETY",
     "GAMB",
     "ADV",
     "EEX",
     "GAIA",
     "MYPS",
-    "AREN",
     "TZOO",
+    "AREN",
     "TEAD",
     "SEAT",
     "MRDN"
@@ -95,8 +95,8 @@
       "GSAT"
     ],
     [
-      "CNK",
-      "CARG"
+      "CARG",
+      "CNK"
     ],
     [
       "MSGE",
@@ -107,20 +107,20 @@
       "MGNI"
     ],
     [
-      "IMAX",
-      "ZD"
+      "ZD",
+      "IMAX"
     ],
     [
-      "YELP",
-      "WLY"
+      "WLY",
+      "YELP"
     ],
     [
       "UNIT",
       "TRIP"
     ],
     [
-      "CCOI",
-      "LILAK"
+      "LILAK",
+      "CCOI"
     ],
     [
       "TDAY",
@@ -136,86 +136,86 @@
     ],
     [
       "RUM",
+      "AMC"
+    ],
+    [
+      "SBGI",
       "CABO"
     ],
     [
-      "AMC",
-      "SBGI"
-    ],
-    [
       "EVER",
-      "GTN"
-    ],
-    [
-      "BAND",
-      "ATEX"
+      "BAND"
     ],
     [
       "CARS",
-      "OPTU"
+      "ATEX"
     ],
     [
       "SSTK",
-      "FUBO"
+      "GTN"
     ],
     [
       "GRND",
-      "BATRA"
+      "FUBO"
     ],
     [
-      "MCS",
-      "GOGO"
-    ],
-    [
-      "IHRT",
-      "NXDR"
-    ],
-    [
-      "MAX",
-      "NMAX"
-    ],
-    [
-      "PUBM",
+      "BATRA",
       "IBTA"
     ],
     [
-      "ANGI",
-      "SSP"
+      "OPTU",
+      "MCS"
     ],
     [
-      "BOC",
-      "NEXN"
+      "GOGO",
+      "MAX"
     ],
     [
-      "AMCX",
-      "ATNI"
+      "NMAX",
+      "NXDR"
     ],
     [
-      "NCMI",
+      "IHRT",
+      "PUBM"
+    ],
+    [
+      "BMBL",
+      "ANGI"
+    ],
+    [
+      "ATNI",
+      "BOC"
+    ],
+    [
+      "NEXN",
       "LILA"
     ],
     [
-      "SPOK",
-      "BMBL"
+      "NCMI",
+      "SSP"
     ],
     [
-      "RSVR",
-      "STRZ"
+      "AMCX",
+      "SPOK"
+    ],
+    [
+      "EVC",
+      "RSVR"
     ],
     [
       "ZIP",
-      "EVC"
-    ],
-    [
-      "WBTN",
       "PLTK"
     ],
     [
-      "CURI",
-      "THRY"
+      "WBTN",
+      "STRZ"
     ],
     [
-      "TTGT",
+      "CURI",
+      "TTGT"
+    ],
+    [
+      "THRY",
       "GETY"
     ],
     [
@@ -228,10 +228,10 @@
     ],
     [
       "MYPS",
-      "AREN"
+      "TZOO"
     ],
     [
-      "TZOO",
+      "AREN",
       "TEAD"
     ],
     [

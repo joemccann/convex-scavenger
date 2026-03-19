@@ -1,31 +1,33 @@
 #!/bin/bash
-set -euo pipefail
+# Autoresearch benchmark for scanner.py speed optimization
+# Measures scan time for watchlist tickers
 
-cd /Users/joemccann/dev/apps/finance/radon
+set -e
+cd "$(dirname "$0")"
 
-# Pre-check: verify evaluate.py is syntactically valid
-python3 -m py_compile scripts/evaluate.py 2>&1 || {
-    echo "METRIC total_ms=999999"
-    echo "METRIC single_ms=999999"
-    exit 1
-}
+echo "=== Scanner Benchmark ===" >&2
 
-# Benchmark: Single ticker
-echo "=== Single Ticker Benchmark (AAPL) ===" >&2
-start_single=$(python3 -c "import time; print(int(time.time() * 1000))")
-python3 scripts/evaluate.py AAPL --json > /dev/null 2>&1 || true  # exit 1 = NO_TRADE (expected)
-end_single=$(python3 -c "import time; print(int(time.time() * 1000))")
-single_ms=$((end_single - start_single))
-echo "Single: ${single_ms}ms" >&2
+# Run scanner and capture timing
+START=$(python3 -c "import time; print(int(time.time() * 1000))")
+python3 scripts/scanner.py --top 5 > /tmp/scanner_output.json 2>/tmp/scanner_stderr.txt
+END=$(python3 -c "import time; print(int(time.time() * 1000))")
 
-# Benchmark: 5 tickers (fast mode - skip IB price history)
-echo "=== Multi-Ticker Benchmark (5 tickers, --fast) ===" >&2
-start_multi=$(python3 -c "import time; print(int(time.time() * 1000))")
-python3 scripts/evaluate.py AAPL MSFT NVDA GOOG TSLA --json --fast > /dev/null 2>&1 || true
-end_multi=$(python3 -c "import time; print(int(time.time() * 1000))")
-total_ms=$((end_multi - start_multi))
-echo "Multi (5): ${total_ms}ms" >&2
+TOTAL_MS=$((END - START))
+
+# Extract tickers scanned from output
+TICKERS_SCANNED=$(python3 -c "import json; d=json.load(open('/tmp/scanner_output.json')); print(d.get('tickers_scanned', 0))")
+
+# Calculate per-ticker time
+if [ "$TICKERS_SCANNED" -gt 0 ]; then
+    PER_TICKER_MS=$((TOTAL_MS / TICKERS_SCANNED))
+else
+    PER_TICKER_MS=0
+fi
+
+echo "Total: ${TOTAL_MS}ms" >&2
+echo "Tickers: ${TICKERS_SCANNED}" >&2
+echo "Per ticker: ${PER_TICKER_MS}ms" >&2
 
 # Output metrics for autoresearch
-echo "METRIC total_ms=${total_ms}"
-echo "METRIC single_ms=${single_ms}"
+echo "METRIC total_ms=${TOTAL_MS}"
+echo "METRIC per_ticker_ms=${PER_TICKER_MS}"
