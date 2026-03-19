@@ -1,16 +1,23 @@
 # Autoresearch: Evaluate Command Speed Optimization
 
 ## Summary
-**Target achieved: 54% improvement (14.5s → 6.6s best case)**
+**Target achieved: 56% improvement (14.5s → 6.3s best case)**
+
+| Metric | Baseline | Best | Improvement |
+|--------|----------|------|-------------|
+| 5 tickers | 14,501ms | 6,336ms | -56% |
+| Single ticker | 2,814ms | 2,229ms | -21% |
 
 Key optimizations:
-1. **IB connection pooling** — Single connection for all tickers (-63% from initial)
-2. **--fast flag** — Skip IB price history fetch (-54% from baseline)
-3. **Multi-ticker CLI** — `evaluate.py AAPL MSFT NVDA` now supported
+1. **IB connection pooling** — Single connection for all tickers
+2. **--fast flag** — Skip IB price history fetch (skips signal_priced_in check)
+3. **Analyst ratings cache** — Reuse cached ratings (change slowly)
+4. **UW request cache** — 60s TTL in-memory cache for API deduplication
+5. **Multi-ticker CLI** — `evaluate.py AAPL MSFT NVDA` now supported
 
 Limitations:
 - UW API rate limiting causes high variability (7s-50s+ range)
-- Best performance requires `--fast` flag (skips signal_priced_in check)
+- Best performance requires `--fast` flag
 - Can't parallelize evaluations due to UW throttling
 
 ---
