@@ -33,3 +33,4 @@
 {"run":33,"commit":"68e2619","metric":32822,"metrics":{"single_ms":17801},"status":"discard","description":"Token bucket rate limiter - doesn't help with UW server-side rate limiting","timestamp":1773893290794,"segment":0}
 {"run":34,"commit":"3ab68db","metric":6213,"metrics":{"single_ms":2020},"status":"keep","description":"Documented rate limiter failure - no solution to UW server-side limits","timestamp":1773893320034,"segment":0}
 {"run":36,"commit":"a9c3e83","metric":6793,"metrics":{"single_ms":17569},"status":"keep","description":"M1 uses stock_info API instead of darkpool - saves 1 call/ticker","timestamp":1773898213485,"segment":0}
+{"run":37,"commit":"d94ff21","metric":8940,"metrics":{"single_ms":17635},"status":"keep","description":"Align flow_alerts params M2/M3 for cache hits + M1 stock_info","timestamp":1773898456677,"segment":0}

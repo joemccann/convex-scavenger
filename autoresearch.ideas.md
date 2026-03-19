@@ -50,6 +50,8 @@ Best result: 6,213ms for 5 tickers (from 14,501ms baseline)
 4. UW request cache (60s TTL) — deduplicates within session
 5. M1 validation reduced to 1 day — saves 2 API calls/ticker
 6. Multi-ticker CLI support — batch evaluation in single command
+7. M1 uses stock_info API instead of darkpool — saves 1 API call/ticker
+8. M2/M3 flow_alerts params aligned — enables cache hits between milestones
 
 ## Conclusion
 The remaining performance variability (6-50s) is due to UW API rate limiting,
