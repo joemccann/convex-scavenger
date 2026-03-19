@@ -156,6 +156,24 @@ class TestCancelOrder:
         assert data["status"] == "error"
         assert "PendingCancel" in data["message"]
 
+    def test_cancel_succeeds_when_order_disappears_from_refreshed_open_orders(self, capsys):
+        """IB may confirm a cancel by removing the order from refreshed open orders."""
+        t = make_trade(status="Submitted")
+        t.order.clientId = 0
+
+        client = make_client()
+        client.ib.client.clientId = 0
+        client.get_open_orders.side_effect = [[t], []]
+        client.cancel_order = MagicMock()
+
+        with pytest.raises(SystemExit) as exc:
+            cancel_order(client, 10, 12345, "127.0.0.1", 4001)
+        assert exc.value.code == 0
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert data["status"] == "ok"
+        assert data["finalStatus"] == "Cancelled"
+
 
 # ─── modify_order ───────────────────────────────────────
 

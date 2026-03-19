@@ -1,5 +1,142 @@
 # TODO
 
+## Session: Clear Blocking Full-Suite Regressions (2026-03-19)
+
+### Goal
+Trace and fix the remaining full-suite blockers that still prevent a compliant commit after the `/orders` cancel propagation work. Group the failures by root cause, use the existing red tests plus any needed regressions, and drive the repo back to a green Python/JS suite with browser verification through chrome-cdp for at least one affected user-facing path.
+
+### Dependency Graph
+- T1 (Trace the remaining pytest failure clusters through the backend/provider/frontend boundaries and reduce them to a small set of root causes) depends_on: []
+- T2 (Fix the scanner parallel/testability regression so watchlist scans still use the optimized provider path without bypassing the patchable fetch seam) depends_on: [T1]
+- T3 (Restore legacy utility/UW client compatibility and deterministic request semantics so the utils and UW client suites pass again) depends_on: [T1]
+- T4 (Restore the blotter IB fetcher compatibility contract expected by the trade blotter tests) depends_on: [T1]
+- T5 (Run focused red/green verification for each cluster, then rerun the full Python and JS suites) depends_on: [T2, T3, T4]
+- T6 (Verify one affected user-facing path end-to-end in the browser via chrome-cdp and update review notes) depends_on: [T5]
+
+### Checklist
+- [x] T1 Trace the remaining pytest failure clusters through the backend/provider/frontend boundaries and reduce them to a small set of root causes
+- [x] T2 Fix the scanner parallel/testability regression so watchlist scans still use the optimized provider path without bypassing the patchable fetch seam
+- [x] T3 Restore legacy utility/UW client compatibility and deterministic request semantics so the utils and UW client suites pass again
+- [x] T4 Restore the blotter IB fetcher compatibility contract expected by the trade blotter tests
+- [x] T5 Run focused red/green verification for each cluster, then rerun the full Python and JS suites
+- [x] T6 Verify one affected user-facing path end-to-end in the browser via chrome-cdp and update review notes
+
+### Review
+- Root-cause trace:
+  - Scanner/backend seam: [scanner.py](/Users/joemccann/dev/apps/finance/radon/scripts/scanner.py) had been refactored to call `fetch_flow.fetch_flow(...)` directly with optimization flags, which preserved runtime behavior but bypassed the patchable `fetch_flow_data` seam that the parallel scanner tests and the FastAPI `/scan` subprocess path still rely on. That broke the backend contract between the scanner worker pool and the test harness.
+  - Provider boundary: the scanner path fans out to Unusual Whales through [fetch_flow.py](/Users/joemccann/dev/apps/finance/radon/scripts/fetch_flow.py) and [uw_client.py](/Users/joemccann/dev/apps/finance/radon/scripts/clients/uw_client.py). Global cache hits in `UWClient._get()` were masking mocked request paths, so retry/parameter tests no longer exercised the third-party request boundary deterministically.
+  - Compatibility boundary: older callers and tests still depended on legacy utility shims ([uw_api.py](/Users/joemccann/dev/apps/finance/radon/scripts/utils/uw_api.py), [ib_connection.py](/Users/joemccann/dev/apps/finance/radon/scripts/utils/ib_connection.py)) and the blotter fetcher’s historical `fetcher.ib` contract. Those had drifted during refactors even though the frontend-triggered APIs still expect the older behavior surface.
+  - Frontend boundary: the user-facing scanner page at [page.tsx](/Users/joemccann/dev/apps/finance/radon/web/app/scanner/page.tsx) reads through the Next bridge at [route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/scanner/route.ts), which POSTs to FastAPI `/scan`. The browser can only show fresh scanner data if the subprocess-based backend scan completes and rewrites `data/scanner.json`.
+- Red/green TDD:
+  - Used the existing failing suites as the red state: `scripts/tests/test_scanner_parallel.py`, `scripts/tests/test_scanner_refactor.py`, `scripts/tests/test_utils.py`, `scripts/tests/test_uw_client.py`, `scripts/trade_blotter/test_blotter.py`, and the full `pytest -q` / `vitest` gates.
+  - Preserved and extended regression intent instead of weakening coverage: [test_scanner_refactor.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_scanner_refactor.py) now locks the real direct-provider contract (`lookback_days=5`, `skip_options_flow=True`) rather than the pre-optimization positional call.
+- Fixes:
+  - Restored the scanner seam in [scanner.py](/Users/joemccann/dev/apps/finance/radon/scripts/scanner.py) so worker threads still use the optimized UW path but go through `fetch_flow_data(...)`, which keeps the backend/test harness patch point intact.
+  - Made [uw_client.py](/Users/joemccann/dev/apps/finance/radon/scripts/clients/uw_client.py) skip the global response cache when tests inject mocked sessions, so provider-boundary tests exercise real request/retry logic again.
+  - Reintroduced compatibility wrappers in [uw_api.py](/Users/joemccann/dev/apps/finance/radon/scripts/utils/uw_api.py) and [ib_connection.py](/Users/joemccann/dev/apps/finance/radon/scripts/utils/ib_connection.py), and restored the blotter compatibility alias in [blotter_service.py](/Users/joemccann/dev/apps/finance/radon/scripts/trade_blotter/blotter_service.py).
+  - Marked the manual IB realtime probe [test_ib_realtime.py](/Users/joemccann/dev/apps/finance/radon/scripts/test_ib_realtime.py) as non-collectable so pytest stops treating its helper functions as fixture-driven tests.
+  - Hardened the JS test harness in [integration.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/integration.test.ts) with an explicit timeout for the CLI help-screen test, which synchronously spawns four Python processes and was intermittently tripping Vitest’s default 5s ceiling under full-suite load.
+- Verification:
+  - Focused Python:
+    - `PYTHONPATH=. pytest scripts/tests/test_scanner_parallel.py -q`
+    - `PYTHONPATH=. pytest scripts/tests/test_scanner_refactor.py -q`
+    - `PYTHONPATH=. pytest scripts/tests/test_utils.py -q`
+    - `PYTHONPATH=. pytest scripts/tests/test_uw_client.py -q`
+    - `PYTHONPATH=.:scripts/trade_blotter pytest scripts/trade_blotter/test_blotter.py -q`
+  - Focused JS:
+    - `npx vitest run web/tests/integration.test.ts --config vitest.config.ts -t 'pi command --help screens are available'`
+  - Full suites:
+    - `npx vitest run --config vitest.config.ts` → `138` files passed, `1308` tests passed, `8` skipped
+    - `PYTHONPATH=. pytest -q` → `1391` passed, `10` warnings
+  - Browser verification via chrome-cdp:
+    - Used `/Users/joemccann/.agents/skills/chrome-cdp/scripts/cdp.mjs` against the live app on `http://127.0.0.1:3000/scanner`.
+    - Verified the scanner page rendered from the rewritten backend cache after a live FastAPI `/scan` run and settled from `SYNCING...` to `0 SIGNALS`, with `LAST SCAN: 3/19/2026, 2:08:01 PM • 19 TICKERS SCANNED`.
+    - Verified the Next bridge data at `http://127.0.0.1:3000/api/scanner` reported a fresh non-stale cache after the scan (`cache_meta.is_stale: false`).
+
+## Session: Propagate Cancel-Failure Rule To Docs And Memory (2026-03-19)
+
+### Goal
+Update the durable documentation, memory, and agent-instruction surfaces so the `/orders` cancel failure-chain lesson is preserved across Codex, Claude, Pi, and structured memory, then verify the resulting changes and prepare the branch for commit/push.
+
+### Dependency Graph
+- T1 (Inventory the durable doc, memory, and agent-instruction surfaces that should carry the cancel-confirmation and error-propagation rule) depends_on: []
+- T2 (Update the identified docs, lessons, agent files, and structured memory fact with the new cancel-flow rule and status-propagation guidance) depends_on: [T1]
+- T3 (Run verification on the updated documentation surfaces, refresh task review notes, and attempt the required commit/push flow) depends_on: [T2]
+
+### Checklist
+- [x] T1 Inventory the durable doc, memory, and agent-instruction surfaces that should carry the cancel-confirmation and error-propagation rule
+- [x] T2 Update the identified docs, lessons, agent files, and structured memory fact with the new cancel-flow rule and status-propagation guidance
+- [x] T3 Run verification on the updated documentation surfaces, refresh task review notes, and attempt the required commit/push flow
+
+### Review
+- Durable propagation completed:
+  - Added the cancel/modify failure-propagation rule to [CLAUDE.md](/Users/joemccann/dev/apps/finance/radon/CLAUDE.md) and confirmed the same rule is present in [AGENTS.md](/Users/joemccann/dev/apps/finance/radon/AGENTS.md) and [.pi/AGENTS.md](/Users/joemccann/dev/apps/finance/radon/.pi/AGENTS.md).
+  - Added the lesson to [tasks/lessons.md](/Users/joemccann/dev/apps/finance/radon/tasks/lessons.md), the structured memory fact [infra-orders-cancel-confirmation-propagation.json](/Users/joemccann/dev/apps/finance/radon/context/memory/fact/infra-orders-cancel-confirmation-propagation.json), and a status-log entry in [docs/status.md](/Users/joemccann/dev/apps/finance/radon/docs/status.md).
+- Commit-gate verification:
+  - `python3 -m json.tool context/memory/fact/infra-orders-cancel-confirmation-propagation.json`
+  - `npx vitest run --config vitest.config.ts` → **green** (`137` files passed, `1303` tests passed, `8` skipped)
+  - Tractable Python blockers cleared so targeted slices now pass:
+    - `PYTHONPATH=. pytest scripts/tests/test_scenario_analysis.py`
+    - `PYTHONPATH=. pytest scripts/tests/test_fetch_options.py -q`
+    - `PYTHONPATH=. pytest scripts/tests/test_fetch_ticker.py -q`
+- Additional blocker cleanup completed while trying to satisfy the repo’s mandatory full-suite gate:
+  - Restored scenario-analysis helper exports in [scenario_analysis.py](/Users/joemccann/dev/apps/finance/radon/scripts/scenario_analysis.py) so the suite can import `approx_delta` / exposure helpers again.
+  - Hardened [route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/place/route.ts) against missing portfolio-reader results, updated [route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/modify/route.ts) validation text, and made [OrderActionsContext.tsx](/Users/joemccann/dev/apps/finance/radon/web/lib/OrderActionsContext.tsx) forward `outsideRth` explicitly so the prior Vitest blockers are green.
+  - Marked the manual IB realtime probe [test_ib_realtime.py](/Users/joemccann/dev/apps/finance/radon/scripts/test_ib_realtime.py) as non-collectable by pytest and restored dark-pool enrichment fallback in [fetch_ticker.py](/Users/joemccann/dev/apps/finance/radon/scripts/fetch_ticker.py).
+- Commit/push outcome:
+  - `PYTHONPATH=. pytest -q` still fails with **47 unrelated Python test failures** after the above cleanup. The remaining failures are outside this cancel/docs scope and include [test_scanner_parallel.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_scanner_parallel.py), [test_utils.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_utils.py), [test_uw_client.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_uw_client.py), and [test_blotter.py](/Users/joemccann/dev/apps/finance/radon/scripts/trade_blotter/test_blotter.py).
+  - Because the repo instructions require the full suite to pass before any commit, the requested commit/push was **not** performed.
+
+## Session: Fix `/orders` Cancel 502/500 Failure Chain (2026-03-19)
+
+### Goal
+Trace why cancelling an open order surfaces a FastAPI `502 Bad Gateway` and a Next `/api/orders/cancel` `500 Internal Server Error`, reproduce the failure with red tests, fix the backend/provider confirmation path and status propagation, and verify the corrected behavior in the browser.
+
+### Dependency Graph
+- T1 (Trace the cancel flow from the `/orders` UI through the Next route, FastAPI `/orders/cancel`, and `scripts/ib_order_manage.py` to identify the real root cause and any masked errors) depends_on: []
+- T2 (Add failing regression coverage for the cancel confirmation path at the Python script layer, the Next route status propagation layer, and the browser-visible cancel behavior) depends_on: [T1]
+- T3 (Implement the minimal fix so IB cancel confirmation re-checks refreshed open orders and the Next route preserves upstream HTTP status/detail) depends_on: [T2]
+- T4 (Run focused verification, run the full test suite, verify the cancel flow in the browser with chrome-cdp, and document review notes) depends_on: [T3]
+
+### Checklist
+- [x] T1 Trace the cancel flow from the `/orders` UI through the Next route, FastAPI `/orders/cancel`, and `scripts/ib_order_manage.py` to identify the real root cause and any masked errors
+- [x] T2 Add failing regression coverage for the cancel confirmation path at the Python script layer, the Next route status propagation layer, and the browser-visible cancel behavior
+- [x] T3 Implement the minimal fix so IB cancel confirmation re-checks refreshed open orders and the Next route preserves upstream HTTP status/detail
+- [x] T4 Run focused verification, run the full test suite, verify the cancel flow in the browser with chrome-cdp, and document review notes
+
+### Review
+- Root-cause trace:
+  - Third-party/provider boundary: Interactive Brokers can acknowledge a cancel by removing the order from refreshed open orders instead of mutating the original `Trade` object in place. The cancel path in [ib_order_manage.py](/Users/joemccann/dev/apps/finance/radon/scripts/ib_order_manage.py) only watched the original `trade.orderStatus.status`, so a real IB cancel could still fall through to `Cancel failed — order still Submitted`, which FastAPI surfaced as `502 Bad Gateway`.
+  - FastAPI/subprocess boundary: when `ib_order_manage.py` exited non-zero, [subprocess.py](/Users/joemccann/dev/apps/finance/radon/scripts/api/subprocess.py) returned the raw JSON line printed by the script instead of its human-readable `message`, so downstream callers could receive unreadable error strings like `{"status":"error","message":"Trade not found ..."}`.
+  - Next route boundary: [route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/cancel/route.ts) caught every upstream `RadonApiError` and rewrote it to a generic `500`, which is why the browser showed `/api/orders/cancel` `500 Internal Server Error` even when FastAPI had actually returned `502`.
+  - Frontend boundary: [OrderActionsContext.tsx](/Users/joemccann/dev/apps/finance/radon/web/lib/OrderActionsContext.tsx) already surfaces `json.error` in the toast. Once the route stopped masking the status and the subprocess helper stopped passing raw JSON through, the user-visible message became the real cancel failure reason.
+- Red/green TDD:
+  - Added a Python regression in [test_ib_order_manage.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_ib_order_manage.py) that reproduces IB confirming a cancel by removing the order from refreshed open orders. It failed red with `Cancel failed — order still Submitted`.
+  - Added a subprocess-helper regression in [test_api_subprocess.py](/Users/joemccann/dev/apps/finance/radon/scripts/tests/test_api_subprocess.py) that requires JSON script errors to resolve to their `message` field.
+  - Added a Next-route regression in [api-routes-extended.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/api-routes-extended.test.ts) that requires `/api/orders/cancel` to preserve an upstream `502`.
+  - Added browser coverage in [order-cancel-error-propagation.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/order-cancel-error-propagation.spec.ts) that drives the `/orders` UI against a mock backend and asserts the browser receives a `502` plus the cleaned cancel message.
+  - Red before fix:
+    - `pytest scripts/tests/test_ib_order_manage.py -k 'cancel_succeeds_when_order_disappears_from_refreshed_open_orders'`
+    - `npx vitest run web/tests/api-routes-extended.test.ts --config vitest.config.ts -t 'preserves upstream 502 detail when FastAPI cancel fails'`
+    - `cd web && RADON_API_URL=http://127.0.0.1:8325 PLAYWRIGHT_PORT=3000 npx playwright test e2e/order-cancel-error-propagation.spec.ts --config playwright.config.ts`
+- Fixes:
+  - Updated [ib_order_manage.py](/Users/joemccann/dev/apps/finance/radon/scripts/ib_order_manage.py) so cancel confirmation re-fetches IB open orders on each poll and treats a disappeared order as a successful cancel, matching IB’s real acknowledgement behavior.
+  - Updated [subprocess.py](/Users/joemccann/dev/apps/finance/radon/scripts/api/subprocess.py) so non-zero script exits extract `detail`/`message`/`error` from JSON stdout instead of surfacing raw serialized JSON.
+  - Updated [route.ts](/Users/joemccann/dev/apps/finance/radon/web/app/api/orders/cancel/route.ts) so `RadonApiError` status/detail are preserved to the browser instead of being collapsed to `500`.
+- Verification:
+  - Focused green:
+    - `pytest scripts/tests/test_ib_order_manage.py -k 'cancel_succeeds_when_order_disappears_from_refreshed_open_orders or cancel_success or cancel_reports_error_on_pending_cancel_timeout'`
+    - `pytest scripts/tests/test_api_subprocess.py -k 'json_error_stdout_returns_message_field'`
+    - `npx vitest run web/tests/api-routes-extended.test.ts --config vitest.config.ts -t 'returns success when cancel succeeds|returns 500 when cancel fails via radonFetch|preserves upstream 502 detail when FastAPI cancel fails'`
+    - `cd web && RADON_API_URL=http://127.0.0.1:8325 PLAYWRIGHT_PORT=3101 npx playwright test e2e/order-cancel-error-propagation.spec.ts --config playwright.config.ts`
+  - Browser verification via `chrome-cdp`:
+    - Started a controlled mock backend on `127.0.0.1:8325` and a local Next dev server on `127.0.0.1:3102`.
+    - Drove the real `/orders` UI through Chrome CDP, opened the cancel dialog for `TSLL`, clicked `Cancel Order`, and confirmed the visible toast reads `Cancel not confirmed by refreshed IB open orders`.
+    - Screenshot saved to `/tmp/radon-cancel-verification.png`.
+  - Full-suite status:
+    - `PYTHONPATH=. pytest` is still blocked by a pre-existing unrelated collection error in `scripts/tests/test_scenario_analysis.py` (`cannot import name 'approx_delta' from 'scenario_analysis'`).
+    - `npx vitest run --config vitest.config.ts` still reports five unrelated pre-existing failures in `web/tests/fastapi-migration.test.ts` and `web/tests/modify-order-ticker-detail.test.ts`.
+
 ## Session: Fix Misleading Combo Close Summary On IWM Order Tab (2026-03-19)
 
 ### Goal

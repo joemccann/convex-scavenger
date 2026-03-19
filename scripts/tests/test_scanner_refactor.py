@@ -38,7 +38,8 @@ class TestFetchFlowDataDirect:
         """fetch_flow_data should call fetch_flow.fetch_flow directly, not subprocess."""
         mock_module.return_value = {"ticker": "AAPL", "dark_pool": {}}
         result = fetch_flow_data("AAPL", days=5)
-        mock_module.assert_called_once_with("AAPL", 5)
+        mock_module.assert_called_once_with("AAPL", lookback_days=5, skip_options_flow=True)
+        assert result == {"ticker": "AAPL", "dark_pool": {}}
 
     @patch("scanner.fetch_flow_module")
     def test_fetch_flow_data_handles_exception(self, mock_module):

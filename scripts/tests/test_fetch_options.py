@@ -1,5 +1,6 @@
 """Tests for fetch_options.py — options chain + flow analysis."""
 import pytest
+from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
 from clients.uw_client import UWAPIError
@@ -9,6 +10,10 @@ from fetch_options import (
     fetch_uw_flow,
     fetch_options,
 )
+
+
+def _recent_alert_iso(hours_ago: int = 1) -> str:
+    return (datetime.utcnow() - timedelta(hours=hours_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # ── fetch_uw_chain ──────────────────────────────────────────────────
@@ -116,12 +121,12 @@ class TestFetchUwFlow:
     def test_call_heavy_bullish(self):
         mock_client = MagicMock()
         mock_client.get_flow_alerts.return_value = {"data": [
-            {"created_at": "2026-03-02T10:00:00Z", "total_premium": "500000",
+            {"created_at": _recent_alert_iso(4), "total_premium": "500000",
              "total_bid_side_prem": "100000", "total_ask_side_prem": "400000",
              "type": "call", "has_sweep": True, "strike": "200",
              "expiry": "2026-03-20", "volume": "100", "open_interest": "500",
              "underlying_price": "195", "alert_rule": "unusual"},
-            {"created_at": "2026-03-02T11:00:00Z", "total_premium": "100000",
+            {"created_at": _recent_alert_iso(3), "total_premium": "100000",
              "total_bid_side_prem": "50000", "total_ask_side_prem": "50000",
              "type": "put", "has_sweep": False, "strike": "180",
              "expiry": "2026-03-20", "volume": "50", "open_interest": "200",
@@ -134,12 +139,12 @@ class TestFetchUwFlow:
     def test_put_heavy_bearish(self):
         mock_client = MagicMock()
         mock_client.get_flow_alerts.return_value = {"data": [
-            {"created_at": "2026-03-02T10:00:00Z", "total_premium": "100000",
+            {"created_at": _recent_alert_iso(4), "total_premium": "100000",
              "total_bid_side_prem": "50000", "total_ask_side_prem": "50000",
              "type": "call", "has_sweep": False, "strike": "200",
              "expiry": "2026-03-20", "volume": "50", "open_interest": "200",
              "underlying_price": "195", "alert_rule": "unusual"},
-            {"created_at": "2026-03-02T11:00:00Z", "total_premium": "500000",
+            {"created_at": _recent_alert_iso(3), "total_premium": "500000",
              "total_bid_side_prem": "100000", "total_ask_side_prem": "400000",
              "type": "put", "has_sweep": True, "strike": "180",
              "expiry": "2026-03-20", "volume": "100", "open_interest": "500",
@@ -152,7 +157,7 @@ class TestFetchUwFlow:
     def test_recent_bias_buying_calls(self):
         mock_client = MagicMock()
         mock_client.get_flow_alerts.return_value = {"data": [
-            {"created_at": "2026-03-02T10:00:00Z", "total_premium": "300000",
+            {"created_at": _recent_alert_iso(2), "total_premium": "300000",
              "total_bid_side_prem": "50000", "total_ask_side_prem": "250000",
              "type": "call", "has_sweep": False, "strike": "200",
              "expiry": "2026-03-20", "volume": "100", "open_interest": "500",

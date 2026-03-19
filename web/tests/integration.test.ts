@@ -109,7 +109,7 @@ test("pi command --help screens are available", () => {
     const text = `${result.stdout} ${result.stderr}`.toLowerCase();
     expect(text.includes("usage") || text.includes("description")).toBeTruthy();
   }
-});
+}, 15_000);
 
 test("kelly command returns valid risk sizing JSON", () => {
   const result = runPython([

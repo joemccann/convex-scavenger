@@ -2,6 +2,8 @@
 
 ## 2026-03-19
 
+- When a feature fix is green in focused tests but the repo-level gates are still red, stay on the blocker chain before switching to docs/commit work. Re-run the full suites, trace the remaining failures by boundary (backend seam, provider contract, frontend bridge), and clear those blockers first so the task can actually close.
+- For IB cancel/modify bugs, do not trust the original `Trade` object or collapse provider errors at the bridge layers. Re-check refreshed open orders, treat disappearance after cancel as success, extract human-readable JSON script errors in FastAPI, and preserve upstream status/detail through the Next order routes so the browser sees the real failure.
 - When a ticker-detail or quote-telemetry surface shows a synthetic multi-leg option quote, do not label a derived combo midpoint as `LAST` or build it from asynchronous leg trade prints. For spreads and risk reversals, use the live combo mark from bid/ask and label it clearly as a mark so it cannot be confused with the entry fill basis.
 - When a combo or short-option surface already carries sign semantics from the portfolio model or combo quote math, do not normalize it with `Math.abs()` in a detail tab or order form; add regressions that assert both the displayed sign and the tone class survive into the input and leg table.
 - When refactoring shared portfolio row math across `PositionRow` and `LegRow`, do not let a child row reference a parent-only variable by name; add a render-path regression for expanded legs so scope leaks fail in test instead of at runtime on `/portfolio`.

@@ -179,6 +179,21 @@ curl http://localhost:8321/health
 # Returns: ib_gateway, ib_pool (sync/orders/data), uw
 ```
 
+## Cancel / Modify Failure Propagation
+
+1. **Do not trust the original IB `Trade` object as the only confirmation source.**
+   - IB can confirm a cancel by removing the order from refreshed open orders without mutating the original `Trade` instance in place.
+   - Cancel/modify flows must confirm against a refreshed open-order snapshot, not just the stale object reference.
+2. **Treat disappearance after cancel as success.**
+   - If the target order no longer appears in refreshed open orders after the cancel request, that is a valid IB acknowledgement.
+3. **Preserve the real upstream error detail end to end.**
+   - If a subprocess script exits non-zero with JSON on stdout, FastAPI must surface the human-readable `detail` / `message` / `error` field.
+   - Next order routes must preserve upstream HTTP status/detail instead of collapsing provider failures to generic `500`s.
+4. **Required regressions for cancel/modify bugs:**
+   - Python/unit coverage for refreshed open-order confirmation semantics
+   - route coverage for upstream status/detail propagation
+   - browser coverage for the visible toast/error state
+
 ## Naked Short Protection (Gate 4)
 
 **Hard rule — no exceptions.** The system must never allow naked short exposure.

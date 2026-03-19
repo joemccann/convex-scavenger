@@ -78,7 +78,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Naked short guard — block orders that would create naked short exposure
     const portfolioResult = await readDataFile("data/portfolio.json");
-    if (portfolioResult.ok) {
+    if (portfolioResult?.ok) {
       const guard = checkNakedShortRisk(body, portfolioResult.data as NakedShortPortfolio);
       if (!guard.allowed) {
         return NextResponse.json(
@@ -87,7 +87,7 @@ export async function POST(request: Request): Promise<Response> {
         );
       }
     } else {
-      console.warn("[orders/place] Could not load portfolio for naked short guard:", portfolioResult.error);
+      console.warn("[orders/place] Could not load portfolio for naked short guard:", portfolioResult?.error ?? "unknown error");
     }
 
     const orderPayload = {

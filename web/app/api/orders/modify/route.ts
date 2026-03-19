@@ -148,7 +148,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (newPrice == null && newQuantity == null && body.outsideRth == null) {
       return NextResponse.json(
-        { error: "Must provide at least one modify field" },
+        { error: "Must provide at least one modify field: newPrice, newQuantity, or outsideRth" },
         { status: 400 },
       );
     }

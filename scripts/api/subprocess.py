@@ -27,6 +27,17 @@ def _extract_error_message(stdout: str, stderr: str, default: str) -> str:
         ]
         if lines:
             err_msg = lines[-1]
+            try:
+                parsed = json.loads(err_msg)
+                if isinstance(parsed, dict):
+                    err_msg = (
+                        parsed.get("detail")
+                        or parsed.get("message")
+                        or parsed.get("error")
+                        or err_msg
+                    )
+            except Exception:
+                pass
             if len(err_msg) > 300:
                 err_msg = err_msg[:300] + "..."
             return err_msg

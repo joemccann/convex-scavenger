@@ -43,6 +43,9 @@ class TestResults:
         return self.failed == 0
 
 
+TestResults.__test__ = False
+
+
 results = TestResults()
 
 
@@ -402,6 +405,14 @@ async def test_latency(server_url: str):
                 
     except Exception as e:
         results.fail("Latency test", str(e))
+
+
+# Manual probe script: keep callable from __main__ but do not let pytest treat
+# these parameterized helpers as fixture-driven tests.
+test_ib_connection.__test__ = False
+test_websocket_server.__test__ = False
+test_multiple_clients.__test__ = False
+test_latency.__test__ = False
 
 
 # =============================================================================

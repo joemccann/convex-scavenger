@@ -21,6 +21,8 @@ export type PendingModify = {
   newQuantity?: number;
 };
 
+type ModifyRequestWithOutsideRth = ModifyOrderRequest & { outsideRth?: boolean };
+
 type Notification = {
   type: "error" | "warning" | "success";
   message: string;
@@ -183,7 +185,7 @@ export function OrderActionsProvider({ children }: { children: ReactNode }) {
 
   /* ── Modify polling ─────────────────────────────────── */
 
-  const startModifyPoll = useCallback((order: OpenOrder, request: ModifyOrderRequest) => {
+  const startModifyPoll = useCallback((order: OpenOrder, request: ModifyRequestWithOutsideRth) => {
     const permId = order.permId;
     pollCountsRef.current.set(permId, 0);
 
@@ -267,12 +269,13 @@ export function OrderActionsProvider({ children }: { children: ReactNode }) {
     scheduleNext();
   }, [pushNotification, pushOrdersData]);
 
-  const requestModify = useCallback(async (order: OpenOrder, request: ModifyOrderRequest) => {
+  const requestModify = useCallback(async (order: OpenOrder, request: ModifyRequestWithOutsideRth) => {
     try {
+      const { outsideRth, ...requestBody } = request;
       const res = await fetch("/api/orders/modify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.orderId, permId: order.permId, ...request }),
+        body: JSON.stringify({ orderId: order.orderId, permId: order.permId, ...requestBody, outsideRth }),
       });
       const json = await res.json();
       if (!res.ok) {

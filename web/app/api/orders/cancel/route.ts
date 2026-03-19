@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { readDataFile } from "@tools/data-reader";
 import { OrdersData } from "@tools/schemas/ib-orders";
-import { radonFetch } from "@/lib/radonApi";
+import { RadonApiError, radonFetch } from "@/lib/radonApi";
 
 export const runtime = "nodejs";
 
@@ -44,6 +44,9 @@ export async function POST(request: Request): Promise<Response> {
       orders: ordersResult.ok ? ordersResult.data : null,
     });
   } catch (error) {
+    if (error instanceof RadonApiError) {
+      return NextResponse.json({ error: error.detail }, { status: error.status });
+    }
     const message = error instanceof Error ? error.message : "Cancel failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }

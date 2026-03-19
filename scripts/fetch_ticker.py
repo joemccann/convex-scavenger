@@ -106,31 +106,74 @@ def fetch_ticker_info(ticker: str) -> dict:
         # Use stock info endpoint - single fast call
         try:
             info_resp = client.get_stock_info(ticker)
-            data = info_resp.get("data", {})
-            
-            if not data:
-                result["error"] = f"Ticker '{ticker}' not found"
-                return result
-            
-            # Ticker is valid
-            result["verified"] = True
-            result["company_name"] = data.get("full_name") or result["company_name"]
-            result["sector"] = data.get("sector") or result["sector"]
-            result["industry"] = data.get("industry")
-            result["market_cap"] = data.get("marketcap")
-            result["avg_volume"] = data.get("avg30_volume")
-            result["options_available"] = data.get("has_options", False)
-            
-            # Cache the company info
-            if result["company_name"] and not cached:
-                cache_ticker(ticker, result["company_name"], result["sector"])
-            
+            data = info_resp.get("data", {}) if isinstance(info_resp, dict) else {}
+            if not isinstance(data, dict):
+                data = {}
+
+            if data:
+                # Ticker is valid
+                result["verified"] = True
+                result["company_name"] = data.get("full_name") or result["company_name"]
+                result["sector"] = data.get("sector") or result["sector"]
+                result["industry"] = data.get("industry")
+                result["market_cap"] = data.get("marketcap")
+                result["avg_volume"] = data.get("avg30_volume")
+                result["current_price"] = data.get("last") or data.get("price") or result["current_price"]
+                result["options_available"] = bool(data.get("has_options", False))
+        except UWNotFoundError:
+            data = {}
+        except UWAPIError as e:
+            result["error"] = f"API error: {e}"
+            return result
+
+        # Dark-pool enrichment remains the compatibility fallback when stock-info
+        # data is missing or incomplete.
+        try:
+            dp_resp = client.get_darkpool_flow(ticker)
+            trades = dp_resp.get("data", []) if isinstance(dp_resp, dict) else []
         except UWNotFoundError:
             result["error"] = f"Ticker '{ticker}' not found"
             return result
         except UWAPIError as e:
             result["error"] = f"API error: {e}"
             return result
+
+        active_trades = [
+            trade for trade in trades
+            if not trade.get("canceled")
+        ]
+
+        if active_trades:
+            result["verified"] = True
+            first_trade = active_trades[0]
+            trade_price = first_trade.get("price")
+            if trade_price is not None:
+                try:
+                    result["current_price"] = float(trade_price)
+                except (TypeError, ValueError):
+                    pass
+
+            total_volume = sum(float(trade.get("size", 0) or 0) for trade in active_trades)
+            trading_days = max(len(get_last_n_trading_days(3, now)), 1)
+            avg_dp_volume = total_volume / trading_days
+            if avg_dp_volume < 10_000:
+                result["liquidity_warning"] = "LOW - Limited dark pool activity"
+            else:
+                result["liquidity_note"] = "HIGH - Active dark pool trading"
+
+            try:
+                flow_resp = client.get_flow_alerts(ticker=ticker, min_premium=50_000, limit=50)
+                flow_data = flow_resp.get("data", []) if isinstance(flow_resp, dict) else []
+                result["options_available"] = result["options_available"] or bool(flow_data)
+            except UWAPIError:
+                pass
+        elif not data:
+            result["error"] = "No dark pool activity"
+            return result
+
+        # Cache the company info only when it is real string data.
+        if isinstance(result["company_name"], str) and result["company_name"] and not cached:
+            cache_ticker(ticker, result["company_name"], result["sector"])
 
     return result
 

@@ -23,7 +23,7 @@ import pytest
 SCRIPTS_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from api.subprocess import run_script, run_module, ScriptResult
+from api.subprocess import run_script, run_module, ScriptResult, _extract_error_message
 
 
 @pytest.fixture
@@ -121,6 +121,14 @@ class TestRunScript:
         )
         assert not result.ok
         assert len(result.error) <= 310  # 300 + "..."
+
+    def test_json_error_stdout_returns_message_field(self):
+        msg = _extract_error_message(
+            '{"status":"error","message":"Trade not found after reconnect as original clientId"}\n',
+            "",
+            "fallback",
+        )
+        assert msg == "Trade not found after reconnect as original clientId"
 
     def test_invalid_json_returns_error(self, temp_script):
         """Script outputs something that starts with { but isn't valid JSON."""

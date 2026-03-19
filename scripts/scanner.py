@@ -35,9 +35,9 @@ def get_open_positions():
     return {p["ticker"] for p in portfolio.get("positions", [])}
 
 def fetch_flow_data(ticker: str, days: int = 5) -> dict:
-    """Fetch flow data for a single ticker via direct import."""
+    """Fetch flow data for a single ticker via the shared wrapper seam."""
     try:
-        return fetch_flow_module(ticker, days)
+        return fetch_flow_module(ticker, lookback_days=days, skip_options_flow=True)
     except Exception as e:
         return {"error": str(e)}
 
@@ -145,10 +145,9 @@ def _process_ticker(item: dict, client=None) -> dict:
     """
     ticker = item["ticker"]
     try:
-        # Pass client to fetch_flow if provided
-        # Use 5 days to match evaluate.py edge criteria (sustained direction detection)
-        # Skip options flow for speed — evaluate.py does full conflict detection
-        flow = fetch_flow_module(ticker, lookback_days=5, _client=client, skip_options_flow=True)
+        # Use the wrapper seam so tests and callers can patch scanner.fetch_flow_data
+        # without needing to know the internal fetch_flow import path.
+        flow = fetch_flow_data(ticker, days=5)
         analysis = analyze_signal(flow)
         return {
             "ticker": ticker,
@@ -197,30 +196,22 @@ def scan(top_n: int = 20, min_score: float = 0, max_workers: int = 5):
     print(f"Scanning {len(items_to_scan)} tickers ({max_workers} workers)...", file=sys.stderr)
 
     results = []
-    # Import here to avoid circular import
-    from clients.uw_client import UWClient
-    from functools import partial
-    
-    # Use shared UWClient for all workers (requests.Session is thread-safe)
-    with UWClient() as client:
-        process_with_client = partial(_process_ticker, client=client)
-        
-        with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            futures = {pool.submit(process_with_client, item): item for item in items_to_scan}
-            done = 0
-            for future in as_completed(futures):
-                done += 1
-                item = futures[future]
-                ticker = item["ticker"]
-                try:
-                    result = future.result()
-                except Exception as exc:
-                    logger.warning("Unhandled error for %s: %s", ticker, exc)
-                    print(f"  [{done}/{len(items_to_scan)}] {ticker} - ERROR ({exc})", file=sys.stderr)
-                    continue
-                if result is not None:
-                    print(f"  [{done}/{len(items_to_scan)}] {ticker}... {result['signal']} ({result['score']})", file=sys.stderr)
-                    results.append(result)
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(_process_ticker, item): item for item in items_to_scan}
+        done = 0
+        for future in as_completed(futures):
+            done += 1
+            item = futures[future]
+            ticker = item["ticker"]
+            try:
+                result = future.result()
+            except Exception as exc:
+                logger.warning("Unhandled error for %s: %s", ticker, exc)
+                print(f"  [{done}/{len(items_to_scan)}] {ticker} - ERROR ({exc})", file=sys.stderr)
+                continue
+            if result is not None:
+                print(f"  [{done}/{len(items_to_scan)}] {ticker}... {result['signal']} ({result['score']})", file=sys.stderr)
+                results.append(result)
 
     # Sort by score descending
     results.sort(key=lambda x: x["score"], reverse=True)

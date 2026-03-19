@@ -137,6 +137,24 @@ Single-leg:
 - Non-finite numbers (NaN, Infinity) → 400
 - Missing required fields → 400
 
+## ⚠️ Order Cancel / Modify Failure Propagation
+
+**For IB order cancel/modify bugs, trace and preserve the real failure boundary.**
+
+1. **Do not trust the original IB `Trade` object as the sole confirmation source.**
+   - IB can acknowledge a cancel by removing the order from refreshed open orders instead of mutating the original `Trade` instance in place.
+   - Cancel/modify confirmation must re-check refreshed open orders, not just the original object reference.
+2. **Treat disappearance after cancel as success.**
+   - If the target order no longer appears in refreshed open orders after a cancel request, that is a valid cancel acknowledgement.
+3. **Do not surface raw JSON script errors to the UI.**
+   - If a subprocess script exits non-zero with JSON on stdout, FastAPI must extract the human-readable `detail` / `message` / `error` field rather than passing the serialized JSON line through.
+4. **Do not rewrite upstream order-route status codes in the Next bridge.**
+   - `/api/orders/cancel` and related order routes must preserve upstream HTTP status/detail so the browser sees the real `4xx`/`5xx` class, not a generic `500`.
+5. **Regression coverage is required at three layers.**
+   - Python/unit coverage for refreshed open-order confirmation semantics
+   - Next route coverage for upstream status/detail propagation
+   - Browser coverage for the visible toast/error state
+
 ---
 
 ## Order System — Unified Components

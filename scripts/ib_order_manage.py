@@ -117,26 +117,41 @@ def cancel_order(client: IBClient, order_id: int, perm_id: int,
     client.ib.errorEvent += on_error
 
     client.cancel_order(trade.order)
-    # Wait for status change
+    latest_trade = trade
+
+    def finish(status_text: str, message: str, **extra):
+        client.ib.errorEvent -= on_error
+        output(status_text, message, **extra)
+
+    # Wait for refreshed open-order state to acknowledge the cancel.
     for _ in range(10):
         client.sleep(0.5)
-        if trade.orderStatus.status in ("Cancelled", "ApiCancelled"):
-            break
+        refreshed_trade = find_trade(client, order_id, perm_id)
+        if refreshed_trade is None:
+            finish(
+                "ok",
+                f"Order cancelled (orderId={trade.order.orderId})",
+                orderId=trade.order.orderId,
+                finalStatus="Cancelled",
+            )
+
+        latest_trade = refreshed_trade
+        if refreshed_trade.orderStatus.status in ("Cancelled", "ApiCancelled"):
+            finish(
+                "ok",
+                f"Order cancelled (orderId={refreshed_trade.order.orderId})",
+                orderId=refreshed_trade.order.orderId,
+                finalStatus=refreshed_trade.orderStatus.status,
+            )
+
         # Check for fatal errors (10147=order not found, 201=rejected)
         fatal = [e for e in error_msgs if e[0] in (10147, 201)]
         if fatal:
-            client.ib.errorEvent -= on_error
-            output("error", f"IB rejected cancel: {fatal[0][1]}")
+            finish("error", f"IB rejected cancel: {fatal[0][1]}")
 
-    client.ib.errorEvent -= on_error
-
-    final_status = trade.orderStatus.status
-    if final_status in ("Cancelled", "ApiCancelled"):
-        output("ok", f"Order cancelled (orderId={trade.order.orderId})",
-               orderId=trade.order.orderId, finalStatus=final_status)
-    else:
-        output("error", f"Cancel failed — order still {final_status}",
-               orderId=trade.order.orderId, finalStatus=final_status)
+    final_status = latest_trade.orderStatus.status if latest_trade is not None else trade.orderStatus.status
+    finish("error", f"Cancel failed — order still {final_status}",
+           orderId=trade.order.orderId, finalStatus=final_status)
 
 
 def modify_order(client: IBClient, order_id: int, perm_id: int, new_price: Optional[float],

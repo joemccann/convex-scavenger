@@ -161,8 +161,11 @@ class UWClient:
         endpoint = endpoint.lstrip("/")
         url = f"{self._base_url}/{endpoint}"
 
-        # Check cache first (60s TTL)
-        if _USE_CACHE:
+        # Check cache first (60s TTL). Skip cache when the HTTP session is
+        # replaced with a mock/test double so request and retry semantics remain
+        # observable in tests and deterministic debugging sessions.
+        cache_enabled = _USE_CACHE and isinstance(self._session, requests.Session)
+        if cache_enabled:
             cache_key = make_key(endpoint, params)
             cached = get_cached(cache_key)
             if cached is not None:
@@ -185,7 +188,7 @@ class UWClient:
             if status == 200:
                 data = resp.json()
                 # Cache successful response
-                if _USE_CACHE:
+                if cache_enabled:
                     set_cached(cache_key, data)
                 return data
 

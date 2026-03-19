@@ -588,6 +588,26 @@ describe("POST /api/orders/cancel — extended", () => {
     expect(body.error).toContain("conn refused");
   });
 
+  it("preserves upstream 502 detail when FastAPI cancel fails", async () => {
+    const { RadonApiError } = await import("@/lib/radonApi");
+    mockRadonFetch.mockRejectedValue(
+      new RadonApiError(502, "Cancel not confirmed by refreshed IB open orders"),
+    );
+
+    const { POST } = await import("../app/api/orders/cancel/route");
+    const res = await POST(
+      new Request("http://localhost/api/orders/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: 202 }),
+      }),
+    );
+    expect(res.status).toBe(502);
+
+    const body = await res.json();
+    expect(body.error).toContain("Cancel not confirmed by refreshed IB open orders");
+  });
+
   it("returns 400 when neither orderId nor permId provided", async () => {
     const { POST } = await import("../app/api/orders/cancel/route");
     const res = await POST(

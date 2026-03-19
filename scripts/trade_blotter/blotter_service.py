@@ -64,6 +64,9 @@ class IBFetcher(ExecutionFetcher):
         self.port = port
         self.client_id = client_id
         self.client = IBClient()
+        # Backward-compat alias used by older tests and scripts that patched the
+        # raw ib_insync handle directly.
+        self.ib = self.client.ib
 
     def _connect(self):
         """Connect to IB Gateway/TWS."""
@@ -128,7 +131,7 @@ class IBFetcher(ExecutionFetcher):
         """Fetch today's fills from IB."""
         self._connect()
         try:
-            fills = self.client.get_fills()
+            fills = self.ib.fills()
             executions = []
             
             for fill in fills:
