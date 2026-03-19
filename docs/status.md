@@ -4,7 +4,7 @@
 2026-03-18T17:00:00-07:00
 
 ## Recent Commits
-- 2026-03-18 — **feat: Complete Order System Migration (Steps 3-5).** ModifyOrderModal: price strip + leg pills for combos. OrderConfirmSummary: total cost, max gain/loss for spreads in confirm step. Standardized leg pills across ChainBuilder, OrderTab, ModifyModal. 137 order tests.
+- 2026-03-18 — **feat: Complete Order System Migration (Steps 3-5).** ModifyOrderModal: price strip + leg pills for combos. OrderConfirmSummary: total cost, max gain/loss for spreads in confirm step. Standardized leg pills across ChainBuilder, OrderTab, ModifyModal. Price values in BID/MID/ASK buttons everywhere. 137 order tests.
 - 2026-03-18 — **feat: Integrate OrderPriceStrip and OrderLegPills into OptionsChainTab.** OrderBuilder now shows price strip (BID/MID/ASK/SPREAD) for combo orders when prices available, plus colored leg pills with +/− direction. 137 order tests (21 new migration tests).
 - 2026-03-18 — **feat: Unified order component system.** Created `web/lib/order/` with 8 reusable components (OrderPriceStrip, OrderLegPills, OrderPriceButtons, OrderActionToggle, OrderTifSelector, OrderQuantityInput, OrderPriceInput, OrderConfirmSummary), 2 hooks (useOrderPrices, useOrderValidation), shared types. Analysis doc identifies 5 placement locations, 3 viewing locations, 2 modification locations with feature gaps. 116 order tests.
 - 2026-03-18 — **ui: Order entry UX improvements.** Form now appears ABOVE open orders (visible without scrolling). Added spread price strip showing BID/MID/ASK/SPREAD at top of combo form. Replaced leg list with compact colored pills (+/− prefixes, green/red backgrounds). 53 order tests.
