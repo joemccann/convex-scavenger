@@ -1,51 +1,56 @@
-import { CommandChip } from "@/components/atoms/CommandChip";
-import { TelemetryLabel } from "@/components/atoms/TelemetryLabel";
-import { ProofMetric } from "@/components/molecules/ProofMetric";
 import { HeroTerminalPanel } from "@/components/organisms/HeroTerminalPanel";
-import { proofItems } from "@/lib/landing-content";
 
 export function HeroSection() {
   return (
-    <section id="top" className="relative py-14 md:py-20">
-      <div className="grid gap-10 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-start">
-        <div>
-          <TelemetryLabel tone="core">Institutional Terminal</TelemetryLabel>
-          <h1 className="mt-5 max-w-[12ch] font-display text-5xl font-semibold leading-[1.02] text-primary md:text-7xl">
-            Strategies, execution, and state reconstruction in one instrument.
+    <section id="top" className="relative py-24 md:py-32">
+      <div className="grid gap-16 xl:grid-cols-2 xl:items-center">
+        {/* Left: copy */}
+        <div className="flex flex-col gap-8 max-w-[768px]">
+          {/* Status badge */}
+          <div className="inline-flex items-center gap-2 bg-panel-raised px-3 py-1 rounded-[2px] self-start">
+            <div className="w-2 h-2 rounded-full bg-signal-strong" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">
+              System Online: v2.4.0-Stable
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="font-sans text-[72px] font-extrabold leading-[72px] tracking-[-3.6px] text-primary">
+            Strategies,<br />
+            execution, and<br />
+            state<br />
+            reconstruction<br />
+            in one<br />
+            instrument.
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-secondary md:text-lg">
+
+          {/* Subtext */}
+          <p className="text-[20px] leading-[28px] text-[#bacac5] max-w-[576px]">
             Radon is built for traders and investors who want deployable strategy
             logic, explicit execution discipline, and explainable metrics without
             outsourcing conviction to a black box.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+
+          {/* CTAs */}
+          <div className="flex flex-wrap gap-4 pt-4">
             <a
               href="#strategies"
-              className="inline-flex items-center border border-accent bg-accent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-canvas transition-colors hover:bg-signal-strong"
+              className="inline-flex items-center gap-6 px-[45px] py-4 rounded-[2px] font-mono text-[14px] uppercase tracking-[0.1em] text-[#00382f] font-semibold transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(134deg, #49ecd0 0%, #0fcfb5 100%)" }}
             >
               Inspect Strategy Matrix
+              <span className="text-[18px] leading-none">→</span>
             </a>
             <a
               href="#execution"
-              className="inline-flex items-center border border-grid bg-panel px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary transition-colors hover:bg-panel-raised"
+              className="inline-flex items-center justify-center px-[37px] py-4 rounded-[2px] bg-panel-raised font-mono text-[14px] uppercase tracking-[0.1em] text-accent transition-colors hover:bg-grid"
             >
               Review Execution Rail
             </a>
-            <a
-              href="https://github.com/joemccann/radon"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex"
-            >
-              <CommandChip command="GitHub / Source" />
-            </a>
-          </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            {proofItems.map((item) => (
-              <ProofMetric key={item.label} item={item} />
-            ))}
           </div>
         </div>
+
+        {/* Right: terminal */}
         <HeroTerminalPanel />
       </div>
     </section>

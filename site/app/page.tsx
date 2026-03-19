@@ -1,28 +1,21 @@
-import { AuditSection } from "@/components/sections/AuditSection";
-import { ExecutionSection } from "@/components/sections/ExecutionSection";
-import { FinalCTASection } from "@/components/sections/FinalCTASection";
+import { FeatureCardsSection } from "@/components/sections/FeatureCardsSection";
 import { FooterSection } from "@/components/sections/FooterSection";
 import { HeaderShell } from "@/components/sections/HeaderShell";
 import { HeroSection } from "@/components/sections/HeroSection";
-import { PreviewSection } from "@/components/sections/PreviewSection";
-import { StrategySection } from "@/components/sections/StrategySection";
+import { TickerStrip } from "@/components/sections/TickerStrip";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-canvas text-primary selection:bg-accent selection:text-canvas">
-      <div className="pointer-events-none fixed inset-0 z-0 instrument-grid opacity-[0.05]" />
-      <div className="pointer-events-none fixed inset-0 z-10 projection-lines opacity-[0.08]" />
+    <div className="min-h-screen bg-[#0f1418] text-primary">
+      <div className="pointer-events-none fixed inset-0 z-0 instrument-grid opacity-[0.04]" />
       <HeaderShell />
       <main className="relative z-20">
-        <div className="mx-auto w-full max-w-[1440px] px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1440px] px-8 pt-24">
           <HeroSection />
-          <StrategySection />
-          <ExecutionSection />
-          <PreviewSection />
-          <AuditSection />
-          <FinalCTASection />
-          <FooterSection />
+          <FeatureCardsSection />
         </div>
+        <TickerStrip />
+        <FooterSection />
       </main>
     </div>
   );

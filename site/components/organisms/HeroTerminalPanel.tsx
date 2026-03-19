@@ -1,111 +1,99 @@
-"use client";
-
-import { useCallback, useState } from "react";
-import { CommandChip } from "@/components/atoms/CommandChip";
-import { MonoMetric } from "@/components/atoms/MonoMetric";
-import { SignalPill } from "@/components/atoms/SignalPill";
-import { StatusDot } from "@/components/atoms/StatusDot";
-import { TelemetryLabel } from "@/components/atoms/TelemetryLabel";
-import { SourceRail } from "@/components/molecules/SourceRail";
-import { TerminalNavItem } from "@/components/molecules/TerminalNavItem";
-import { moduleContents, type ModuleTab } from "@/lib/landing-content";
-
-const tabs: Array<{ id: ModuleTab; label: string }> = [
-  { id: "flow", label: "Flow" },
-  { id: "performance", label: "Performance" },
-  { id: "structure", label: "Structure" },
-  { id: "execution", label: "Execution" },
-];
-
 export function HeroTerminalPanel() {
-  const [activeTab, setActiveTab] = useState<ModuleTab>("flow");
-  const [animKey, setAnimKey] = useState(0);
-
-  const handleTabChange = useCallback((tab: ModuleTab) => {
-    setActiveTab(tab);
-    setAnimKey((k) => k + 1);
-  }, []);
-
-  const content = moduleContents[activeTab];
-
   return (
-    <div className="scan-line relative border border-grid bg-panel">
-      <div className="absolute inset-0 projection-lines opacity-35" />
-      <div className="relative z-20 border-b border-grid px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <TelemetryLabel tone="core">Radon Terminal</TelemetryLabel>
-            <h2 className="mt-3 font-sans text-2xl font-semibold text-primary">
-              Strategy state and execution path in one shell.
-            </h2>
-          </div>
-          <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.16em] text-secondary">
-            <StatusDot tone="strong" />
-            Signal Chain Nominal
-          </div>
-        </div>
-      </div>
-      <div className="relative z-20 grid gap-px border-b border-grid bg-grid lg:grid-cols-[160px_minmax(0,1fr)]">
-        <nav className="bg-canvas px-4 py-5">
-          <TelemetryLabel>Modules</TelemetryLabel>
-          <div className="mt-4 space-y-1">
-            {tabs.map((tab) => (
-              <TerminalNavItem
-                key={tab.id}
-                label={tab.label}
-                active={activeTab === tab.id}
-                onClick={() => handleTabChange(tab.id)}
-              />
-            ))}
-          </div>
-        </nav>
-        <div className="bg-panel px-4 py-5 overflow-hidden">
-          <div key={animKey} className="module-content-enter">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {content.metrics.map((metric, index) => (
-                <MonoMetric
-                  key={metric.label}
-                  label={metric.label}
-                  value={metric.value}
-                  detail={metric.detail}
-                  tone={index % 2 === 0 ? "core" : "primary"}
-                />
-              ))}
+    <div className="relative self-center">
+      {/* Ambient glow */}
+      <div
+        className="absolute inset-[-2px] opacity-10 blur-[20px] rounded-[2px]"
+        style={{ background: "linear-gradient(135deg, #49ecd0 0%, #0fcfb5 100%)" }}
+      />
+
+      {/* Outer wrapper */}
+      <div className="relative bg-panel-raised p-1 rounded-[2px]">
+        {/* Terminal body */}
+        <div className="bg-canvas border border-[rgba(59,74,70,0.15)] min-h-[480px] p-[25px] rounded-[2px] flex flex-col">
+
+          {/* Title bar */}
+          <div className="flex items-center justify-between pb-[17px] border-b border-[rgba(59,74,70,0.1)] mb-8">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-[rgba(255,180,171,0.4)]" />
+              <div className="w-3 h-3 rounded-full bg-[rgba(255,203,135,0.4)]" />
+              <div className="w-3 h-3 rounded-full bg-[rgba(73,236,208,0.4)]" />
             </div>
-            <div className="mt-4 border border-grid bg-canvas">
-              <div className="flex items-center justify-between border-b border-grid px-4 py-3">
-                <TelemetryLabel tone="muted">{content.commandLabel}</TelemetryLabel>
-                <SignalPill tone="strong">{content.commandPill}</SignalPill>
-              </div>
-              <div className="divide-y divide-grid">
-                {content.commands.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <p className="font-sans text-sm font-medium text-primary">{item.label}</p>
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-secondary">
-                        {item.state}
-                      </p>
-                    </div>
-                    <CommandChip command={item.command} />
-                  </div>
-                ))}
-              </div>
+            <span className="font-mono text-[10px] tracking-[0.1em] text-[rgba(186,202,197,0.5)] uppercase">
+              REALTIME_EXECUTION_STREAM
+            </span>
+          </div>
+
+          {/* Log entries */}
+          <div className="flex-1 flex flex-col gap-4 font-mono text-[12px]">
+            {/* RECON */}
+            <div className="flex gap-4 items-start">
+              <span className="text-muted shrink-0 w-[58px]">10:42:01</span>
+              <span className="text-accent shrink-0">[RECON]</span>
+              <span className="text-secondary leading-[16px]">
+                Kelly calc complete. Strategy<br />&ldquo;Bull Call Spread&rdquo; verified.
+              </span>
+            </div>
+
+            {/* SIGNAL */}
+            <div className="flex gap-4 items-start">
+              <span className="text-muted shrink-0 w-[58px]">10:42:04</span>
+              <span className="text-warn shrink-0">[SIGNAL]</span>
+              <span className="text-secondary leading-[16px]">
+                IV rank divergence detected in AAPL<br />chain (+12.4 pts).
+              </span>
+            </div>
+
+            {/* EXECUTE — highlighted */}
+            <div className="flex gap-4 items-start bg-[rgba(38,43,47,0.5)] border-l-2 border-accent pl-[10px] pr-2 py-2 rounded-[2px]">
+              <span className="text-muted shrink-0 w-[58px]">10:42:10</span>
+              <span className="text-accent font-semibold shrink-0">[EXECUTE]</span>
+              <span className="text-primary leading-[16px]">
+                Placing &ldquo;Order #43&rdquo; → TSLA<br />$400/$440 Apr 17. IB Direct.
+              </span>
+            </div>
+
+            {/* LATENCY */}
+            <div className="flex gap-4 items-start opacity-60">
+              <span className="text-muted shrink-0 w-[58px]">10:42:12</span>
+              <span className="text-[rgba(186,202,197,0.4)] shrink-0">[LATENCY]</span>
+              <span className="text-[rgba(186,202,197,0.4)] leading-[16px]">
+                32ms transit. IB confirmed. Fill logged.
+              </span>
             </div>
           </div>
+
+          {/* Stats row */}
+          <div className="border-t border-[rgba(59,74,70,0.1)] pt-[33px] mt-8 grid grid-cols-3 gap-4">
+            {/* Alpha Yield */}
+            <div className="flex flex-col gap-1">
+              <p className="font-mono text-[9px] uppercase text-muted tracking-[0.2em]">Alpha Yield</p>
+              <p className="font-mono text-[18px] text-accent font-semibold leading-[28px]">+18.42%</p>
+              <div className="h-1 bg-panel-raised overflow-hidden">
+                <div className="h-full bg-accent" style={{ width: "72%" }} />
+              </div>
+            </div>
+
+            {/* Risk Parity */}
+            <div className="flex flex-col gap-1">
+              <p className="font-mono text-[9px] uppercase text-muted tracking-[0.2em]">Risk Parity</p>
+              <p className="font-mono text-[18px] text-warn font-semibold leading-[28px]">0.84</p>
+              <div className="h-1 bg-panel-raised overflow-hidden">
+                <div className="h-full bg-warn" style={{ width: "44%" }} />
+              </div>
+            </div>
+
+            {/* System Health */}
+            <div className="flex flex-col gap-1">
+              <p className="font-mono text-[9px] uppercase text-muted tracking-[0.2em]">System Health</p>
+              <p className="font-mono text-[18px] text-primary font-semibold leading-[28px]">99.9%</p>
+              <div className="h-1 bg-panel-raised overflow-hidden">
+                <div className="h-full bg-primary" style={{ width: "99%" }} />
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
-      <div className="relative z-20 px-5 py-4">
-        <SourceRail
-          items={[
-            { label: "IB Gateway", value: "Connected", tone: "strong" },
-            { label: "Methodology", value: "Exposed", tone: "core" },
-            { label: "Execution", value: "Operator Led", tone: "core" },
-            { label: "Recency", value: "Session Scoped", tone: "warn" },
-          ]}
-        />
       </div>
     </div>
   );

@@ -36,10 +36,10 @@ export type AuditItem = {
 };
 
 export const headerLinks = [
-  { href: "#strategies", label: "Strategies" },
+  { href: "#strategies", label: "Strategy" },
   { href: "#execution", label: "Execution" },
-  { href: "#surfaces", label: "Surfaces" },
-  { href: "#methodology", label: "Methodology" },
+  { href: "#surfaces", label: "Surface" },
+  { href: "#methodology", label: "Docs" },
 ];
 
 export const proofItems: ProofItem[] = [
