@@ -21,6 +21,11 @@ Best result: 6,213ms for 5 tickers (from 14,501ms baseline)
 - Result: No consistent improvement (7-17s range)
 - Fails faster but doesn't help with rate limiting
 
+### 4. Token Bucket Rate Limiter ❌
+- Attempted: Global rate limiter with 15 token bucket, 10 req/s refill
+- Result: No improvement — UW rate limiting is account-level and persists
+- The limiter adds latency without eliminating 429 errors
+
 ## Remaining Ideas (Not Pursued - Diminishing Returns)
 
 ### 4. UW Request Deduplication Between M1 and M2
