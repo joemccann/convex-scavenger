@@ -1294,7 +1294,7 @@ function JournalSections() {
                       <td className="right">{qty ?? "—"}</td>
                       <td className="right">{fmtJournalUsd(cost)}</td>
                       <td className="right">{fmtJournalUsd(t.max_risk)}</td>
-                      <td className="right"><span className={pnlClass(t.realized_pnl)}>{fmtJournalUsd(t.realized_pnl)}</span></td>
+                      <td className="right"><span className={pnlClass(t.realized_pnl)}>{fmtJournalUsd(t.realized_pnl)}{t.return_on_risk != null ? ` (${(t.return_on_risk * 100) >= 0 ? "+" : ""}${(t.return_on_risk * 100).toFixed(1)}%)` : ""}</span></td>
                       <td className="right">{t.return_on_risk != null ? `${(t.return_on_risk * 100).toFixed(1)}%` : "—"}</td>
                       <td className="cell-muted">{t.gates_passed?.join(", ") || t.gates_failed?.join(", ") || "—"}</td>
                       <td className="cell-muted">{t.edge_analysis?.edge_type ?? "—"}</td>
@@ -1837,7 +1837,12 @@ function OrdersSections({
                         <td className="right">{group.netPrice != null ? fmtPrice(group.netPrice) : "—"}</td>
                         <td className="right">{group.totalCommission !== 0 ? fmtPrice(group.totalCommission) : "—"}</td>
                         <td className={`right ${group.totalPnL != null ? (group.totalPnL >= 0 ? "positive" : "negative") : ""}`}>
-                          {group.totalPnL != null ? `${group.totalPnL >= 0 ? "+" : ""}${fmtPrice(group.totalPnL)}` : "—"}
+                          {group.totalPnL != null ? (() => {
+                            const optFills = group.fills.filter((f) => f.contract.secType === "OPT");
+                            const totalNotional = optFills.reduce((sum, f) => sum + Math.abs((f.avgPrice ?? 0) * f.quantity * 100), 0);
+                            const pct = totalNotional > 0 ? (group.totalPnL / totalNotional) * 100 : null;
+                            return `${group.totalPnL >= 0 ? "+" : ""}${fmtPrice(group.totalPnL)}${pct != null ? ` (${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%)` : ""}`;
+                          })() : "—"}
                         </td>
                         <td>{new Date(group.time).toLocaleTimeString()}</td>
                         <td>
@@ -2017,6 +2022,7 @@ function HistoricalTradesSection() {
                     <td className="right">{fmtPrice(t.total_commission)}</td>
                     <td className={`right ${t.realized_pnl >= 0 ? "positive" : "negative"}`}>
                       {t.realized_pnl >= 0 ? "+" : ""}{fmtPrice(t.realized_pnl)}
+                      {t.cost_basis != null && Math.abs(t.cost_basis) > 0 ? ` (${((t.realized_pnl / Math.abs(t.cost_basis)) * 100) >= 0 ? "+" : ""}${((t.realized_pnl / Math.abs(t.cost_basis)) * 100).toFixed(1)}%)` : ""}
                     </td>
                     <td className="right">{fmtPrice(t.cost_basis)}</td>
                     <td className="right">{fmtPrice(t.proceeds)}</td>
