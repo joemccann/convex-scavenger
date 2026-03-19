@@ -102,8 +102,9 @@ def fetch_ticker_info(ticker: str) -> dict:
         "error": None
     }
 
-    # Get last 3 trading days
-    trading_days = get_last_n_trading_days(3, now)
+    # Get last 1 trading day for validation (faster)
+    # If ticker has activity today/yesterday, it's valid
+    trading_days = get_last_n_trading_days(1, now)
     result["trading_days_checked"] = trading_days
 
     if not trading_days:
