@@ -218,7 +218,7 @@ async def _run_raw_script(script_path: str, timeout: float = 10.0) -> ScriptResu
 
     try:
         proc = await _aio.create_subprocess_exec(
-            "python3", script_path,
+            sys.executable, script_path,
             stdout=_aio.subprocess.PIPE,
             stderr=_aio.subprocess.PIPE,
         )

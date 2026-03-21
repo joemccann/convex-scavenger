@@ -1,7 +1,13 @@
 # Lessons
 
+## 2026-03-21
+
+- Never hardcode `"python3"` in subprocess calls. Use `sys.executable` so child processes inherit the same interpreter as the parent. On this machine, `python3` resolves to Homebrew Python 3.14 (missing `ib_insync`, incompatible asyncio) while the FastAPI server runs Xcode Python 3.9. The PATH order varies between shell, Node.js, and Codex environments.
+
 ## 2026-03-19
 
+- For `/internals` skew history, treat the skew metric source and the expiry-discovery source as separate decisions. If the user explicitly chooses UW for the metric, do not keep IB in the path just because it can supply expiries; make the route semantics match the chosen provider.
+- For `/internals` skew work, honor the market-data source order explicitly: check IB first for the option-chain/expiry surface before falling back to Unusual Whales for the skew metric itself. Do not assume IB is irrelevant just because the final skew value comes from UW.
 - When a feature fix is green in focused tests but the repo-level gates are still red, stay on the blocker chain before switching to docs/commit work. Re-run the full suites, trace the remaining failures by boundary (backend seam, provider contract, frontend bridge), and clear those blockers first so the task can actually close.
 - For IB cancel/modify bugs, do not trust the original `Trade` object or collapse provider errors at the bridge layers. Re-check refreshed open orders, treat disappearance after cancel as success, extract human-readable JSON script errors in FastAPI, and preserve upstream status/detail through the Next order routes so the browser sees the real failure.
 - When a ticker-detail or quote-telemetry surface shows a synthetic multi-leg option quote, do not label a derived combo midpoint as `LAST` or build it from asynchronous leg trade prints. For spreads and risk reversals, use the live combo mark from bid/ask and label it clearly as a mark so it cannot be confused with the entry fill basis.

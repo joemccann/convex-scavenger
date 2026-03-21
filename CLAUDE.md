@@ -156,7 +156,7 @@ Next.js routes call FastAPI (`localhost:8321`) via `radonFetch()` (`web/lib/rado
 | `server.py` | 19 endpoints, CORS, IB pool, health, auto-restart. `POST /performance/background` = fire-and-forget, 202, dedup |
 | `ib_pool.py` | Role-based IB pool (sync/orders/data), auto-reconnect |
 | `ib_gateway.py` | Health check + auto-restart via IBC launchd |
-| `subprocess.py` | Async `run_script()`, `run_module()` |
+| `subprocess.py` | Async `run_script()`, `run_module()` — uses `sys.executable` (not `python3`) to match server interpreter |
 
 ### Graceful Degradation
 

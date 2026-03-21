@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional
@@ -76,7 +77,7 @@ async def run_script(
     if not script_path.exists():
         return ScriptResult(ok=False, error=f"Script not found: {script}")
 
-    cmd = ["python3", str(script_path)] + (args or [])
+    cmd = [sys.executable, str(script_path)] + (args or [])
     work_dir = cwd or str(SCRIPTS_DIR)
 
     try:
@@ -139,7 +140,7 @@ async def run_module(
 
     For scripts invoked as `python3 -m trade_blotter.flex_query --json`.
     """
-    cmd = ["python3", "-m", module] + (args or [])
+    cmd = [sys.executable, "-m", module] + (args or [])
 
     try:
         proc = await asyncio.create_subprocess_exec(
