@@ -213,7 +213,7 @@ def test_build_payload_exposes_expected_top_level_contract(monkeypatch):
         }
         return histories.get(symbol, {})
 
-    def fake_fetch_all(trades, start, end, ib_client, warnings):
+    def fake_fetch_all(trades, start, end, ib_client, warnings, seed_marks=None):
         marks = {
             "STK:AAA": {"2026-01-02": 100.0, "2026-01-05": 110.0, "2026-01-06": 120.0},
             "STK:BBB": {"2026-01-05": 50.0, "2026-01-06": 60.0},
@@ -225,7 +225,10 @@ def test_build_payload_exposes_expected_top_level_contract(monkeypatch):
         "account_summary": {"net_liquidation": 2000.0},
         "bankroll": 2000.0,
     })
+    monkeypatch.setattr("portfolio_performance.fetch_ib_nav_series", lambda: None)
+    monkeypatch.setattr("portfolio_performance.load_ib_nav_cache", lambda: None)
     monkeypatch.setattr("portfolio_performance.fetch_flex_trade_fills", lambda: (trades, "ib_flex"))
+    monkeypatch.setattr("portfolio_performance.extract_fill_marks", lambda *a, **kw: {})
     monkeypatch.setattr("portfolio_performance.fetch_stock_history", fake_stock_history)
     monkeypatch.setattr("portfolio_performance._fetch_all_histories", fake_fetch_all)
     monkeypatch.setattr("portfolio_performance._fetch_stock_history_fallback", lambda s, st, en: (s, {}, "none"))
@@ -239,7 +242,8 @@ def test_build_payload_exposes_expected_top_level_contract(monkeypatch):
     assert payload["benchmark"] == "SPY"
     assert payload["trades_source"] == "ib_flex"
     assert payload["price_sources"]["options"] == "unusual_whales_option_contract_historic"
-    assert payload["summary"]["starting_equity"] == pytest.approx(1750.0)
+    # starting_equity is curve["equity"].iloc[0], anchored to net_liquidation
+    assert payload["summary"]["starting_equity"] == pytest.approx(2000.0)
     assert payload["summary"]["ending_equity"] == pytest.approx(2000.0)
     assert payload["summary"]["trading_days"] == 3
     assert len(payload["series"]) == 3
@@ -268,7 +272,7 @@ def test_build_payload_warns_and_continues_when_option_history_is_rate_limited(m
         def disconnect(self):
             return None
 
-    def fake_fetch_all(trades_arg, start, end, ib_client, warnings):
+    def fake_fetch_all(trades_arg, start, end, ib_client, warnings, seed_marks=None):
         warnings.append("Option history unavailable for SPY260320C00570000: rate limited")
         return {}, ["SPY260320C00570000"]
 
@@ -277,7 +281,10 @@ def test_build_payload_warns_and_continues_when_option_history_is_rate_limited(m
         "account_summary": {"net_liquidation": 1000.0},
         "bankroll": 1000.0,
     })
+    monkeypatch.setattr("portfolio_performance.fetch_ib_nav_series", lambda: None)
+    monkeypatch.setattr("portfolio_performance.load_ib_nav_cache", lambda: None)
     monkeypatch.setattr("portfolio_performance.fetch_flex_trade_fills", lambda: (trades, "ib_flex"))
+    monkeypatch.setattr("portfolio_performance.extract_fill_marks", lambda *a, **kw: {})
     monkeypatch.setattr("portfolio_performance.fetch_stock_history", lambda symbol, start_date, end_date, ib_client, uw_client: {
         "2026-01-02": 100.0,
         "2026-01-05": 101.0,

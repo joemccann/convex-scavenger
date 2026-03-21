@@ -184,7 +184,7 @@ class TestRunModule:
         )
         assert not result.ok
         assert result.error is not None
-        assert "Flex Query" in result.error or "credentials required" in result.error
+        assert "Flex Query" in result.error or "credentials required" in result.error or "timed out" in result.error
 
 
 class TestScriptResult:

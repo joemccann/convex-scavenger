@@ -116,6 +116,8 @@ def build_chart_paths(series: List[dict], starting_equity: float) -> Dict[str, s
     padding_left = 56
     equity_values = [float(point["equity"]) for point in series]
     first_benchmark = float(series[0]["benchmark_close"]) if series else 1.0
+    if first_benchmark == 0:
+        first_benchmark = 1.0
     benchmark_values = [
         (float(point["benchmark_close"]) / first_benchmark) * starting_equity
         for point in series
