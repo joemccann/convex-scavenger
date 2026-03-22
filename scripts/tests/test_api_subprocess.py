@@ -40,7 +40,7 @@ class TestRunScript:
     """Tests for run_script()."""
 
     def test_script_not_found(self):
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             run_script("nonexistent_script_xyz.py")
         )
         assert not result.ok
@@ -49,7 +49,7 @@ class TestRunScript:
     def test_successful_json_output(self, temp_script):
         script = temp_script('import json; print(json.dumps({"status": "ok", "count": 42}))')
         # run_script expects path relative to scripts/, so we need to adjust
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert result.ok
@@ -65,7 +65,7 @@ class TestRunScript:
             'print("Progress: 100%")\n'
             'print(json.dumps({"result": "done"}))\n'
         )
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert result.ok
@@ -74,7 +74,7 @@ class TestRunScript:
     def test_empty_stdout_returns_empty_dict(self, temp_script):
         """Scripts that write to files produce no stdout JSON."""
         script = temp_script('print("Saved to file")')
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert result.ok
@@ -86,7 +86,7 @@ class TestRunScript:
             'print("Some useful error context", file=sys.stderr)\n'
             'sys.exit(1)\n'
         )
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert not result.ok
@@ -102,7 +102,7 @@ class TestRunScript:
             'print("The real error message", file=sys.stderr)\n'
             'sys.exit(1)\n'
         )
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert not result.ok
@@ -116,7 +116,7 @@ class TestRunScript:
         script = temp_script(
             f'import sys\nprint("{long_msg}", file=sys.stderr)\nsys.exit(1)\n'
         )
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert not result.ok
@@ -133,7 +133,7 @@ class TestRunScript:
     def test_invalid_json_returns_error(self, temp_script):
         """Script outputs something that starts with { but isn't valid JSON."""
         script = temp_script('print("{not valid json")')
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert not result.ok
@@ -144,7 +144,7 @@ class TestRunScript:
         script = temp_script(
             'import time\ntime.sleep(60)\n'
         )
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script, timeout=0.1)
         )
         assert not result.ok
@@ -152,7 +152,7 @@ class TestRunScript:
 
     def test_exit_code_preserved(self, temp_script):
         script = temp_script('import sys; sys.exit(42)')
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _run_raw_script(script)
         )
         assert not result.ok
@@ -163,7 +163,7 @@ class TestRunModule:
     """Tests for run_module()."""
 
     def test_module_not_found(self):
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             run_module("nonexistent.module.xyz")
         )
         assert not result.ok
@@ -171,7 +171,7 @@ class TestRunModule:
 
     def test_module_timeout(self):
         """Module that hangs should be killed."""
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             run_module("time", args=[], timeout=0.5)
         )
         # python3 -m time just runs and exits, so this might succeed or timeout
@@ -181,7 +181,7 @@ class TestRunModule:
     def test_module_error_falls_back_to_stdout_when_stderr_is_empty(self):
         """When stderr is empty, error should be extracted from stdout."""
         # Use a nonexistent sub-module that fails fast with a clear error
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             run_module("json.tool", args=["--no-such-arg"], timeout=5)
         )
         assert not result.ok
