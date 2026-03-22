@@ -35,7 +35,7 @@ export const navItems: WorkspaceNavItem[] = [
   { label: "Journal", route: "journal", href: "/journal", icon: Wrench },
   { label: "Regime", route: "regime", href: "/regime", icon: Shield },
   { label: "CTA", route: "cta", href: "/cta", icon: Activity },
-  { label: "Internals", route: "internals", href: "/internals", icon: Activity },
+  // { label: "Internals", route: "internals", href: "/internals", icon: Activity },
 ];
 
 export const quickPromptsBySection: Record<WorkspaceSection, string[]> = {
@@ -49,7 +49,6 @@ export const quickPromptsBySection: Record<WorkspaceSection, string[]> = {
   journal: ["journal --limit 25", "portfolio", "analyze nfLx", "help"],
   regime: ["cri-scan", "portfolio", "scan --top 12", "help"],
   cta: ["menthorq-cta", "cri-scan", "portfolio", "help"],
-  internals: ["cri-scan", "portfolio", "scan --top 12", "help"],
   "ticker-detail": ["portfolio", "scan --top 12", "help"],
 };
 
@@ -64,6 +63,5 @@ export const sectionDescription: Record<WorkspaceSection, string> = {
   journal: "Trade decision logs and history review.",
   regime: "Crash Risk Index — real-time CTA deleveraging monitor.",
   cta: "CTA positioning, vol-targeting exposure model and institutional flow.",
-  internals: "Institutional flow and regime internals powered by the same CRI cache.",
   "ticker-detail": "Instrument research surface — company, book, chain, position, orders, news, ratings, seasonality.",
 };

@@ -52,7 +52,6 @@ import SharePnlButton, { type SharePnlData } from "./SharePnlButton";
 import { SECTION_TOOLTIPS } from "@/lib/sectionTooltips";
 import TickerLink from "./TickerLink";
 import TickerWorkspace from "./TickerWorkspace";
-import InternalsPanel from "./InternalsPanel";
 import { MarketState } from "@/lib/useMarketHours";
 
 /* ─── Re-exports for backward compat ──────────────────── */
@@ -2115,8 +2114,6 @@ export default function WorkspaceSections({ section, portfolio, portfolioLastSyn
       return <JournalSections />;
     case "regime":
       return <RegimePanel prices={prices ?? {}} marketState={marketState} />;
-    case "internals":
-      return <InternalsPanel marketState={marketState} />;
     case "cta":
       return <CtaPage />;
     case "ticker-detail":
