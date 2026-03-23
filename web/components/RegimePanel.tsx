@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Check, Shield, X, Zap } from "lucide-react";
 import CriHistoryChart from "./CriHistoryChart";
 import RegimeRelationshipView from "./RegimeRelationshipView";
+import VcgPanel from "./VcgPanel";
 import { DayChange, LiveBadge, PointChange, RegimeStrip, RegimeStripCell } from "./RegimeStrip";
 import ShareReportModal from "./ShareReportModal";
 import type { ChartSeries, CriHistoryEntry } from "./CriHistoryChart";
@@ -15,6 +16,8 @@ import { useRegime } from "@/lib/useRegime";
 import { SECTION_TOOLTIPS } from "@/lib/sectionTooltips";
 import { computeCri, type CriLevel, type CriResult } from "@/lib/criCalc";
 import { MarketState } from "@/lib/useMarketHours";
+
+type RegimeTab = "cri" | "vcg";
 
 type RegimePanelProps = {
   prices: Record<string, PriceData>;
@@ -108,6 +111,7 @@ export default function RegimePanel({
   shareContentTitle = "Regime Share Preview",
   marketState,
 }: RegimePanelProps) {
+  const [activeTab, setActiveTab] = useState<RegimeTab>("cri");
   const { data, syncing, lastSync } = useRegime(marketState, { endpoint: dataEndpoint });
   const shareModal = shareEndpoint ? (
     <ShareReportModal
@@ -255,9 +259,26 @@ export default function RegimePanel({
     ? spyVal < ma
     : data?.crash_trigger?.conditions.spx_below_100d_ma ?? false;
 
+  const tabBar = (
+    <div className="ticker-tabs" style={{ marginBottom: "16px" }}>
+      <button className={`ticker-tab ${activeTab === "cri" ? "active" : ""}`} onClick={() => setActiveTab("cri")}>CRI</button>
+      <button className={`ticker-tab ${activeTab === "vcg" ? "active" : ""}`} onClick={() => setActiveTab("vcg")}>VCG</button>
+    </div>
+  );
+
+  if (activeTab === "vcg") {
+    return (
+      <div className="regime-panel">
+        {tabBar}
+        <VcgPanel prices={prices} marketState={marketState} />
+      </div>
+    );
+  }
+
   if (!data && !syncing) {
     return (
       <div className="regime-panel">
+        {tabBar}
         <div className="regime-empty">
           <Shield size={32} strokeWidth={1} />
           <p>No CRI data available. Click Sync Now to run a scan.</p>
@@ -268,6 +289,7 @@ export default function RegimePanel({
 
   return (
     <div className="regime-panel">
+      {tabBar}
       {/* ── Row 1: CRI Score Hero ──────────────────── */}
       <div className="regime-hero">
         <div className="regime-hero-score" style={{ color }}>

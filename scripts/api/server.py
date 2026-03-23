@@ -879,6 +879,38 @@ async def regime_scan():
     return result.data
 
 
+# ── VCG (Volatility-Credit Gap) ─────────────────────────────────────
+
+_vcg_last_scan: float = 0.0
+_vcg_scan_lock: Optional[asyncio.Lock] = None
+VCG_COOLDOWN_S = 60
+
+
+@app.post("/vcg/scan")
+async def vcg_scan():
+    """Run VCG scan (vcg_scan.py --json). 60s cooldown between scans."""
+    global _vcg_last_scan, _vcg_scan_lock
+    import time as _time
+    if _vcg_scan_lock is None:
+        _vcg_scan_lock = asyncio.Lock()
+    now = _time.monotonic()
+    if now - _vcg_last_scan < VCG_COOLDOWN_S:
+        cached = _read_cache(DATA_DIR / "vcg.json")
+        if cached:
+            return cached
+    async with _vcg_scan_lock:
+        if _time.monotonic() - _vcg_last_scan < VCG_COOLDOWN_S:
+            cached = _read_cache(DATA_DIR / "vcg.json")
+            if cached:
+                return cached
+        result = await run_script("vcg_scan.py", ["--json"], timeout=120)
+        if not result.ok:
+            raise HTTPException(status_code=502, detail=result.error)
+        _write_cache(DATA_DIR / "vcg.json", result.data)
+        _vcg_last_scan = _time.monotonic()
+        return result.data
+
+
 @app.post("/regime/share")
 async def regime_share():
     """Generate Regime/CRI X share report (4 cards + preview HTML). Returns output path."""
