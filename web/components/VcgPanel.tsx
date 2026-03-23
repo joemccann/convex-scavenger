@@ -233,7 +233,7 @@ export default function VcgPanel({ marketState }: VcgPanelProps) {
       <div className="section">
         <div className="section-header">
           <div className="section-title">
-            VCG History (10d)
+            VCG History (20d)
           </div>
         </div>
         <div className="section-body table-wrap">

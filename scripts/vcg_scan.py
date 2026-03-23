@@ -564,12 +564,12 @@ def print_summary(
     else:
         print(f"\n  No signal. Market in normal regime.", file=sys.stderr)
 
-    # Rolling residuals (last 10 days)
+    # Rolling residuals (last 20 sessions)
     n = len(model["residuals"])
     print(f"\n  Last 10 days — rolling residuals:", file=sys.stderr)
     print(f"  {'Date':<12} {'Resid':>10} {'VCG':>8} {'VCG_div':>9} {'B1':>10} {'B2':>10}", file=sys.stderr)
     print(f"  {'-'*12} {'-'*10} {'-'*8} {'-'*9} {'-'*10} {'-'*10}", file=sys.stderr)
-    for i in range(max(0, n - 10), n):
+    for i in range(max(0, n - 20), n):
         date_idx = i + 1  # dates are 1 longer than returns
         d = dates[date_idx] if date_idx < len(dates) else "?"
         r = model["residuals"][i]
@@ -596,10 +596,10 @@ def build_json_output(
     backtest_results: Optional[List[Dict]] = None,
 ) -> Dict:
     """Build JSON output dict."""
-    # Recent history (last 10 days)
+    # Recent history (last 20 sessions)
     n = len(model["residuals"])
     history = []
-    for i in range(max(0, n - 10), n):
+    for i in range(max(0, n - 20), n):
         date_idx = i + 1
         d = dates[date_idx] if date_idx < len(dates) else None
         history.append({
@@ -804,7 +804,7 @@ def generate_html_report(
   VCG = {vcg_val}. Interpretation: {signal['interpretation'].replace('_', ' ').title()}.
 </div>""")
 
-    # Rolling residuals table (last 10 days)
+    # Rolling residuals table (last 20 sessions)
     body_parts.append("""<hr class="divider"><div class="section-header">Rolling Model — Last 10 Trading Days</div>""")
     body_parts.append("""<div class="panel"><table>
 <thead><tr>
@@ -820,7 +820,7 @@ def generate_html_report(
 </tr></thead><tbody>""")
 
     n = len(model["residuals"])
-    for i in range(max(0, n - 10), n):
+    for i in range(max(0, n - 20), n):
         date_idx = i + 1
         d = dates[date_idx] if date_idx < len(dates) else "?"
         r = model["residuals"][i]
