@@ -350,42 +350,99 @@ def build_tweet(data: dict, ds: str) -> str:
     sig = data.get("signal", {})
     vcg = sig.get("vcg")
     interp = sig.get("interpretation", "NORMAL")
-    regime = sig.get("regime", "DIVERGENCE")
     ro = sig.get("ro", 0)
     edr = sig.get("edr", 0)
     tier = sig.get("tier")
     bounce = sig.get("bounce", 0)
     vvix_severity = sig.get("vvix_severity", "moderate")
     proxy = data.get("credit_proxy", "HYG")
+    vix = sig.get("vix", 0)
+    vvix = sig.get("vvix", 0)
+    credit_price = sig.get("credit_price", 0)
+    credit_5d = sig.get("credit_5d_return_pct", 0) or 0
+    attr = sig.get("attribution", {})
+    vvix_pct = attr.get("vvix_pct", 0)
+    vix_pct = attr.get("vix_pct", 0)
 
     vcg_str = fmt_z(vcg) if vcg is not None else "N/A"
-    interp_str = interp_label(interp)
-    tier_str = f"Tier {tier}" if tier else "—"
 
-    if ro:
-        signal_note = "⚠ RISK-OFF active — credit artificially calm vs vol complex."
+    # ── Build the narrative based on signal state ──
+
+    if ro and tier == 1:
+        hook = f"🚨 The vol-credit gap just hit {vcg_str} — a level that preceded avg -11% drawdowns in backtesting."
+        thesis = (
+            f"VIX is at {vix:.1f} (equity market pricing stress) but ${proxy} "
+            f"is flat at ${credit_price:.2f} ({fmt_pct(credit_5d)} 5d). "
+            f"Credit hasn't caught down. In a 19-year backtest, this exact "
+            f"configuration (VIX>30, VCG>2.5σ) produced avg -1.3%/day and "
+            f"-11.2% over 10 days. 100% of occurrences were negative at day 2."
+        )
+        action = "Full risk-off posture. Preserving hedges, reducing credit beta."
+
+    elif ro and tier == 2:
+        hook = f"⚠️ Vol-credit divergence at {vcg_str} with VIX above 28 — this is where crashes accelerate."
+        thesis = (
+            f"The VIX/VVIX complex says risk is elevated ({vix:.1f}/{vvix:.1f}), "
+            f"but ${proxy} at ${credit_price:.2f} hasn't repriced. "
+            f"This divergence resolves violently — backtested avg: -1.7%/day, "
+            f"-7.6% over 10 sessions, -11.9% max drawdown."
+        )
+        action = "Risk-off triggered. Monitoring for credit catch-down."
+
     elif edr:
-        signal_note = "Early Divergence Risk detected — vol complex elevated, credit lagging."
+        hook = f"📡 Early divergence detected — vol-credit gap widening to {vcg_str}."
+        thesis = (
+            f"VIX at {vix:.1f} is elevated but ${proxy} remains calm at "
+            f"${credit_price:.2f} ({fmt_pct(credit_5d)} 5d). The gap isn't extreme "
+            f"yet, but the vol complex is pricing risk that credit is ignoring. "
+            f"If VIX pushes above 28, this becomes a full risk-off signal."
+        )
+        action = "Pre-positioning hedges. Watching for escalation."
+
     elif bounce:
-        signal_note = "↩ Bounce signal — credit rebounding against vol divergence."
+        hook = f"↩️ Credit oversold vs vol — VCG at {vcg_str} signals a tactical bounce."
+        thesis = (
+            f"Credit (${proxy} at ${credit_price:.2f}) sold off harder than the "
+            f"VIX/VVIX model predicts. Backtested: avg +1.2% next day at this level, "
+            f"only 30% of days negative. This is a 1-2 day mean-reversion signal."
+        )
+        action = "Closing risk-off positions. Tactical long window."
+
+    elif vcg is not None and vcg > 2.0:
+        hook = f"👁️ Watching: vol-credit gap at {vcg_str} — credit is calm, vol is not."
+        thesis = (
+            f"VIX at {vix:.1f} and VVIX at {vvix:.1f} are pricing uncertainty, "
+            f"but ${proxy} at ${credit_price:.2f} ({fmt_pct(credit_5d)} 5d) hasn't "
+            f"moved. The gap is above 2σ but VIX hasn't crossed the 28 threshold "
+            f"where this divergence becomes dangerous. No edge below that level — "
+            f"backtested forward returns are positive when VIX < 28."
+        )
+        action = "No position. Monitoring for VIX escalation."
+
     else:
-        signal_note = "No active signal. Vol-credit relationship within normal bounds."
+        hook = f"📊 Vol-credit gap at {vcg_str} — no divergence. Credit and vol are aligned."
+        thesis = (
+            f"VIX at {vix:.1f}, ${proxy} at ${credit_price:.2f}. "
+            f"The regression model shows credit is pricing risk "
+            f"consistently with the vol complex. No anomaly to exploit."
+        )
+        action = "Normal regime. No VCG signal."
 
-    return f"""Radon VCG Scan — {ds}
+    # ── Assemble tweet ──
 
-> Volatility-Credit Gap: {vcg_str} ({interp_str})
-> Regime: {regime} · EDR: {"ACTIVE" if edr else "INACTIVE"} · RO: {"⚠ TRIGGERED" if ro else "CLEAR"}
+    driver = "VVIX (convexity demand)" if vvix_pct > 50 else "VIX (broad vol)"
 
-> Tier: {tier_str} · VVIX Severity: {vvix_severity.upper()}
-> VIX: {sig.get('vix', 0):.2f} · VVIX: {sig.get('vvix', 0):.2f}
-> {proxy}: ${sig.get('credit_price', 0):.2f} ({fmt_pct(sig.get('credit_5d_return_pct'))} 5d)
+    return f"""{hook}
 
-> Attribution: VVIX {sig.get('attribution', {}).get('vvix_pct', 0):.0f}% / VIX {sig.get('attribution', {}).get('vix_pct', 0):.0f}%
+{thesis}
 
-{signal_note}
+> VCG: {vcg_str} · VIX: {vix:.1f} · VVIX: {vvix:.1f}
+> {proxy}: ${credit_price:.2f} ({fmt_pct(credit_5d)} 5d)
+> Gap driven {vix_pct:.0f}% by VIX, {vvix_pct:.0f}% by VVIX
 
-Analyzed by Radon
-radon.run"""
+{action}
+
+Analyzed by Radon · radon.run"""
 
 
 # ── Screenshot ───────────────────────────────────────────────────
