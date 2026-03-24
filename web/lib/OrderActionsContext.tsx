@@ -327,9 +327,10 @@ export function OrderActionsProvider({ children }: { children: ReactNode }) {
     ordersUpdaterRef.current = fn;
   }, []);
 
-  // Cleanup all poll timers on unmount
+  // Cleanup all poll timers on unmount (read map at teardown so late pollers are cleared)
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional ref read at unmount
       for (const timer of pollTimersRef.current.values()) {
         clearTimeout(timer);
       }

@@ -27,7 +27,7 @@ export default function InstrumentDetailModal({ leg, ticker, expiry, prices, onC
       return;
     }
     setQuantity(String(leg.contracts));
-  }, [leg?.contracts, leg?.direction, leg?.strike, leg?.type, ticker, expiry]);
+  }, [leg, ticker, expiry]);
 
   if (!leg) return null;
 

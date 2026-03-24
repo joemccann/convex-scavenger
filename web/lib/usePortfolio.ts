@@ -27,6 +27,7 @@ export function usePortfolio(active: boolean = true): UsePortfolioReturn {
   const didInitialReadRef = useRef(false);
   const initialLoadStartedRef = useRef(false);
   const syncLoopArmedRef = useRef(false);
+  const doSyncRef = useRef<() => Promise<void>>(async () => {});
 
   const fetchPortfolio = useCallback(async () => {
     try {
@@ -48,7 +49,7 @@ export function usePortfolio(active: boolean = true): UsePortfolioReturn {
     if (!active) return;
     if (intervalRef.current) clearTimeout(intervalRef.current);
     intervalRef.current = setTimeout(() => {
-      void doSync();
+      void doSyncRef.current();
     }, delay);
   }, [active]);
 
@@ -77,6 +78,8 @@ export function usePortfolio(active: boolean = true): UsePortfolioReturn {
       setSyncing(false);
     }
   }, [scheduleNext]);
+
+  doSyncRef.current = doSync;
 
   const syncNow = useCallback(() => {
     backoffRef.current = BASE_INTERVAL_MS;

@@ -321,7 +321,7 @@ function OrderBuilder({
     } finally {
       setLoading(false);
     }
-  }, [confirmStep, ticker, legs, parsedPrice, isDebit, normalizedOrder, totalQty, tif, structure]);
+  }, [confirmStep, ticker, legs, parsedPrice, normalizedOrder, totalQty, tif, structure]);
 
   // Convert chain legs to unified OrderLeg format for pills
   const unifiedLegs: UnifiedOrderLeg[] = useMemo(() => {

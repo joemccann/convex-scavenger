@@ -124,17 +124,18 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
     () => indexes.map((i) => `${i.symbol}@${i.exchange}`).sort().join(","),
     [indexes],
   );
+  // Hash keys avoid recomputation when parents pass new array identities with the same subscription set.
   const normalizedSymbols = useMemo(
     () => normalizeSymbolList(symbols),
-    [symbolHash],
+    [symbolHash], // eslint-disable-line react-hooks/exhaustive-deps -- symbolHash content-keys `symbols`
   );
   const normalizedContracts = useMemo(
     () => uniqueOptionContracts(contracts),
-    [contractHash],
+    [contractHash], // eslint-disable-line react-hooks/exhaustive-deps -- contractHash content-keys `contracts`
   );
   const normalizedIndexes = useMemo(
     () => indexes,
-    [indexHash],
+    [indexHash], // eslint-disable-line react-hooks/exhaustive-deps -- indexHash content-keys `indexes`
   );
 
   const hasSubscriptions =

@@ -372,7 +372,7 @@ function StockOrderForm({
     } finally {
       setLoading(false);
     }
-  }, [confirmStep, ticker, action, parsedQty, parsedPrice, tif, position]);
+  }, [confirmStep, ticker, action, parsedQty, parsedPrice, tif]);
 
   return (
     <div className="order-form" style={{ marginTop: "16px" }}>

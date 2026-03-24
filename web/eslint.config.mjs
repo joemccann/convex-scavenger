@@ -11,8 +11,6 @@ export default defineConfig([
       "react-hooks/refs": "off",
       "react-hooks/immutability": "off",
       "react-hooks/preserve-manual-memoization": "off",
-      // Pre-existing conditional hooks in WorkspaceSections — tracked for refactor; keep as warning.
-      "react-hooks/rules-of-hooks": "warn",
     },
   },
   globalIgnores([

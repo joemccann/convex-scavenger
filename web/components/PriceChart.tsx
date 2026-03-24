@@ -22,8 +22,8 @@ export default function PriceChart({ ticker, prices, priceKey, theme = "dark" }:
 
   const priceData = prices[chartKey];
   const closePrice = priceData?.close ?? null;
-  const positiveColor = useMemo(() => resolveChartSeriesColor("primary"), [theme]);
-  const negativeColor = useMemo(() => resolveChartSeriesColor("fault"), [theme]);
+  const positiveColor = useMemo(() => resolveChartSeriesColor("primary"), []);
+  const negativeColor = useMemo(() => resolveChartSeriesColor("fault"), []);
 
   const color = useMemo(() => {
     if (!closePrice || !value) return positiveColor;

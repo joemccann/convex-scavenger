@@ -913,6 +913,19 @@ function FlowSections() {
 /* ─── Portfolio sections ──────────────────────────────────── */
 
 function PortfolioSections({ portfolio, prices }: { portfolio: PortfolioData | null; prices?: Record<string, PriceData> }) {
+  const positions = portfolio?.positions ?? [];
+  const definedPositions = positions.filter((p) => p.risk_profile === "defined");
+  const equityPositions = positions.filter((p) => p.risk_profile === "equity");
+  const undefinedPositions = positions.filter((p) => p.risk_profile === "undefined" || p.risk_profile === "complex");
+
+  const extractPositionSearchText = useCallback(
+    (p: PortfolioPosition) => `${p.ticker} ${p.structure} ${p.direction} ${p.expiry}`,
+    [],
+  );
+  const definedFilter = useTableFilter(definedPositions, extractPositionSearchText);
+  const undefinedFilter = useTableFilter(undefinedPositions, extractPositionSearchText);
+  const equityFilter = useTableFilter(equityPositions, extractPositionSearchText);
+
   if (!portfolio) {
     return (
       <div className="section">
@@ -930,18 +943,6 @@ function PortfolioSections({ portfolio, prices }: { portfolio: PortfolioData | n
       </div>
     );
   }
-
-  const definedPositions = portfolio.positions.filter((p) => p.risk_profile === "defined");
-  const equityPositions = portfolio.positions.filter((p) => p.risk_profile === "equity");
-  const undefinedPositions = portfolio.positions.filter((p) => p.risk_profile === "undefined" || p.risk_profile === "complex");
-
-  const extractPositionSearchText = useCallback(
-    (p: PortfolioPosition) => `${p.ticker} ${p.structure} ${p.direction} ${p.expiry}`,
-    [],
-  );
-  const definedFilter = useTableFilter(definedPositions, extractPositionSearchText);
-  const undefinedFilter = useTableFilter(undefinedPositions, extractPositionSearchText);
-  const equityFilter = useTableFilter(equityPositions, extractPositionSearchText);
 
   return (
     <>

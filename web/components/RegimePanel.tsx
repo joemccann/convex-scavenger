@@ -250,7 +250,7 @@ export default function RegimePanel({
       corr5dChange: activeCorrChange,
       spxDistancePct,
     });
-  }, [data, effectiveHasLive, liveVix, liveVvix, liveSpy, activeCorr, activeCorrChange]);
+  }, [data, effectiveHasLive, liveVix, liveVvix, liveSpy, activeCorrChange, safeActiveCorr]);
 
   const cri = liveCri ?? (data?.cri ? { ...data.cri, level: data.cri.level as CriLevel } : { score: 0, level: "LOW" as CriLevel, components: { vix: 0, vvix: 0, correlation: 0, momentum: 0 } });
   const color = levelColor(cri.level);
