@@ -1117,11 +1117,34 @@ def _is_ib_connection_error(error_msg: str) -> bool:
 async def _run_ib_script_with_recovery(
     script: str, args: list, timeout: float = 30
 ) -> ScriptResult:
-    """Run an IB-dependent script. On connection error or timeout, restart Gateway and retry once."""
+    """Run an IB-dependent script. On connection error, verify Gateway health before restarting.
+
+    Only restarts if the Gateway is genuinely unreachable (port not listening
+    or CLOSE_WAIT detected). Subprocess failures from client ID collisions,
+    VOL errors, or transient timeouts do NOT trigger a restart.
+    """
     result = await run_script(script, args, timeout=timeout)
 
     if not result.ok and _is_ib_connection_error(result.error):
-        logger.warning("IB Gateway unreachable, attempting auto-restart...")
+        # Verify Gateway is actually down before restarting — don't restart
+        # for subprocess-level failures when Gateway is healthy
+        gw_status = await check_ib_gateway()
+        port_ok = gw_status.get("port_listening", False)
+        upstream_dead = gw_status.get("upstream_dead", False)
+
+        if port_ok and not upstream_dead:
+            # Gateway is healthy — subprocess failed for other reasons.
+            # Don't restart; just return the error.
+            logger.warning(
+                "Script %s failed but Gateway is healthy (port=%s, upstream_dead=%s) — not restarting",
+                script, port_ok, upstream_dead,
+            )
+            return result
+
+        logger.warning(
+            "IB Gateway unreachable (port=%s, upstream_dead=%s), attempting auto-restart...",
+            port_ok, upstream_dead,
+        )
         gw_result = await restart_ib_gateway()
 
         if gw_result.get("restarted") and gw_result.get("port_listening"):

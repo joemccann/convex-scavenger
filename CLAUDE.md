@@ -188,7 +188,7 @@ No spawn fallback. Always try FastAPI first.
 
 ### IB Gateway Auto-Recovery
 
-Startup: check port 4001 + CLOSE_WAIT detection (`lsof`), restart if needed, poll 45s. Runtime: IB endpoints detect `ECONNREFUSED`, `TimeoutError`, and `API connection failed` — auto-restart + retry once. Restart script (`~/ibc/bin/restart-secure-ibc-service.sh`) kills lingering IB/IBC Java processes (`kill -9`) before restarting to handle CLOSE_WAIT state. Manual: `POST /ib/restart`. Health: `GET /health` returns `upstream_dead: true` when CLOSE_WAIT detected.
+Startup: check port 4001 + CLOSE_WAIT detection (`lsof`), restart if needed, poll 45s. Runtime: IB subprocess errors trigger Gateway health check FIRST — only restart if port not listening or CLOSE_WAIT detected. Subprocess failures from client ID collisions, VOL errors, or transient timeouts do NOT trigger restart. Restart script snapshots pre-existing PIDs and only force-kills those that survived SIGTERM (prevents killing newly-spawned processes). Manual: `POST /ib/restart`. Health: `GET /health` returns `upstream_dead: true` when CLOSE_WAIT detected.
 
 ### Health Check
 
