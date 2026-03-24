@@ -1,5 +1,50 @@
 # TODO
 
+## Session: Restore Visible VCG EDR Badge (2026-03-24)
+
+### Goal
+Make the `EDR` signal chip in the `/regime` VCG header visibly render again by restoring valid warning-token styling and locking that behavior with component and browser regression coverage.
+
+### Dependency Graph
+- T1 (Inspect the VCG badge rendering path and confirm why the `EDR` chip loses visibility on the live `/regime` page) depends_on: []
+- T2 (Add red regression coverage for the EDR badge styling contract in both component and browser tests) depends_on: [T1]
+- T3 (Patch the VCG panel so EDR uses valid warning design tokens and remains readable in the header cluster) depends_on: [T2]
+- T4 (Run focused verification, the full JS suite, and browser/visual verification against the already-running dev server) depends_on: [T3]
+- T5 (Document the fix and verification in task tracking) depends_on: [T4]
+
+### Checklist
+- [x] T1 Inspect the VCG badge rendering path and confirm why the `EDR` chip loses visibility on the live `/regime` page
+- [x] T2 Add red regression coverage for the EDR badge styling contract in both component and browser tests
+- [x] T3 Patch the VCG panel so EDR uses valid warning design tokens and remains readable in the header cluster
+- [x] T4 Run focused verification, the full JS suite, and browser/visual verification against the already-running dev server
+- [x] T5 Document the fix and verification in task tracking
+
+### Review
+- Root cause:
+  - [VcgPanel.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/VcgPanel.tsx) was using the undefined CSS token `var(--warn)` for EDR/WATCH/tier-3 warning states.
+  - The Radon theme defines `--warning`, not `--warn`, so the header `EDR` pill fell back to a transparent background. On the dark `/regime` header, that left the chip effectively invisible.
+- Fix:
+  - Replaced every VCG warning-state token reference in [VcgPanel.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/VcgPanel.tsx) from `var(--warn)` to `var(--warning)`.
+  - This restores the visible warning fill for the header `EDR` pill and keeps the rest of the VCG warning styling consistent across:
+    - interpretation text
+    - transition/tier-3 badge color
+    - EDR status row
+    - sign-reversed note
+    - negative history-cell warning state
+- Regression coverage:
+  - Added [vcg-panel-badge.test.tsx](/Users/joemccann/dev/apps/finance/radon/web/tests/vcg-panel-badge.test.tsx) to lock the header `EDR` badge onto the warning token.
+  - Added [regime-vcg-edr-badge.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/regime-vcg-edr-badge.spec.ts) to verify the rendered `/regime` VCG badge has a non-transparent warning background in the browser.
+- Verification:
+  - Red before fix:
+    - `npx vitest run web/tests/vcg-panel-badge.test.tsx`
+    - `cd web && PLAYWRIGHT_PORT=3000 npx playwright test e2e/regime-vcg-edr-badge.spec.ts --config playwright.config.ts`
+  - Green after fix:
+    - `npx vitest run web/tests/vcg-panel-badge.test.tsx`
+    - `cd web && PLAYWRIGHT_PORT=3000 npx playwright test e2e/regime-vcg-edr-badge.spec.ts --config playwright.config.ts`
+    - `npx vitest run --config vitest.config.ts` passed (`152` files, `1419` tests)
+  - Visual verification:
+    - Captured the mocked `/regime` VCG tab from the already-running dev server and confirmed the `EDR` pill is now visibly filled with the warning color in the header cluster.
+
 ## Session: Add Currency Analysis To CTA Page (2026-03-24)
 
 ### Goal

@@ -32,8 +32,8 @@ function fmtNum(v: number | null | undefined, decimals = 2): string {
 function interpretationColor(interpretation: string): string {
   switch (interpretation) {
     case "RISK_OFF":   return "var(--fault)";
-    case "EDR":        return "var(--warn)";
-    case "WATCH":      return "var(--warn)";
+    case "EDR":        return "var(--warning)";
+    case "WATCH":      return "var(--warning)";
     case "BOUNCE":     return "var(--signal-core)";
     case "NORMAL":     return "var(--signal-core)";
     case "PANIC":      return "var(--extreme)";
@@ -58,7 +58,7 @@ function interpretationLabel(interpretation: string): string {
 function regimeBadgeColor(regime: string): string {
   switch (regime) {
     case "PANIC":      return "var(--extreme)";
-    case "TRANSITION": return "var(--warn)";
+    case "TRANSITION": return "var(--warning)";
     default:           return "var(--signal-core)";
   }
 }
@@ -67,7 +67,7 @@ function tierColor(tier: 1 | 2 | 3 | null): string {
   switch (tier) {
     case 1: return "var(--fault)";
     case 2: return "var(--fault)";
-    case 3: return "var(--warn)";
+    case 3: return "var(--warning)";
     default: return "var(--text-muted)";
   }
 }
@@ -84,7 +84,7 @@ function tierLabel(tier: 1 | 2 | 3 | null): string {
 function vvixSeverityColor(sev: string): string {
   switch (sev) {
     case "extreme":  return "var(--fault)";
-    case "elevated": return "var(--warn)";
+    case "elevated": return "var(--warning)";
     default:         return "var(--signal-core)";
   }
 }
@@ -164,7 +164,7 @@ export default function VcgPanel({ marketState }: VcgPanelProps) {
             )}
             {/* EDR (only when not already RISK-OFF) */}
             {sig.edr === 1 && sig.ro !== 1 && (
-              <span className="pill" style={{ background: "var(--warn)", color: "#000", fontSize: "9px", fontWeight: 700 }}>
+              <span className="pill" style={{ background: "var(--warning)", color: "#000", fontSize: "9px", fontWeight: 700 }}>
                 EDR
               </span>
             )}
@@ -302,7 +302,7 @@ export default function VcgPanel({ marketState }: VcgPanelProps) {
             {/* EDR / Bounce rows */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0" }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)" }}>EDR</span>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 700, color: sig.edr === 1 ? "var(--warn)" : "var(--text-muted)" }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 700, color: sig.edr === 1 ? "var(--warning)" : "var(--text-muted)" }}>
                 {sig.edr === 1 ? "ACTIVE" : "INACTIVE"}
               </span>
             </div>
@@ -338,7 +338,7 @@ export default function VcgPanel({ marketState }: VcgPanelProps) {
             <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", borderTop: "1px solid var(--line-grid)", paddingTop: "8px" }}>
               β₁(VVIX) = {fmtNum(sig.beta1_vvix, 6)} | β₂(VIX) = {fmtNum(sig.beta2_vix, 6)}
               {sig.sign_suppressed && (
-                <span style={{ color: "var(--warn)", marginLeft: "8px" }}>SIGN REVERSED</span>
+                <span style={{ color: "var(--warning)", marginLeft: "8px" }}>SIGN REVERSED</span>
               )}
             </div>
             {/* VVIX level */}
@@ -373,7 +373,7 @@ export default function VcgPanel({ marketState }: VcgPanelProps) {
               {data.history.map((h: VcgHistoryEntry) => (
                 <tr key={h.date}>
                   <td>{h.date}</td>
-                  <td className="right" style={{ color: (h.vcg ?? 0) > 2 ? "var(--fault)" : (h.vcg ?? 0) < -2 ? "var(--warn)" : "var(--text-primary)" }}>
+                  <td className="right" style={{ color: (h.vcg ?? 0) > 2 ? "var(--fault)" : (h.vcg ?? 0) < -2 ? "var(--warning)" : "var(--text-primary)" }}>
                     {fmtZ(h.vcg)}
                   </td>
                   <td className="right">{fmtZ(h.vcg_adj)}</td>
