@@ -821,10 +821,12 @@ async def orders_cancel(request: Request):
 
 @app.post("/orders/modify")
 async def orders_modify(request: Request):
-    """Modify an open order via IB pool (no subprocess).
+    """Modify an open order via subprocess.
 
-    Uses sync role (clientId=0, master) which can modify ANY order
-    regardless of which clientId placed it.
+    Modify requires the original clientId that placed the order (IB scopes
+    placeOrder by clientId). The subprocess detects the original clientId
+    and reconnects as that client before modifying. Cancel can use the pool
+    (master clientId=0 can cancel anything), but modify cannot.
     """
     body = await request.json()
     if test_mode:
@@ -840,19 +842,26 @@ async def orders_modify(request: Request):
     new_quantity = body.get("newQuantity")
     outside_rth = body.get("outsideRth")
 
-    if not ib_pool or not ib_pool.is_connected("sync"):
-        raise HTTPException(status_code=503, detail="IB pool sync connection unavailable")
+    args = ["modify"]
+    if order_id:
+        args.extend(["--order-id", str(order_id)])
+    if perm_id:
+        args.extend(["--perm-id", str(perm_id)])
+    if new_price is not None:
+        args.extend(["--new-price", str(new_price)])
+    if new_quantity is not None:
+        args.extend(["--new-quantity", str(new_quantity)])
+    if outside_rth is True:
+        args.append("--outside-rth")
+    elif outside_rth is False:
+        args.append("--no-outside-rth")
 
-    async with ib_pool.acquire("sync") as client:
-        result = await pool_modify_order(
-            client, order_id=order_id, perm_id=perm_id,
-            new_price=new_price, new_quantity=new_quantity,
-            outside_rth=outside_rth,
-        )
-
-    if result["status"] == "error":
-        raise HTTPException(status_code=502, detail=result["message"])
-    return result
+    result = await _run_ib_script_with_recovery("ib_order_manage.py", args, timeout=15)
+    if not result.ok:
+        raise HTTPException(status_code=502, detail=result.error)
+    if result.data and result.data.get("status") == "error":
+        raise HTTPException(status_code=502, detail=result.data.get("message", "Modify failed"))
+    return result.data
 
 
 # ---------------------------------------------------------------------------
