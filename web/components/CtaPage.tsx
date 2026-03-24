@@ -8,6 +8,7 @@ import { SECTION_TOOLTIPS } from "@/lib/sectionTooltips";
 import InfoTooltip from "./InfoTooltip";
 import SortableCtaTable, { type CtaSectionCallout } from "./SortableCtaTable";
 import CtaBriefing from "./CtaBriefing";
+import { formatCtaPercentileLabel, normalizeCtaPercentile } from "@/lib/ctaPercentiles";
 
 /* ─── Helpers ────────────────────────────────────────── */
 
@@ -46,6 +47,10 @@ function normalizeSyncState(value: string | null | undefined): string {
   return value;
 }
 
+function pctile(value: number | null | undefined): number | null {
+  return normalizeCtaPercentile(value);
+}
+
 /* ─── CtaPage ────────────────────────────────────────── */
 
 export default function CtaPage() {
@@ -67,12 +72,12 @@ export default function CtaPage() {
       case "main": {
         const spx = rows.find(r => r.underlying.toLowerCase().includes("s&p") || r.underlying.toLowerCase().includes("e-mini"));
         const bonds = rows.filter(r => r.underlying.toLowerCase().includes("t-note") || r.underlying.toLowerCase().includes("treasury"));
-        if (spx && spx.percentile_3m <= 10) {
+        if (spx && (pctile(spx.percentile_3m) ?? 101) <= 10) {
           const flipped = spx.position_1m_ago > 0 && spx.position_today < 0;
-          const bondShortCount = bonds.filter(b => b.percentile_3m <= 10).length;
+          const bondShortCount = bonds.filter(b => (pctile(b.percentile_3m) ?? 101) <= 10).length;
           return {
             kind: "short",
-            headline: `MAX SHORT · ${spx.percentile_3m === 0 ? "0th" : spx.percentile_3m + "th"} pctile (3M), z ${spx.z_score_3m.toFixed(2)}.`,
+            headline: `MAX SHORT · ${formatCtaPercentileLabel(spx.percentile_3m)} pctile (3M), z ${spx.z_score_3m.toFixed(2)}.`,
             body: [
               flipped ? `Flipped from ${spx.position_1m_ago.toFixed(2)} long one month ago.` : null,
               bondShortCount >= 2 ? `${bondShortCount} bond contracts at 0th pctile — full duration short.` : null,
@@ -80,13 +85,13 @@ export default function CtaPage() {
             ].filter(Boolean).join(" "),
           };
         }
-        if (spx && spx.percentile_3m >= 85) {
-          return { kind: "long", headline: `HEAVY LONG · ${spx.percentile_3m}th pctile.`, body: "CTA equity exposure elevated. Watch for mean reversion on disappointing macro." };
+        if (spx && (pctile(spx.percentile_3m) ?? -1) >= 85) {
+          return { kind: "long", headline: `HEAVY LONG · ${formatCtaPercentileLabel(spx.percentile_3m)} pctile.`, body: "CTA equity exposure elevated. Watch for mean reversion on disappointing macro." };
         }
         return undefined;
       }
       case "index": {
-        const extreme = rows.filter(r => r.percentile_3m <= 5 && r.position_today < 0);
+        const extreme = rows.filter(r => (pctile(r.percentile_3m) ?? 101) <= 5 && r.position_today < 0);
         if (extreme.length >= 3) {
           return {
             kind: "short",
@@ -97,9 +102,11 @@ export default function CtaPage() {
         return undefined;
       }
       case "commodity": {
-        const crowdedLongs = rows.filter(r => r.percentile_3m >= 85 && r.position_today > 0).sort((a, b) => b.percentile_3m - a.percentile_3m);
+        const crowdedLongs = rows
+          .filter(r => (pctile(r.percentile_3m) ?? -1) >= 85 && r.position_today > 0)
+          .sort((a, b) => (pctile(b.percentile_3m) ?? -1) - (pctile(a.percentile_3m) ?? -1));
         if (crowdedLongs.length >= 2) {
-          const labels = crowdedLongs.slice(0, 3).map(r => `${r.underlying.split(" ")[0]} ${r.percentile_3m}th`).join(", ");
+          const labels = crowdedLongs.slice(0, 3).map(r => `${r.underlying.split(" ")[0]} ${formatCtaPercentileLabel(r.percentile_3m)}`).join(", ");
           return {
             kind: "long",
             headline: `CROWDED LONGS · ${labels}.`,
@@ -107,19 +114,45 @@ export default function CtaPage() {
           };
         }
         const gold = rows.find(r => r.underlying.toLowerCase().includes("gold"));
-        if (gold && gold.percentile_3m <= 10 && gold.position_today > 0 && gold.position_yesterday > gold.position_today) {
+        if (gold && (pctile(gold.percentile_3m) ?? 101) <= 10 && gold.position_today > 0 && gold.position_yesterday > gold.position_today) {
           return { kind: "neutral", headline: "GOLD REDUCING.", body: `Position softening (${gold.position_yesterday.toFixed(2)} to ${gold.position_today.toFixed(2)}) despite elevated spot price. CTA reduction signal.` };
         }
         return undefined;
       }
       case "currency": {
         const dxy = rows.find(r => r.underlying.toLowerCase().includes("dollar"));
-        const extreme = rows.filter(r => r.percentile_3m <= 10 && r.position_today < 0);
-        if (dxy && dxy.percentile_3m >= 85 && extreme.length >= 2) {
+        const shorts = rows
+          .filter(r => r.position_today < 0 && ((pctile(r.percentile_3m) ?? 101) <= 20 || r.z_score_3m <= -1))
+          .sort((a, b) => (pctile(a.percentile_3m) ?? 101) - (pctile(b.percentile_3m) ?? 101));
+        const longs = rows
+          .filter(r => r.position_today > 0 && ((pctile(r.percentile_3m) ?? -1) >= 80 || r.z_score_3m >= 1))
+          .sort((a, b) => (pctile(b.percentile_3m) ?? -1) - (pctile(a.percentile_3m) ?? -1));
+        if (dxy && (pctile(dxy.percentile_3m) ?? -1) >= 85 && shorts.length >= 2) {
           return {
             kind: "long",
-            headline: `LONG USD · ${dxy.percentile_3m}th pctile.`,
-            body: `${extreme.length} currency pairs short at extreme levels. Dollar strength trade crowded — watch for reversal if risk appetite returns.`,
+            headline: `LONG USD · ${formatCtaPercentileLabel(dxy.percentile_3m)} pctile.`,
+            body: `${shorts.length} currency pairs short at extreme levels. Dollar strength trade crowded — watch for reversal if risk appetite returns.`,
+          };
+        }
+        if (shorts.length > 0 && longs.length > 0) {
+          return {
+            kind: "neutral",
+            headline: "FX DISPERSION.",
+            body: `${shorts[0].underlying} at ${formatCtaPercentileLabel(shorts[0].percentile_3m)} pctile short while ${longs[0].underlying} sits ${formatCtaPercentileLabel(longs[0].percentile_3m)} pctile long.`,
+          };
+        }
+        if (shorts.length >= 2) {
+          return {
+            kind: "short",
+            headline: "DEFENSIVE FX SKEW.",
+            body: shorts.slice(0, 2).map(r => `${r.underlying} ${formatCtaPercentileLabel(r.percentile_3m)}`).join(", "),
+          };
+        }
+        if (longs.length >= 2) {
+          return {
+            kind: "long",
+            headline: "CROWDED FX LONGS.",
+            body: longs.slice(0, 2).map(r => `${r.underlying} ${formatCtaPercentileLabel(r.percentile_3m)}`).join(", "),
           };
         }
         return undefined;

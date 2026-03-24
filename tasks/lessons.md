@@ -1,5 +1,9 @@
 # Lessons
 
+## 2026-03-24
+
+- When UI verification guidance prefers `chrome-cdp`, check whether that skill is actually available in the current Codex runtime before planning around it. If it is unavailable, explicitly reuse any already-running dev server and fall back cleanly instead of trying to boot a duplicate app instance.
+
 ## 2026-03-22
 
 - When a route handler gates fresh data fetches behind `isMarketOpenNow()`, any data published after market close (UW end-of-day processing, overnight batch updates) will never be picked up until market reopens. Use a data-staleness check (compare latest data-point date to today) instead of a market-hours guard. This prevents stale charts across ~17.5 hrs/day of market-closed time plus weekends.

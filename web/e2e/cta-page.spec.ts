@@ -114,6 +114,17 @@ const CTA_STALE_MOCK = {
   },
 };
 
+const CTA_CURRENCY_DECIMAL_MOCK = {
+  ...CTA_MOCK,
+  tables: {
+    ...CTA_MOCK.tables,
+    currency: [
+      { underlying: "Euro", position_today: -0.3, position_yesterday: -0.34, position_1m_ago: 0.35, percentile_1m: 0.33, percentile_3m: 0.13, percentile_1y: 0.09, z_score_3m: -1.13 },
+      { underlying: "Canadian Dollar", position_today: 1.36, position_yesterday: 1.2, position_1m_ago: 1.03, percentile_1m: 0.57, percentile_3m: 0.84, percentile_1y: 0.65, z_score_3m: 1.01 },
+    ],
+  },
+};
+
 const PORTFOLIO_EMPTY = {
   bankroll: 100_000, positions: [], account_summary: {}, exposure: {}, violations: [],
 };
@@ -240,6 +251,16 @@ test.describe("/cta page", () => {
     await expect(banner).toContainText("2026-03-08");
     await expect(banner).toContainText("2026-03-09");
     await expect(banner).toContainText("Your username or password was incorrect");
+  });
+
+  test("renders currency analysis when currency percentiles arrive as decimals", async ({ page }) => {
+    await setupMocks(page, { cta: CTA_CURRENCY_DECIMAL_MOCK });
+    await page.goto("/cta");
+
+    const ctaPage = page.locator('[data-testid="cta-page"]');
+    await expect(ctaPage).toContainText("Euro at 13th pctile short while Canadian Dollar sits 84th pctile long.");
+    await expect(ctaPage).toContainText("FX DISPERSION");
+    await expect(ctaPage).toContainText("84");
   });
 });
 

@@ -1,5 +1,51 @@
 # TODO
 
+## Session: Add Currency Analysis To CTA Page (2026-03-24)
+
+### Goal
+Add real CTA currency analysis to the `/cta` briefing and section callout, and normalize mixed-format MenthorQ percentile values so both the narrative and table render correctly from live cache data.
+
+### Dependency Graph
+- T1 (Inspect the CTA briefing/callout pipeline and confirm why currency rows do not influence the narrative) depends_on: []
+- T2 (Add red regression coverage for decimal-form CTA percentiles and the missing currency-analysis narrative) depends_on: [T1]
+- T3 (Implement normalized CTA percentile handling plus broader currency narrative/callout logic in the CTA page) depends_on: [T2]
+- T4 (Run focused verification, full JS verification, and browser verification against the already-running dev server) depends_on: [T3]
+- T5 (Document the result in task tracking and lessons, including the corrected verification workflow) depends_on: [T4]
+
+### Checklist
+- [x] T1 Inspect the CTA briefing/callout pipeline and confirm why currency rows do not influence the narrative
+- [x] T2 Add red regression coverage for decimal-form CTA percentiles and the missing currency-analysis narrative
+- [x] T3 Implement normalized CTA percentile handling plus broader currency narrative/callout logic in the CTA page
+- [x] T4 Run focused verification, full JS verification, and browser verification against the already-running dev server
+- [x] T5 Document the result in task tracking and lessons, including the corrected verification workflow
+
+### Notes
+- Live MenthorQ CTA payloads currently mix percentile encodings: some rows arrive as decimals in `[0,1]`, others as integers in `[0,100]`. The CTA UI must normalize both before applying thresholds, labels, and visual emphasis.
+- Browser verification should reuse the already-running dev server instead of attempting to start a second Next instance.
+
+### Review
+- Root cause:
+  - [web/components/CtaBriefing.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/CtaBriefing.tsx) ignored `tables.currency` for both the main narrative and signal tags, so the CTA page could show a currencies table with no FX analysis.
+  - [web/components/CtaPage.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/CtaPage.tsx) only emitted a currency callout for a narrow long-USD setup.
+  - Live MenthorQ CTA cache rows mix percentile encodings. Decimal values like `0.13` and `0.84` were being rendered and thresholded as literal percentiles instead of `13` and `84`, which suppressed extreme-signal logic and produced misleading table values.
+- Fix:
+  - Added [ctaPercentiles.ts](/Users/joemccann/dev/apps/finance/radon/web/lib/ctaPercentiles.ts) to normalize mixed-format percentile values and format ordinal percentile labels consistently.
+  - Updated [CtaBriefing.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/CtaBriefing.tsx) to:
+    - normalize percentile thresholds
+    - include FX dispersion/defensive-FX/crowded-FX tags
+    - add explicit currency narrative text when short and long extremes are present
+    - render the SPX percentile metric with normalized labels
+  - Updated [CtaPage.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/CtaPage.tsx) to generate broader currency section callouts, including `FX DISPERSION.` when both short and long currency extremes exist.
+  - Updated [SortableCtaTable.tsx](/Users/joemccann/dev/apps/finance/radon/web/components/SortableCtaTable.tsx) so percentile cells, shading, and flags all use normalized values.
+- Regression coverage:
+  - Added [cta-briefing-currency.test.ts](/Users/joemccann/dev/apps/finance/radon/web/tests/cta-briefing-currency.test.ts) to lock the new FX narrative and tag behavior for decimal-form percentiles.
+  - Extended [cta-page.spec.ts](/Users/joemccann/dev/apps/finance/radon/web/e2e/cta-page.spec.ts) with a browser regression covering the decimal-form currency scenario.
+- Verification:
+  - Focused JS tests: `npx vitest run web/tests/cta-briefing-currency.test.ts web/tests/cta-page.test.ts web/tests/cta-page-freshness.test.ts` passed (`24` tests).
+  - Full JS suite: `npx vitest run --config vitest.config.ts` passed (`151` files, `1418` tests).
+  - Browser regression against the already-running dev server: `cd web && PLAYWRIGHT_PORT=3000 npx playwright test e2e/cta-page.spec.ts --config playwright.config.ts --grep "renders currency analysis when currency percentiles arrive as decimals"` passed.
+  - Visual verification: captured the mocked `/cta` page against `http://localhost:3000` and confirmed the rendered briefing/callout show `FX DISPERSION` plus normalized `13` / `84` table values.
+
 ## Session: Fix CTA Sync Wrapper Credential Mangling (2026-03-24)
 
 ### Goal

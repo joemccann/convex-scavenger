@@ -1,6 +1,7 @@
 "use client";
 
 import type { CtaRow } from "@/lib/useMenthorqCta";
+import { formatCtaPercentileLabel, normalizeCtaPercentile } from "@/lib/ctaPercentiles";
 
 /* ─── Types ──────────────────────────────────────────── */
 
@@ -23,6 +24,10 @@ function fmt(v: number | null | undefined, decimals = 2): string {
   return v.toFixed(decimals);
 }
 
+function pctile(v: number | null | undefined): number | null {
+  return normalizeCtaPercentile(v);
+}
+
 /** Derive equity posture regime from SPX row in main table */
 function deriveEquityPosture(main: CtaRow[]): {
   label: string;
@@ -36,7 +41,7 @@ function deriveEquityPosture(main: CtaRow[]): {
   );
   if (!spx) return { label: "UNKNOWN", cssColor: "var(--text-muted)", borderColor: "var(--border-dim)", bgColor: "transparent" };
 
-  const pctile = spx.percentile_3m;
+  const pctile = normalizeCtaPercentile(spx.percentile_3m) ?? 50;
   const z = spx.z_score_3m;
 
   if (pctile <= 5 || z <= -2.0) return {
@@ -88,14 +93,24 @@ function getSpxRow(main: CtaRow[]): CtaRow | undefined {
 /** Find most extreme commodity long (pctile_3m >= 80) */
 function getCrowdedCommodityLongs(commodity: CtaRow[]): CtaRow[] {
   return commodity
-    .filter((r) => r.percentile_3m >= 80 && r.position_today > 0)
-    .sort((a, b) => b.percentile_3m - a.percentile_3m);
+    .filter((r) => (pctile(r.percentile_3m) ?? -1) >= 80 && r.position_today > 0)
+    .sort((a, b) => (pctile(b.percentile_3m) ?? -1) - (pctile(a.percentile_3m) ?? -1));
+}
+
+function getCurrencyExtremes(currency: CtaRow[]): { shorts: CtaRow[]; longs: CtaRow[] } {
+  const shorts = currency
+    .filter((r) => r.position_today < 0 && ((pctile(r.percentile_3m) ?? 101) <= 20 || r.z_score_3m <= -1))
+    .sort((a, b) => (pctile(a.percentile_3m) ?? 101) - (pctile(b.percentile_3m) ?? 101));
+  const longs = currency
+    .filter((r) => r.position_today > 0 && ((pctile(r.percentile_3m) ?? -1) >= 80 || r.z_score_3m >= 1))
+    .sort((a, b) => (pctile(b.percentile_3m) ?? -1) - (pctile(a.percentile_3m) ?? -1));
+  return { shorts, longs };
 }
 
 /** Derive squeeze risk label */
 function deriveSqueezeRisk(spx: CtaRow | undefined): { label: string; cssColor: string } {
   if (!spx) return { label: "UNKNOWN", cssColor: "var(--text-muted)" };
-  const pctile = spx.percentile_3m;
+  const pctile = normalizeCtaPercentile(spx.percentile_3m) ?? 50;
   const z = spx.z_score_3m;
   if (pctile <= 5 || z <= -2.0) return { label: "ELEVATED", cssColor: "var(--warning)" };
   if (pctile <= 15 || z <= -1.5) return { label: "MODERATE", cssColor: "var(--warning)" };
@@ -107,7 +122,7 @@ function deriveSignalTags(tables: CtaTables): Array<{ label: string; cssColor: s
   const tags: Array<{ label: string; cssColor: string; borderColor: string; bgColor: string }> = [];
 
   const spx = getSpxRow(tables.main);
-  if (spx && spx.percentile_3m <= 15) {
+  if (spx && (pctile(spx.percentile_3m) ?? 101) <= 15) {
     tags.push({
       label: "SHORT EQUITIES",
       cssColor: "var(--negative)",
@@ -115,7 +130,7 @@ function deriveSignalTags(tables: CtaTables): Array<{ label: string; cssColor: s
       bgColor: "rgba(232,93,108,0.12)",
     });
   }
-  if (spx && spx.percentile_3m >= 80) {
+  if (spx && (pctile(spx.percentile_3m) ?? -1) >= 80) {
     tags.push({
       label: "LONG EQUITIES",
       cssColor: "var(--positive)",
@@ -129,7 +144,7 @@ function deriveSignalTags(tables: CtaTables): Array<{ label: string; cssColor: s
     r.underlying.toLowerCase().includes("t-note") ||
     r.underlying.toLowerCase().includes("treasury")
   );
-  const bondShort = bonds.filter((r) => r.percentile_3m <= 10 && r.position_today < 0);
+  const bondShort = bonds.filter((r) => (pctile(r.percentile_3m) ?? 101) <= 10 && r.position_today < 0);
   if (bondShort.length >= 2) {
     tags.push({
       label: "SHORT BONDS",
@@ -141,7 +156,7 @@ function deriveSignalTags(tables: CtaTables): Array<{ label: string; cssColor: s
 
   // Crowded commodity longs
   const crowdedEnergy = tables.commodity.filter(
-    (r) => r.percentile_3m >= 85 && r.position_today > 0 &&
+    (r) => (pctile(r.percentile_3m) ?? -1) >= 85 && r.position_today > 0 &&
       (r.underlying.toLowerCase().includes("brent") ||
         r.underlying.toLowerCase().includes("diesel") ||
         r.underlying.toLowerCase().includes("crude"))
@@ -156,12 +171,36 @@ function deriveSignalTags(tables: CtaTables): Array<{ label: string; cssColor: s
   }
 
   // Squeeze watch
-  if (spx && spx.percentile_3m <= 10 && spx.position_1m_ago > 0) {
+  if (spx && (pctile(spx.percentile_3m) ?? 101) <= 10 && spx.position_1m_ago > 0) {
     tags.push({
       label: "SQUEEZE WATCH",
       cssColor: "var(--warning)",
       borderColor: "rgba(245,166,35,0.3)",
       bgColor: "rgba(245,166,35,0.1)",
+    });
+  }
+
+  const fx = getCurrencyExtremes(tables.currency);
+  if (fx.shorts.length > 0 && fx.longs.length > 0) {
+    tags.push({
+      label: "FX DISPERSION",
+      cssColor: "var(--warning)",
+      borderColor: "rgba(245,166,35,0.3)",
+      bgColor: "rgba(245,166,35,0.1)",
+    });
+  } else if (fx.shorts.length >= 2) {
+    tags.push({
+      label: "DEFENSIVE FX",
+      cssColor: "var(--negative)",
+      borderColor: "rgba(232,93,108,0.25)",
+      bgColor: "rgba(232,93,108,0.1)",
+    });
+  } else if (fx.longs.length >= 2) {
+    tags.push({
+      label: "FX LONGS CROWDED",
+      cssColor: "var(--signal-core)",
+      borderColor: "rgba(5,173,152,0.3)",
+      bgColor: "rgba(5,173,152,0.1)",
     });
   }
 
@@ -173,38 +212,53 @@ function buildNarrative(tables: CtaTables, estSellingBn: number | null): string 
   const spx = getSpxRow(tables.main);
   const nq = tables.main.find((r) => r.underlying.toLowerCase().includes("nasdaq"));
   const crowded = getCrowdedCommodityLongs(tables.commodity);
+  const fx = getCurrencyExtremes(tables.currency);
 
   const parts: string[] = [];
 
   if (spx) {
     const flipped = spx.position_1m_ago > 0 && spx.position_today < 0;
-    const pctile = spx.percentile_3m;
-    if (pctile <= 10) {
+    const spxPctile = pctile(spx.percentile_3m) ?? 50;
+    if (spxPctile <= 10) {
       parts.push(
-        `SPX CTAs at the ${pctile === 0 ? "0th" : pctile + "th"} percentile of their 3M range${flipped ? `, having flipped from ${fmt(spx.position_1m_ago)} long one month ago` : ""}.`
+        `SPX CTAs at the ${formatCtaPercentileLabel(spx.percentile_3m)} percentile of their 3M range${flipped ? `, having flipped from ${fmt(spx.position_1m_ago)} long one month ago` : ""}.`
       );
-    } else if (pctile >= 90) {
-      parts.push(`SPX CTAs at the ${pctile}th percentile of their 3M range — heavily long.`);
+    } else if (spxPctile >= 90) {
+      parts.push(`SPX CTAs at the ${formatCtaPercentileLabel(spx.percentile_3m)} percentile of their 3M range — heavily long.`);
     }
   }
 
-  if (nq && nq.percentile_3m <= 10) {
+  if (nq && (pctile(nq.percentile_3m) ?? 101) <= 10) {
     const increasing = nq.position_today < nq.position_yesterday;
     parts.push(
-      `NQ positioning at 0th percentile${increasing ? ", shorts increasing" : ""} (${fmt(nq.position_yesterday)} to ${fmt(nq.position_today)}).`
+      `NQ positioning at ${formatCtaPercentileLabel(nq.percentile_3m)} percentile${increasing ? ", shorts increasing" : ""} (${fmt(nq.position_yesterday)} to ${fmt(nq.position_today)}).`
     );
   }
 
   if (crowded.length > 0) {
     const labels = crowded.slice(0, 3).map((r) => {
       const name = r.underlying.split(" ")[0];
-      return `${name} at ${r.percentile_3m}th pctile`;
+      return `${name} at ${formatCtaPercentileLabel(r.percentile_3m)} pctile`;
     });
     parts.push(`Crowded commodity longs: ${labels.join(", ")}.`);
   }
 
+  if (fx.shorts.length > 0 && fx.longs.length > 0) {
+    const short = fx.shorts[0];
+    const long = fx.longs[0];
+    parts.push(
+      `${short.underlying} at ${formatCtaPercentileLabel(short.percentile_3m)} pctile short while ${long.underlying} sits ${formatCtaPercentileLabel(long.percentile_3m)} pctile long.`,
+    );
+  } else if (fx.shorts.length >= 2) {
+    const labels = fx.shorts.slice(0, 2).map((r) => `${r.underlying} ${formatCtaPercentileLabel(r.percentile_3m)}`).join(", ");
+    parts.push(`Defensive FX skew: ${labels}.`);
+  } else if (fx.longs.length >= 2) {
+    const labels = fx.longs.slice(0, 2).map((r) => `${r.underlying} ${formatCtaPercentileLabel(r.percentile_3m)}`).join(", ");
+    parts.push(`Crowded FX longs: ${labels}.`);
+  }
+
   const spxShort = getSpxRow(tables.main);
-  if (spxShort && spxShort.percentile_3m <= 10 && spxShort.position_1m_ago > 0) {
+  if (spxShort && (pctile(spxShort.percentile_3m) ?? 101) <= 10 && spxShort.position_1m_ago > 0) {
     parts.push(
       "Positioning is a mean-reversion coil — any bullish catalyst risks violent CTA short-covering across all equity classes."
     );
@@ -259,9 +313,9 @@ export default function CtaBriefing({ tables, estSellingBn }: CtaBriefingProps) 
           <div className="cta-briefing-metric-label">SPX 3M PCTILE</div>
           <div
             className="cta-briefing-metric-value"
-            style={{ color: spx && spx.percentile_3m <= 15 ? "var(--negative)" : spx && spx.percentile_3m >= 85 ? "var(--positive)" : "var(--text-primary)" }}
+            style={{ color: spx && (pctile(spx.percentile_3m) ?? 50) <= 15 ? "var(--negative)" : spx && (pctile(spx.percentile_3m) ?? 50) >= 85 ? "var(--positive)" : "var(--text-primary)" }}
           >
-            {spx != null ? (spx.percentile_3m === 0 ? "0th" : `${spx.percentile_3m}th`) : "---"}
+            {spx != null ? formatCtaPercentileLabel(spx.percentile_3m) : "---"}
           </div>
         </div>
         <div className="cta-briefing-metric">

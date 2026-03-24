@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CtaRow } from "@/lib/useMenthorqCta";
 import { SECTION_TOOLTIPS } from "@/lib/sectionTooltips";
 import InfoTooltip from "./InfoTooltip";
+import { normalizeCtaPercentile } from "@/lib/ctaPercentiles";
 
 /* ─── Props ──────────────────────────────────────────── */
 
@@ -26,6 +27,12 @@ function fmt(v: number | null | undefined, decimals = 2): string {
   return v.toFixed(decimals);
 }
 
+function fmtPctile(v: number | null | undefined): string {
+  const normalized = normalizeCtaPercentile(v);
+  if (normalized == null) return "---";
+  return String(Math.round(normalized));
+}
+
 function posColor(v: number): string {
   if (v > 0) return "var(--positive)";
   if (v < 0) return "var(--negative)";
@@ -33,11 +40,12 @@ function posColor(v: number): string {
 }
 
 function pctileBg(v: number): string {
-  if (v <= 10) return "rgba(232,93,108,0.25)";
-  if (v <= 25) return "rgba(232,93,108,0.12)";
-  if (v <= 40) return "rgba(245,166,35,0.12)";
-  if (v >= 75) return "rgba(5,173,152,0.25)";
-  if (v >= 60) return "rgba(5,173,152,0.12)";
+  const normalized = normalizeCtaPercentile(v) ?? v;
+  if (normalized <= 10) return "rgba(232,93,108,0.25)";
+  if (normalized <= 25) return "rgba(232,93,108,0.12)";
+  if (normalized <= 40) return "rgba(245,166,35,0.12)";
+  if (normalized >= 75) return "rgba(5,173,152,0.25)";
+  if (normalized >= 60) return "rgba(5,173,152,0.12)";
   return "transparent";
 }
 
@@ -76,7 +84,7 @@ type NumericSortCol =
 /* ─── Flag helpers ───────────────────────────────────── */
 
 function flagForRow(r: CtaRow): { kind: "short" | "long"; tooltip: string } | null {
-  const p = r.percentile_3m;
+  const p = normalizeCtaPercentile(r.percentile_3m) ?? r.percentile_3m;
   const z = r.z_score_3m;
   const isExtreme = p <= 10 || p >= 90 || Math.abs(z) >= 1.5;
   if (!isExtreme) return null;
@@ -89,7 +97,7 @@ function flagForRow(r: CtaRow): { kind: "short" | "long"; tooltip: string } | nu
     return {
       kind: "short",
       tooltip: [
-        `${p}th pctile (3M), z ${fmt(z)}.`,
+        `${Math.round(p)}th pctile (3M), z ${fmt(z)}.`,
         flipped ? `Flipped from ${fmt(r.position_1m_ago)} long 1M ago.` : null,
         Math.abs(z) >= 2.0
           ? "Extreme short. Violent covering risk on any bullish catalyst."
@@ -101,7 +109,7 @@ function flagForRow(r: CtaRow): { kind: "short" | "long"; tooltip: string } | nu
     return {
       kind: "long",
       tooltip: [
-        `${p}th pctile (3M), z ${fmt(z)}.`,
+        `${Math.round(p)}th pctile (3M), z ${fmt(z)}.`,
         "Crowded long. Mean reversion risk elevated.",
       ].join(" "),
     };
@@ -256,15 +264,13 @@ export default function SortableCtaTable({ sectionKey, rows, callout }: Sortable
                     {fmt(r.position_1m_ago)}
                   </td>
                   <td className="cta-td-num" style={{ background: pctileBg(r.percentile_1m) }}>
-                    {r.percentile_1m}
+                    {fmtPctile(r.percentile_1m)}
                   </td>
                   <td className="cta-td-num" style={{ background: pctileBg(r.percentile_3m) }}>
-                    {r.percentile_3m}
+                    {fmtPctile(r.percentile_3m)}
                   </td>
                   <td className="cta-td-num" style={{ background: pctileBg(r.percentile_1y) }}>
-                    {typeof r.percentile_1y === "number" && r.percentile_1y > 100
-                      ? fmt(r.percentile_1y)
-                      : r.percentile_1y}
+                    {fmtPctile(r.percentile_1y)}
                   </td>
                   <td
                     className="cta-td-num"
