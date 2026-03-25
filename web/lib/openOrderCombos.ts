@@ -74,6 +74,14 @@ function formatStrike(strike: number): string {
   return Number.isInteger(strike) ? String(strike) : String(strike);
 }
 
+function formatExpiryShort(expiry: string): string {
+  const clean = expiry.replace(/-/g, "");
+  if (clean.length !== 8) return expiry;
+  const month = parseInt(clean.slice(4, 6), 10);
+  const day = parseInt(clean.slice(6, 8), 10);
+  return `${month}/${day}`;
+}
+
 function findPortfolioLegDirection(
   positions: readonly PortfolioPosition[] | undefined,
   symbol: string,
@@ -225,6 +233,7 @@ export function buildExecutedGroupDescription(
   }
 
   const parts: string[] = [];
+  const legExpiries: string[] = [];
   for (const legGroup of legGroups.values()) {
     const c = legGroup[0].contract;
     const right = c.right === "C" || c.right === "CALL"
@@ -233,6 +242,8 @@ export function buildExecutedGroupDescription(
         ? "Put"
         : "Unknown";
     const strike = c.strike != null ? `$${c.strike}` : "Unknown";
+
+    if (c.expiry) legExpiries.push(c.expiry);
 
     const explicitDir = inferExecutedLegDirectionFromFills(legGroup, isClosing);
     const portfolioDir = c.right == null || c.expiry == null || c.strike == null
@@ -250,11 +261,20 @@ export function buildExecutedGroupDescription(
       : portfolioDir
         ? (portfolioDir === "LONG" ? "Long" : "Short")
         : "Long";
-    parts.push(`${direction} ${strike} ${right}`);
+
+    const expiryShort = c.expiry ? formatExpiryShort(c.expiry) : "";
+    parts.push(`${direction} ${strike} ${right}${expiryShort ? ` ${expiryShort}` : ""}`);
   }
 
-  if (parts.length === 2) {
-    parts.sort((a, b) => {
+  // If all legs share the same expiry, show it once at structure level instead of per-leg
+  const uniqueExpiries = [...new Set(legExpiries)];
+  const sharedExpiry = uniqueExpiries.length === 1 ? formatExpiryShort(uniqueExpiries[0]) : null;
+  const displayParts = sharedExpiry
+    ? parts.map((p) => p.replace(` ${sharedExpiry}`, ""))
+    : parts;
+
+  if (displayParts.length === 2) {
+    displayParts.sort((a, b) => {
       const aIsShort = a.startsWith("Short");
       const bIsShort = b.startsWith("Short");
       if (aIsShort === bIsShort) return 0;
@@ -264,10 +284,7 @@ export function buildExecutedGroupDescription(
 
   const base = isClosing ? "Closed" : "Opened";
   let structure = "";
-  if (parts.length === 2) {
-    // Classify 2-leg combos by option type:
-    // - Same type (Call+Call or Put+Put) = vertical spread
-    // - Different types (Call+Put) = risk reversal / synthetic
+  if (displayParts.length === 2) {
     const rights = new Set(
       [...legGroups.values()].map((g) => {
         const r = g[0].contract.right;
@@ -275,15 +292,13 @@ export function buildExecutedGroupDescription(
       }),
     );
     if (rights.size === 1) {
-      // Both legs same type → vertical spread
-      const hasShort = parts.some((p) => p.startsWith("Short"));
-      const hasLong = parts.some((p) => p.startsWith("Long"));
+      const hasShort = displayParts.some((p) => p.startsWith("Short"));
+      const hasLong = displayParts.some((p) => p.startsWith("Long"));
       if (hasShort && hasLong) {
         const right = rights.has("C") ? "Call" : "Put";
-        // Determine bull/bear from strike ordering
         const strikes = [...legGroups.values()].map((g) => ({
           strike: g[0].contract.strike ?? 0,
-          dir: parts.find((p) => p.includes(`$${g[0].contract.strike}`))?.startsWith("Long") ? "Long" : "Short",
+          dir: displayParts.find((p) => p.includes(`$${g[0].contract.strike}`))?.startsWith("Long") ? "Long" : "Short",
         }));
         const longStrike = strikes.find((s) => s.dir === "Long")?.strike ?? 0;
         const shortStrike = strikes.find((s) => s.dir === "Short")?.strike ?? 0;
@@ -298,10 +313,12 @@ export function buildExecutedGroupDescription(
     } else {
       structure = "Risk Reversal";
     }
-  } else if (parts.length > 2) {
+  } else if (displayParts.length > 2) {
     structure = "Combo";
   }
-  return `${base} ${fills[0].contract.symbol} ${structure} (${parts.join(" / ")})`;
+
+  const expirySuffix = sharedExpiry ? ` ${sharedExpiry}` : "";
+  return `${base} ${fills[0].contract.symbol} ${structure}${expirySuffix} (${displayParts.join(" / ")})`;
 }
 
 function makeComboLeg(order: OpenOrder, index: number): OptionLegCandidate | null {
