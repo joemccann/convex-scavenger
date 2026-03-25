@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { NextRequest } from "next/server";
+import { buildEvaluateCommand, __resolvePiInput } from "../app/api/pi/route";
 
 type CommandResult = {
   status: number;
@@ -39,6 +40,18 @@ const runPiRequest = async (input: string) => {
   const body = await response.json();
   return { response, body };
 };
+
+test("__resolvePiInput combines command and separate text payloads", () => {
+  expect(__resolvePiInput({ command: "/evaluate", text: "KWEB" })).toBe("/evaluate KWEB");
+  expect(__resolvePiInput({ command: "/evaluate", input: "KWEB" })).toBe("/evaluate KWEB");
+  expect(__resolvePiInput({ input: "/evaluate KWEB" })).toBe("/evaluate KWEB");
+  expect(__resolvePiInput({ text: "/evaluate KWEB" })).toBe("/evaluate KWEB");
+});
+
+test("buildEvaluateCommand builds single evaluate command with default and explicit --days", () => {
+  expect(buildEvaluateCommand(["AAPL"])).toEqual(["scripts/evaluate.py", "AAPL", "--days", "5"]);
+  expect(buildEvaluateCommand(["AAPL", "--days", "10"])).toEqual(["scripts/evaluate.py", "AAPL", "--days", "10"]);
+});
 
 test("pi API returns local portfolio payload", async () => {
   const { response, body } = await runPiRequest("/portfolio");

@@ -1,8 +1,8 @@
 {
   "commands": [
     {
-      "command": "evaluate [TICKER]",
-      "description": "Full trade evaluation (ticker, seasonality, analysts, news/catalysts, dark pool, options, OI) \u2014 fetches all data in parallel, stops at first failing gate"
+      "command": "evaluate [TICKER] [--days N]",
+      "description": "Full trade evaluation (ticker, seasonality, analysts, news/catalysts, dark pool, options, OI) \u2014 fetches all data in parallel, stops at first failing gate (optional: --days N, default 5)"
     },
     {
       "command": "scan",

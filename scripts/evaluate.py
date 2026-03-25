@@ -424,7 +424,12 @@ def determine_edge(
 # Parallel data fetching
 # ---------------------------------------------------------------------------
 
-def _run_parallel_milestones(ticker: str, bankroll: float, skip_ib: bool = False) -> Dict[str, Any]:
+def _run_parallel_milestones(
+    ticker: str,
+    bankroll: float,
+    skip_ib: bool = False,
+    flow_days: int = 5,
+) -> Dict[str, Any]:
     """Fetch all independent milestones concurrently.
 
     Returns a dict keyed by milestone name with raw results.
@@ -433,6 +438,7 @@ def _run_parallel_milestones(ticker: str, bankroll: float, skip_ib: bool = False
         ticker: Ticker symbol
         bankroll: Current bankroll (unused here, kept for API compat)
         skip_ib: If True, skip IB price fetch (used when batch-fetching prices)
+        flow_days: Dark-pool lookback window in trading days
 
     Note: IB price history runs on the main thread (ib_insync requires the
     main asyncio event loop). All UW-based fetches run in a thread pool.
@@ -468,7 +474,7 @@ def _run_parallel_milestones(ticker: str, bankroll: float, skip_ib: bool = False
         return ("M1C", fetch_analyst_ratings(ticker, use_cache=True))
 
     def _m2():
-        return ("M2", fetch_flow(ticker))
+        return ("M2", fetch_flow(ticker, lookback_days=flow_days))
 
     def _m3():
         # Skip IB inside thread (ib_insync needs main event loop).
@@ -559,6 +565,7 @@ def run_evaluations(
     tickers: List[str],
     bankroll: float = 1_200_000,
     skip_ib_price: bool = False,
+    flow_days: int = 5,
 ) -> List[EvaluationResult]:
     """Run evaluations for multiple tickers with IB connection pooling.
 
@@ -569,10 +576,11 @@ def run_evaluations(
         tickers: List of ticker symbols
         bankroll: Current bankroll for Kelly sizing
         skip_ib_price: If True, skip IB price history entirely (faster, skips signal_priced_in check)
+        flow_days: Dark-pool lookback trading days for M2
     """
     if len(tickers) == 1 and not skip_ib_price:
         # Single ticker — standard flow, no batch overhead
-        return [run_evaluation(tickers[0], bankroll=bankroll)]
+        return [run_evaluation(tickers[0], bankroll=bankroll, flow_days=flow_days)]
 
     # Optionally batch fetch all price data with a single IB connection
     price_cache = {} if skip_ib_price else _fetch_all_prices(tickers)
@@ -580,21 +588,22 @@ def run_evaluations(
     # Process tickers sequentially (each has internal parallelism for UW calls)
     # This avoids 35 concurrent UW requests (5 tickers × 7 milestones)
     results = [
-        run_evaluation(t, bankroll=bankroll, price_history=price_cache.get(t, []))
+        run_evaluation(t, bankroll=bankroll, price_history=price_cache.get(t, []), flow_days=flow_days)
         for t in tickers
     ]
     return results
 
 
-def _run_single_eval(ticker: str, bankroll: float, price_history: List[Dict]) -> EvaluationResult:
+def _run_single_eval(ticker: str, bankroll: float, price_history: List[Dict], flow_days: int = 5) -> EvaluationResult:
     """Run evaluation for a single ticker with pre-fetched price data."""
-    return run_evaluation(ticker, bankroll=bankroll, price_history=price_history)
+    return run_evaluation(ticker, bankroll=bankroll, price_history=price_history, flow_days=flow_days)
 
 
 def run_evaluation(
     ticker: str,
     bankroll: float = 1_200_000,
     price_history: Optional[List[Dict]] = None,
+    flow_days: int = 5,
 ) -> EvaluationResult:
     """Run a full 7-milestone evaluation for *ticker*.
 
@@ -618,7 +627,12 @@ def run_evaluation(
 
     # ── Phase 1: Parallel fetch ──────────────────────────────────────────
     # If price_history was pre-fetched (batch mode), skip IB in _run_parallel_milestones
-    raw = _run_parallel_milestones(ticker, bankroll, skip_ib=price_history is not None)
+    raw = _run_parallel_milestones(
+        ticker,
+        bankroll,
+        skip_ib=price_history is not None,
+        flow_days=flow_days,
+    )
     if price_history is not None:
         raw["PRICE"] = price_history
 
@@ -911,6 +925,8 @@ def main():
     parser.add_argument("tickers", nargs="+", help="Ticker symbol(s) to evaluate")
     parser.add_argument("--bankroll", type=float, default=1_200_000,
                         help="Current bankroll (default: 1,200,000)")
+    parser.add_argument("--days", type=int, default=5,
+                        help="Dark-pool lookback trading days (default: 5)")
     parser.add_argument("--json", action="store_true",
                         help="Output raw JSON instead of formatted report")
     parser.add_argument("--fast", action="store_true",
@@ -918,7 +934,12 @@ def main():
     args = parser.parse_args()
 
     tickers = [t.upper() for t in args.tickers]
-    results = run_evaluations(tickers, bankroll=args.bankroll, skip_ib_price=args.fast)
+    results = run_evaluations(
+        tickers,
+        bankroll=args.bankroll,
+        skip_ib_price=args.fast,
+        flow_days=args.days,
+    )
 
     if args.json:
         output = []

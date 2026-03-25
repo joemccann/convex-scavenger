@@ -99,14 +99,14 @@ python3.13 scripts/fetch_options.py [TICKER]
 | Command | Data Fetched | Purpose | Speed |
 |---------|-------------|---------|-------|
 | `scan` | Dark pool only (5 days) | Quick ranking of watchlist | ~17-25s for 19 tickers |
-| `evaluate [TICKER]` | Dark pool + options flow + OI + news + analysts | Full trade decision | ~6-15s per ticker |
+| `evaluate [TICKER] [--days N]` | Dark pool + options flow + OI + news + analysts | Full trade decision | ~6-15s per ticker |
 | `discover` | Flow alerts market-wide | Find new candidates | Variable |
 
 **Key difference**: `scan` skips options flow for speed. It ranks tickers by dark pool signal strength but does NOT detect conflicts with options flow. Use `evaluate` for trade decisions — it does full 7-milestone analysis including conflict detection.
 
 **Intraday interpolation**: During market hours, all dark pool data is **automatically interpolated**. Today's partial data is blended with prior days' patterns based on trading day progress. The `aggregate` values used for scoring/edge determination are interpolated — not raw partial-day values. Confidence level (LOW/MEDIUM/HIGH) depends on how much of the trading day has elapsed.
 
-**Workflow**: `scan` → identify top candidates → `evaluate [TICKER]` → trade decision
+**Workflow**: `scan` → identify top candidates → `evaluate [TICKER]` (optional `--days`) → trade decision
 
 ### Scripts
 

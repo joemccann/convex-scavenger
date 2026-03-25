@@ -402,7 +402,7 @@ Volume Pace: 1.28x (Above average — signal is real)
 
 | Command | Action |
 |---------|--------|
-| `evaluate [TICKER]` | **Run `python3.13 scripts/evaluate.py [TICKER]`** — full 7-milestone evaluation |
+| `evaluate [TICKER] [--days N]` | **Run `python3.13 scripts/evaluate.py [TICKER]`** — full 7-milestone evaluation (use `--days N` to set dark-pool lookback; default 5) |
 | `scan` | Scan watchlist for dark pool flow signals + CRI regime overlay — generates HTML report |
 | `discover` | Find new candidates — market-wide (default), or pass tickers/presets |
 | `portfolio` | **Generate HTML portfolio report and open in browser** |
@@ -674,6 +674,9 @@ When user runs `evaluate [TICKER]`, ALWAYS:
 ```bash
 # Standard evaluation (human-readable output)
 python3.13 scripts/evaluate.py AAPL
+
+# Set dark-pool lookback days
+python3.13 scripts/evaluate.py AAPL --days 10
 
 # JSON output (for programmatic use)
 python3.13 scripts/evaluate.py AAPL --json

@@ -246,6 +246,11 @@ const parseEvaluate = (args: string[]) => {
   return { ticker: clamp(tickerArg, 12), days: parsed.days };
 };
 
+export const buildEvaluateCommand = (args: string[]): string[] => {
+  const { ticker, days } = parseEvaluate(args);
+  return ["scripts/evaluate.py", ticker, "--days", days ?? "5"];
+};
+
 const parseGenericIntFlags = (args: string[], schema: Record<string, (value: string) => string>) => {
   const parsed: Record<string, string> = {};
   const positional: string[] = [];
@@ -372,37 +377,20 @@ const executeDiscover = async (args: string[], paths: Paths): Promise<ScriptResu
 };
 
 const executeEvaluate = async (args: string[], paths: Paths): Promise<ScriptResult> => {
-  const { ticker, days } = parseEvaluate(args);
+  const commandArgs = buildEvaluateCommand(args);
 
-  const flowArgs = ["scripts/fetch_flow.py", ticker];
-  const commands: ScriptResult[] = [];
+  const result = await runPythonScript(commandArgs[0], commandArgs.slice(1), paths.cwd);
 
-  if (days) {
-    flowArgs.push("--days", days);
-  }
+  const status: CommandStatus = result.exitCode === 0 || !!result.output ? "ok" : "error";
 
-  const fetchTicker = await runPythonScript("scripts/fetch_ticker.py", [ticker], paths.cwd);
-  commands.push(fetchTicker);
-
-  const fetchFlow = await runPythonScript(flowArgs[0], flowArgs.slice(1), paths.cwd);
-  commands.push(fetchFlow);
-
-  const fetchOptions = await runPythonScript("scripts/fetch_options.py", [ticker], paths.cwd);
-  commands.push(fetchOptions);
-
-  const output = commands
-    .map((result) => `# ${result.command}\nexit=${result.exitCode}\nstdout:\n${result.output || "<no output>"}\n`)
-    .join("\n");
-
-  const hasError = commands.some((item) => item.status === "error");
   return {
     command: "evaluate",
-    status: hasError ? "error" : "ok",
-    output: output.trim(),
-    stderr: commands.map((item) => item.stderr).filter(Boolean).join("\n\n"),
-    exitCode: hasError ? 1 : 0,
-    timedOut: commands.some((item) => item.timedOut),
-    source: "script",
+    status,
+    output: result.output,
+    stderr: result.stderr,
+    exitCode: result.exitCode,
+    timedOut: result.timedOut,
+    source: result.source,
   };
 };
 
@@ -510,6 +498,34 @@ const executeCommand = async (value: ParsedCommand): Promise<ScriptResult> => {
   }
 };
 
+const resolvePiInput = (body: PiRoutePayload): string => {
+  const inputParts: string[] = [
+    typeof body.command === "string" ? body.command.trim() : "",
+    typeof body.text === "string" ? body.text.trim() : "",
+    typeof body.input === "string" ? body.input.trim() : "",
+  ].filter(Boolean);
+
+  if (inputParts.length === 0) {
+    return "";
+  }
+
+  if (inputParts.length === 1) {
+    return inputParts[0];
+  }
+
+  const [first, second] = inputParts;
+  const firstHasTokens = first.includes(" ") || first.includes("\n");
+  const secondIsFlag = second.startsWith("-");
+
+  if (!firstHasTokens && second && !secondIsFlag) {
+    return `${first} ${second}`;
+  }
+
+  return first;
+};
+
+export const __resolvePiInput = resolvePiInput;
+
 export async function POST(request: NextRequest): Promise<Response> {
   let body: PiRoutePayload;
   try {
@@ -518,12 +534,13 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
   }
 
-  const rawInput = body.command ?? body.text ?? body.input;
-  if (typeof rawInput !== "string") {
+  const normalizedInput = resolvePiInput(body);
+
+  if (typeof normalizedInput !== "string" || !normalizedInput) {
     return NextResponse.json({ error: "Missing input text." }, { status: 400 });
   }
 
-  const parsed = normalizeCommand(rawInput);
+  const parsed = normalizeCommand(normalizedInput);
   if (!parsed) {
     return NextResponse.json(
       {
