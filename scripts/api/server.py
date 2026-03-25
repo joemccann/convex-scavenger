@@ -1202,26 +1202,38 @@ async def _run_ib_script_with_recovery(
             )
             return result
 
-        logger.warning(
-            "IB Gateway unreachable (port=%s, upstream_dead=%s), attempting auto-restart...",
-            port_ok, upstream_dead,
-        )
-        gw_result = await restart_ib_gateway()
-
-        if gw_result.get("restarted") and gw_result.get("port_listening"):
-            logger.info("IB Gateway restarted, retrying %s", script)
-            _ib_last_failure = 0.0  # Clear cooldown after successful restart
-            if ib_pool:
-                await ib_pool.disconnect_all()
-                await ib_pool.connect_all()
-            result = await run_script(script, args, timeout=timeout)
-        else:
-            logger.error("IB Gateway restart failed: %s", gw_result)
+        if is_docker_mode():
+            # Docker manages Gateway reliability — don't attempt restart.
+            # Return 503 and let Docker's restart: unless-stopped handle it.
+            logger.warning(
+                "IB Gateway unreachable in Docker mode (port=%s, upstream_dead=%s) — not restarting (Docker handles it)",
+                port_ok, upstream_dead,
+            )
             result = ScriptResult(
                 ok=False,
-                error=f"IB Gateway is down and restart failed. {gw_result.get('error', '')}".strip()
-                    + " Check IBKR Mobile for 2FA approval.",
+                error="IB Gateway is not responding. Docker will auto-restart the container. Check IBKR Mobile for 2FA approval.",
             )
+        else:
+            logger.warning(
+                "IB Gateway unreachable (port=%s, upstream_dead=%s), attempting auto-restart...",
+                port_ok, upstream_dead,
+            )
+            gw_result = await restart_ib_gateway()
+
+            if gw_result.get("restarted") and gw_result.get("port_listening"):
+                logger.info("IB Gateway restarted, retrying %s", script)
+                _ib_last_failure = 0.0  # Clear cooldown after successful restart
+                if ib_pool:
+                    await ib_pool.disconnect_all()
+                    await ib_pool.connect_all()
+                result = await run_script(script, args, timeout=timeout)
+            else:
+                logger.error("IB Gateway restart failed: %s", gw_result)
+                result = ScriptResult(
+                    ok=False,
+                    error=f"IB Gateway is down and restart failed. {gw_result.get('error', '')}".strip()
+                        + " Check IBKR Mobile for 2FA approval.",
+                )
 
     return result
 

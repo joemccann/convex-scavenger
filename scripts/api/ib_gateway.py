@@ -242,14 +242,16 @@ async def _docker_compose(*args: str, timeout: float = 30.0) -> tuple:
         return ("", "Docker compose command timed out", -1)
 
 
-async def _docker_container_state() -> str:
-    """Get Docker container state: running, exited, restarting, not_found."""
+async def _docker_container_state() -> tuple:
+    """Get Docker container state and health.
+
+    Returns (state, health) tuple, e.g. ("running", "healthy"), ("exited", "").
+    """
     stdout, _, rc = await _docker_compose("ps", "--format", "json", timeout=10.0)
     if rc != 0 or not stdout:
-        return "not_found"
+        return "not_found", ""
 
     try:
-        # docker compose ps --format json can return one JSON object per line
         for line in stdout.strip().split("\n"):
             line = line.strip()
             if not line:
@@ -257,32 +259,44 @@ async def _docker_container_state() -> str:
             entry = json.loads(line)
             if entry.get("Service") == "ib-gateway" or "ib-gateway" in entry.get("Name", ""):
                 state = entry.get("State", "unknown").lower()
-                return state
+                health = entry.get("Health", "").lower()
+                return state, health
     except (json.JSONDecodeError, KeyError):
         pass
 
-    return "not_found"
+    return "not_found", ""
 
 
 async def _check_docker() -> Dict:
     """Check Gateway health via Docker container status."""
     port_ok = await asyncio.to_thread(_port_listening)
-    container_state = await _docker_container_state()
+    container_state, container_health = await _docker_container_state()
 
     # Map container health status
-    health = "unknown"
+    service_state = "unknown"
     if container_state == "running":
-        health = "healthy" if port_ok else "starting"
+        if container_health == "healthy":
+            service_state = "healthy"
+        elif container_health == "unhealthy":
+            service_state = "unhealthy"
+        else:
+            service_state = "starting" if not port_ok else "healthy"
     elif container_state == "restarting":
-        health = "restarting"
+        service_state = "restarting"
     elif container_state in ("exited", "not_found"):
-        health = "stopped"
+        service_state = "stopped"
+
+    # In Docker mode, upstream_dead means the container is running but IB API
+    # inside is not responsive (unhealthy healthcheck). Docker's port proxy
+    # may still accept TCP connections even when the IB API is down.
+    upstream_dead = container_state == "running" and container_health == "unhealthy"
 
     return {
         "port_listening": port_ok,
-        "upstream_dead": False,  # Docker isolation — CLOSE_WAIT not applicable
-        "service_state": health,
+        "upstream_dead": upstream_dead,
+        "service_state": service_state,
         "container_state": container_state,
+        "container_health": container_health,
         "host": IB_HOST,
         "port": IB_PORT,
         "gateway_mode": "docker",
@@ -290,13 +304,18 @@ async def _check_docker() -> Dict:
 
 
 async def _ensure_docker_container() -> Dict:
-    """Ensure Docker container is running. Start if stopped, wait if restarting."""
+    """Ensure Docker container is running. Start if stopped, wait if restarting.
+
+    In Docker mode, we do NOT attempt to restart the container — Docker's
+    restart: unless-stopped policy handles that. We only start a stopped/missing
+    container, or wait for a restarting one.
+    """
     port_ok = await asyncio.to_thread(_port_listening)
 
     if port_ok:
         return {"status": "already_running", "port_listening": True, "gateway_mode": "docker"}
 
-    container_state = await _docker_container_state()
+    container_state, container_health = await _docker_container_state()
 
     if container_state == "restarting":
         logger.info("Docker container is restarting, waiting for port...")
@@ -318,6 +337,16 @@ async def _ensure_docker_container() -> Dict:
                 "port_listening": False,
                 "gateway_mode": "docker",
             }
+    elif container_state == "running" and container_health == "unhealthy":
+        # Container is running but IB API is unresponsive (e.g. 2FA expired).
+        # Docker's restart: unless-stopped will cycle it. Don't restart from here.
+        logger.warning("Docker container running but unhealthy — waiting for Docker auto-restart")
+        return {
+            "restarted": False,
+            "port_listening": False,
+            "gateway_mode": "docker",
+            "error": "IB Gateway container is unhealthy (IB API not responding). Docker will auto-restart. Check IBKR Mobile for 2FA.",
+        }
 
     # Container running but port not yet ready — wait
     logger.info("Waiting for Gateway port (up to %ds)...", RESTART_WAIT_SECS)
@@ -343,8 +372,13 @@ async def _ensure_docker_container() -> Dict:
 
 
 async def _restart_docker() -> Dict:
-    """Restart Gateway via Docker Compose."""
-    container_state = await _docker_container_state()
+    """Restart Gateway via Docker Compose.
+
+    For running containers, issue docker compose restart. Docker's own
+    restart: unless-stopped policy handles crash recovery — this is only
+    for explicit user-initiated restarts via POST /ib/restart.
+    """
+    container_state, _ = await _docker_container_state()
 
     if container_state in ("exited", "not_found"):
         return await _ensure_docker_container()
