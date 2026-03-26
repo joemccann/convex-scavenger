@@ -190,8 +190,18 @@ function OrderBuilder({
   const lastStructureKeyRef = useRef("");
   const structure = detectStructure(legs);
   const netPrice = computeNetPrice(pricingLegs, prices);
-  const isDebit = netPrice != null && netPrice > 0;
+  const isDebit = netPrice != null ? netPrice > 0 : null;
   const totalQty = normalizedOrder?.quantity ?? (legs.length > 0 ? legs[0].quantity : 1);
+
+  const parsedPrice = parseFloat(limitPrice);
+  const isValidPrice = !isNaN(parsedPrice) && parsedPrice > 0;
+  const signedLimitPrice = Number.isFinite(parsedPrice)
+    ? isDebit === null
+      ? parsedPrice
+      : isDebit
+        ? Math.abs(parsedPrice)
+        : -Math.abs(parsedPrice)
+    : NaN;
 
   // For BID/MID/ASK quote, always use ratio-normalized legs (quantity=1 for single leg)
   // so the quote shows per-unit price, not aggregate (e.g. $1.46 not $73.00 for 50 contracts)
@@ -220,9 +230,6 @@ function OrderBuilder({
       setLimitPrice(netPrices.mid.toFixed(2));
     }
   }, [netPrices.mid, priceManuallySet, structureKey]);
-
-  const parsedPrice = parseFloat(limitPrice);
-  const isValidPrice = !isNaN(parsedPrice) && parsedPrice > 0;
 
   // Calculate order summary for confirmation
   const orderSummary: OrderSummary | null = useMemo(() => {
@@ -283,7 +290,7 @@ function OrderBuilder({
             symbol: ticker,
             action: getComboEntryAction(comboOrder.legs),
             quantity: totalQty,
-            limitPrice: parsedPrice,
+            limitPrice: signedLimitPrice,
             tif,
             legs: comboOrder.legs.map((l) => ({
               symbol: ticker,
@@ -325,7 +332,17 @@ function OrderBuilder({
     } finally {
       setLoading(false);
     }
-  }, [confirmStep, ticker, legs, parsedPrice, normalizedOrder, totalQty, tif, structure]);
+  }, [
+    confirmStep,
+    ticker,
+    legs,
+    parsedPrice,
+    normalizedOrder,
+    totalQty,
+    tif,
+    structure,
+    signedLimitPrice,
+  ]);
 
   // Convert chain legs to unified OrderLeg format for pills
   const unifiedLegs: UnifiedOrderLeg[] = useMemo(() => {
@@ -528,7 +545,7 @@ function OrderBuilder({
               className="modify-price-input"
               type="number"
               step="0.01"
-              min="0.01"
+              min={isCombo ? "-100000" : "0.01"}
               value={limitPrice}
               onChange={(e) => {
                 setLimitPrice(e.target.value);
@@ -581,7 +598,7 @@ function OrderBuilder({
           </div>
           {isValidPrice && (
             <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-secondary)", marginTop: "4px" }}>
-              {fmtPrice(parsedPrice * totalQty * 100)} notional
+              {fmtPrice(signedLimitPrice * totalQty * 100)} notional
             </span>
           )}
         </div>
@@ -804,7 +821,7 @@ export default function OptionsChainTab({
     if (!focusPosition || !focusedExpiry || focusedExpiry !== selectedExpiry) return null;
     const positionStrikes = focusPosition.legs
       .map((leg) => leg.strike)
-      .filter((strike): strike is number => Number.isFinite(strike) && strike > 0);
+      .filter((strike): strike is number => strike != null && Number.isFinite(strike) && strike > 0);
     if (positionStrikes.length === 0) return null;
     if (currentPrice == null) return positionStrikes[0];
 
