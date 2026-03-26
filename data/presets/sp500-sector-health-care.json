@@ -40,7 +40,6 @@
     "LLY",
     "MCK",
     "MDT",
-    "MOH",
     "MRK",
     "MRNA",
     "MTD",
@@ -177,10 +176,6 @@
       "CNC"
     ],
     [
-      "MOH",
-      "CNC"
-    ],
-    [
       "JNJ",
       "MRK"
     ],
@@ -198,6 +193,5 @@
     ]
   ],
   "sector": "Health Care",
-  "vol_driver": "Drug approvals, Medicare policy, M&A cycles",
   "source": "S&P 500 GICS classification"
 }

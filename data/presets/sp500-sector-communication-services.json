@@ -12,12 +12,12 @@
     "GOOGL",
     "LYV",
     "META",
-    "MTCH",
     "NFLX",
     "NWS",
     "NWSA",
     "OMC",
     "PSKY",
+    "SATS",
     "T",
     "TKO",
     "TMUS",
@@ -57,7 +57,7 @@
     ],
     [
       "GOOG",
-      "MTCH"
+      "GOOGL"
     ],
     [
       "DIS",
@@ -77,6 +77,5 @@
     ]
   ],
   "sector": "Communication Services",
-  "vol_driver": "Ad spending, streaming, telecom capex",
   "source": "S&P 500 GICS classification"
 }

@@ -84,6 +84,5 @@
     ]
   ],
   "sector": "Materials",
-  "vol_driver": "Commodity prices, construction, manufacturing",
   "source": "S&P 500 GICS classification"
 }

@@ -1,15 +1,14 @@
 {
   "name": "r2k-communication",
-  "description": "Russell 2000 Communication (78 companies)",
+  "description": "Russell 2000 Communication (77 companies)",
   "tickers": [
     "SATS",
     "LUMN",
     "TDS",
-    "TGNA",
-    "SPHR",
     "GSAT",
-    "CARG",
+    "SPHR",
     "CNK",
+    "CARG",
     "MSGE",
     "LION",
     "BATRK",
@@ -19,66 +18,66 @@
     "WLY",
     "YELP",
     "UNIT",
-    "TRIP",
     "LILAK",
-    "CCOI",
+    "TRIP",
     "TDAY",
+    "CCOI",
+    "SCHL",
     "IDT",
     "SHEN",
-    "STGW",
-    "SCHL",
     "QNST",
+    "STGW",
     "RUM",
     "AMC",
     "SBGI",
     "CABO",
-    "EVER",
     "BAND",
-    "CARS",
+    "EVER",
     "ATEX",
-    "SSTK",
+    "CARS",
     "GTN",
+    "SSTK",
     "GRND",
-    "FUBO",
-    "BATRA",
-    "IBTA",
-    "OPTU",
     "MCS",
+    "BATRA",
+    "OPTU",
     "GOGO",
-    "MAX",
-    "NMAX",
-    "NXDR",
     "IHRT",
+    "IBTA",
+    "MAX",
+    "FUBO",
     "PUBM",
-    "BMBL",
-    "ANGI",
-    "ATNI",
-    "BOC",
-    "NEXN",
+    "NXDR",
+    "NMAX",
     "LILA",
-    "NCMI",
+    "ATNI",
+    "ANGI",
+    "BOC",
+    "BMBL",
     "SSP",
     "AMCX",
+    "NCMI",
+    "NEXN",
     "SPOK",
     "EVC",
     "RSVR",
-    "ZIP",
     "PLTK",
     "WBTN",
     "STRZ",
     "CURI",
+    "ZIP",
     "TTGT",
     "THRY",
-    "GETY",
     "GAMB",
     "ADV",
     "EEX",
+    "GETY",
     "GAIA",
     "MYPS",
     "TZOO",
     "AREN",
-    "TEAD",
     "SEAT",
+    "TEAD",
     "MRDN"
   ],
   "pairs": [
@@ -88,122 +87,118 @@
     ],
     [
       "TDS",
-      "TGNA"
-    ],
-    [
-      "SPHR",
       "GSAT"
     ],
     [
-      "CARG",
+      "SPHR",
       "CNK"
     ],
     [
-      "MSGE",
-      "LION"
+      "CARG",
+      "MSGE"
     ],
     [
-      "BATRK",
-      "MGNI"
+      "LION",
+      "BATRK"
     ],
     [
-      "ZD",
-      "IMAX"
+      "MGNI",
+      "ZD"
     ],
     [
-      "WLY",
-      "YELP"
+      "IMAX",
+      "WLY"
     ],
     [
-      "UNIT",
-      "TRIP"
+      "YELP",
+      "UNIT"
     ],
     [
       "LILAK",
-      "CCOI"
+      "TRIP"
     ],
     [
       "TDAY",
+      "CCOI"
+    ],
+    [
+      "SCHL",
       "IDT"
     ],
     [
       "SHEN",
-      "STGW"
-    ],
-    [
-      "SCHL",
       "QNST"
     ],
     [
-      "RUM",
-      "AMC"
+      "STGW",
+      "RUM"
     ],
     [
-      "SBGI",
-      "CABO"
+      "AMC",
+      "SBGI"
     ],
     [
-      "EVER",
+      "CABO",
       "BAND"
     ],
     [
-      "CARS",
+      "EVER",
       "ATEX"
     ],
     [
-      "SSTK",
+      "CARS",
       "GTN"
     ],
     [
-      "GRND",
-      "FUBO"
+      "SSTK",
+      "GRND"
     ],
     [
-      "BATRA",
-      "IBTA"
+      "MCS",
+      "BATRA"
     ],
     [
       "OPTU",
-      "MCS"
-    ],
-    [
-      "GOGO",
-      "MAX"
-    ],
-    [
-      "NMAX",
-      "NXDR"
+      "GOGO"
     ],
     [
       "IHRT",
-      "PUBM"
+      "IBTA"
     ],
     [
-      "BMBL",
-      "ANGI"
+      "MAX",
+      "FUBO"
     ],
     [
-      "ATNI",
-      "BOC"
+      "PUBM",
+      "NXDR"
     ],
     [
-      "NEXN",
+      "NMAX",
       "LILA"
     ],
     [
+      "ATNI",
+      "ANGI"
+    ],
+    [
+      "BOC",
+      "BMBL"
+    ],
+    [
+      "SSP",
+      "AMCX"
+    ],
+    [
       "NCMI",
-      "SSP"
+      "NEXN"
     ],
     [
-      "AMCX",
-      "SPOK"
+      "SPOK",
+      "EVC"
     ],
     [
-      "EVC",
-      "RSVR"
-    ],
-    [
-      "ZIP",
+      "RSVR",
       "PLTK"
     ],
     [
@@ -212,11 +207,11 @@
     ],
     [
       "CURI",
-      "TTGT"
+      "ZIP"
     ],
     [
-      "THRY",
-      "GETY"
+      "TTGT",
+      "THRY"
     ],
     [
       "GAMB",
@@ -224,19 +219,23 @@
     ],
     [
       "EEX",
-      "GAIA"
+      "GETY"
     ],
     [
-      "MYPS",
-      "TZOO"
+      "GAIA",
+      "MYPS"
     ],
     [
-      "AREN",
-      "TEAD"
+      "TZOO",
+      "AREN"
     ],
     [
       "SEAT",
-      "MRDN"
+      "TEAD"
+    ],
+    [
+      "MRDN",
+      "SATS"
     ]
   ],
   "sector": "Communication",

@@ -2,520 +2,524 @@
   "name": "r2k-consumer-discretionary",
   "description": "Russell 2000 Consumer Discretionary (197 companies)",
   "tickers": [
-    "IBP",
     "EAT",
+    "IBP",
     "TMHC",
     "BOOT",
-    "FTDR",
-    "MTH",
     "LAUR",
     "SKY",
+    "FTDR",
+    "MTH",
     "ANF",
-    "TPH",
     "URBN",
     "LTH",
-    "DAN",
+    "CVSA",
+    "TPH",
     "GPI",
     "KTB",
-    "CVSA",
+    "DAN",
+    "ABG",
     "CVCO",
     "LRN",
-    "ABG",
     "PATK",
-    "GHC",
-    "SHAK",
-    "ASO",
-    "KBH",
-    "VSCO",
-    "MHO",
     "SIG",
+    "ASO",
+    "SHAK",
+    "GHC",
+    "GTX",
+    "MHO",
+    "KBH",
     "AAP",
+    "VSCO",
+    "PII",
+    "DORM",
     "LCII",
     "RRR",
-    "DORM",
-    "PII",
     "AEO",
-    "GTX",
+    "PHIN",
     "CAKE",
     "GOLF",
     "HGV",
-    "PHIN",
-    "WRBY",
+    "PRDO",
     "SHOO",
     "VC",
-    "PRDO",
+    "OSW",
+    "WRBY",
     "EYE",
     "CPRI",
-    "OSW",
-    "VAC",
-    "GRBK",
-    "STRA",
     "RSI",
+    "GRBK",
+    "VAC",
+    "STRA",
+    "UTI",
     "CALY",
     "GT",
+    "ADNT",
     "SGHC",
     "FUN",
-    "UTI",
-    "ADNT",
     "PTON",
-    "SONO",
     "BKE",
+    "SONO",
     "CCS",
-    "SBH",
-    "LZB",
-    "WWW",
-    "BRSL",
-    "LEG",
-    "KSS",
     "FIGS",
-    "CRI",
+    "KSS",
+    "SBH",
+    "WWW",
+    "DCH",
+    "BRSL",
+    "LZB",
+    "LEG",
     "WINA",
     "MCRI",
-    "DCH",
+    "CRI",
     "LINC",
     "PZZA",
-    "GENI",
     "GCT",
-    "GIII",
     "XPEL",
     "APEI",
-    "REAL",
-    "RVLV",
-    "UPBD",
+    "GENI",
+    "GIII",
     "SAH",
+    "REAL",
+    "UPBD",
+    "RVLV",
     "WGO",
-    "GOLD",
-    "PRKS",
     "THRM",
+    "PRKS",
     "COUR",
+    "GOLD",
     "LGIH",
     "PRSU",
-    "GBTG",
     "SMP",
-    "MATW",
-    "BJRI",
-    "MCW",
-    "FOXF",
-    "FWRG",
-    "LIND",
     "DRVN",
+    "MATW",
+    "FOXF",
+    "BJRI",
+    "LIND",
+    "GBTG",
+    "MCW",
     "SWBI",
-    "CBRL",
+    "FWRG",
     "ZGN",
+    "CBRL",
     "SERV",
-    "SG",
     "CSV",
-    "BZH",
-    "ACEL",
     "RGR",
+    "ACEL",
     "SABR",
-    "GDEN",
+    "SG",
     "HOV",
-    "ETD",
-    "BBW",
-    "HZO",
-    "CPS",
-    "BLMN",
+    "BZH",
     "SLDP",
+    "ETD",
+    "CPS",
+    "GDEN",
+    "HZO",
     "MBUU",
-    "MNRO",
+    "BBW",
+    "BLMN",
     "OXM",
+    "MNRO",
+    "KRUS",
     "UDMY",
-    "DIN",
     "DFH",
-    "MH",
-    "ARKO",
+    "CWH",
     "LOCO",
+    "ARKO",
+    "MH",
+    "SFIX",
+    "CAL",
+    "MOV",
+    "DIN",
     "PTLO",
     "ARHS",
-    "PLAY",
-    "KRUS",
-    "MOV",
-    "HELE",
-    "SFIX",
-    "CWH",
     "NAVN",
-    "BBBY",
-    "TDUP",
-    "SCVL",
-    "MCFT",
-    "SVV",
-    "CAL",
+    "HELE",
     "STRT",
+    "TDUP",
+    "PLAY",
+    "BBBY",
+    "MCFT",
+    "SCVL",
     "TH",
+    "ZUMZ",
+    "SVV",
+    "GRPN",
+    "HVT",
+    "GCO",
     "RCKY",
     "NATH",
-    "HVT",
-    "ZUMZ",
-    "DNUT",
-    "GRPN",
-    "BRCB",
     "SWIM",
+    "JOUT",
+    "DNUT",
+    "BRCB",
     "WOOF",
     "EVGO",
-    "GCO",
-    "JOUT",
     "HLLY",
-    "CTRN",
-    "JACK",
-    "CRCT",
     "BH",
+    "CTRN",
+    "POWW",
+    "CRCT",
+    "RICK",
+    "JACK",
     "JAKK",
     "DBI",
     "WEYS",
-    "POWW",
-    "RICK",
-    "EWCZ",
-    "INSE",
     "ESCA",
-    "FLXS",
+    "INSE",
+    "EWCZ",
     "XPOF",
-    "BNED",
-    "LEGH",
+    "FLXS",
     "LOVE",
-    "FNKO",
+    "LEGH",
+    "BNED",
     "MPAA",
-    "LE",
     "PXED",
+    "FNKO",
     "HBB",
+    "LE",
     "JILL",
     "SGC",
     "BALY",
     "BSET",
     "ONEW",
     "AOUT",
-    "BARK",
+    "ELA",
     "CRMT",
-    "FLWS",
     "CLAR",
     "KLC",
+    "FLWS",
     "LAKE",
-    "ELA",
+    "BARK",
+    "MPX",
+    "CURV",
+    "NRDY",
+    "FFAI",
     "SNBR",
     "LVWR",
-    "NRDY",
-    "MPX",
-    "FFAI",
-    "CURV",
     "COOK",
     "ZSPC"
   ],
   "pairs": [
     [
-      "IBP",
-      "EAT"
+      "EAT",
+      "IBP"
     ],
     [
       "TMHC",
       "BOOT"
     ],
     [
-      "FTDR",
-      "MTH"
-    ],
-    [
       "LAUR",
       "SKY"
     ],
     [
+      "FTDR",
+      "MTH"
+    ],
+    [
       "ANF",
-      "TPH"
+      "URBN"
     ],
     [
-      "URBN",
-      "LTH"
+      "LTH",
+      "CVSA"
     ],
     [
-      "DAN",
+      "TPH",
       "GPI"
     ],
     [
       "KTB",
-      "CVSA"
-    ],
-    [
-      "CVCO",
-      "LRN"
+      "DAN"
     ],
     [
       "ABG",
+      "CVCO"
+    ],
+    [
+      "LRN",
       "PATK"
     ],
     [
-      "GHC",
-      "SHAK"
+      "SIG",
+      "ASO"
     ],
     [
-      "ASO",
-      "KBH"
+      "SHAK",
+      "GHC"
     ],
     [
-      "VSCO",
+      "GTX",
       "MHO"
     ],
     [
-      "SIG",
+      "KBH",
       "AAP"
     ],
     [
-      "LCII",
-      "RRR"
-    ],
-    [
-      "DORM",
+      "VSCO",
       "PII"
     ],
     [
-      "AEO",
-      "GTX"
+      "DORM",
+      "LCII"
     ],
     [
-      "CAKE",
-      "GOLF"
+      "RRR",
+      "AEO"
     ],
     [
-      "HGV",
-      "PHIN"
+      "PHIN",
+      "CAKE"
     ],
     [
-      "WRBY",
+      "GOLF",
+      "HGV"
+    ],
+    [
+      "PRDO",
       "SHOO"
     ],
     [
       "VC",
-      "PRDO"
+      "OSW"
     ],
     [
-      "EYE",
-      "CPRI"
+      "WRBY",
+      "EYE"
     ],
     [
-      "OSW",
-      "VAC"
+      "CPRI",
+      "RSI"
     ],
     [
       "GRBK",
-      "STRA"
+      "VAC"
     ],
     [
-      "RSI",
-      "CALY"
+      "STRA",
+      "UTI"
     ],
     [
-      "GT",
+      "CALY",
+      "GT"
+    ],
+    [
+      "ADNT",
       "SGHC"
     ],
     [
       "FUN",
-      "UTI"
-    ],
-    [
-      "ADNT",
       "PTON"
     ],
     [
-      "SONO",
-      "BKE"
+      "BKE",
+      "SONO"
     ],
     [
       "CCS",
-      "SBH"
-    ],
-    [
-      "LZB",
-      "WWW"
-    ],
-    [
-      "BRSL",
-      "LEG"
-    ],
-    [
-      "KSS",
       "FIGS"
     ],
     [
-      "CRI",
+      "KSS",
+      "SBH"
+    ],
+    [
+      "WWW",
+      "DCH"
+    ],
+    [
+      "BRSL",
+      "LZB"
+    ],
+    [
+      "LEG",
       "WINA"
     ],
     [
       "MCRI",
-      "DCH"
+      "CRI"
     ],
     [
       "LINC",
       "PZZA"
     ],
     [
-      "GENI",
-      "GCT"
-    ],
-    [
-      "GIII",
+      "GCT",
       "XPEL"
     ],
     [
       "APEI",
-      "REAL"
+      "GENI"
     ],
     [
-      "RVLV",
+      "GIII",
+      "SAH"
+    ],
+    [
+      "REAL",
       "UPBD"
     ],
     [
-      "SAH",
+      "RVLV",
       "WGO"
     ],
     [
-      "GOLD",
+      "THRM",
       "PRKS"
     ],
     [
-      "THRM",
-      "COUR"
+      "COUR",
+      "GOLD"
     ],
     [
       "LGIH",
       "PRSU"
     ],
     [
-      "GBTG",
-      "SMP"
+      "SMP",
+      "DRVN"
     ],
     [
       "MATW",
-      "BJRI"
-    ],
-    [
-      "MCW",
       "FOXF"
     ],
     [
-      "FWRG",
+      "BJRI",
       "LIND"
     ],
     [
-      "DRVN",
-      "SWBI"
+      "GBTG",
+      "MCW"
     ],
     [
-      "CBRL",
-      "ZGN"
+      "SWBI",
+      "FWRG"
+    ],
+    [
+      "ZGN",
+      "CBRL"
     ],
     [
       "SERV",
-      "SG"
+      "CSV"
     ],
     [
-      "CSV",
-      "BZH"
-    ],
-    [
-      "ACEL",
-      "RGR"
+      "RGR",
+      "ACEL"
     ],
     [
       "SABR",
-      "GDEN"
+      "SG"
     ],
     [
       "HOV",
-      "ETD"
-    ],
-    [
-      "BBW",
-      "HZO"
-    ],
-    [
-      "CPS",
-      "BLMN"
+      "BZH"
     ],
     [
       "SLDP",
+      "ETD"
+    ],
+    [
+      "CPS",
+      "GDEN"
+    ],
+    [
+      "HZO",
       "MBUU"
     ],
     [
-      "MNRO",
-      "OXM"
+      "BBW",
+      "BLMN"
     ],
     [
-      "UDMY",
-      "DIN"
+      "OXM",
+      "MNRO"
+    ],
+    [
+      "KRUS",
+      "UDMY"
     ],
     [
       "DFH",
-      "MH"
-    ],
-    [
-      "ARKO",
-      "LOCO"
-    ],
-    [
-      "PTLO",
-      "ARHS"
-    ],
-    [
-      "PLAY",
-      "KRUS"
-    ],
-    [
-      "MOV",
-      "HELE"
-    ],
-    [
-      "SFIX",
       "CWH"
     ],
     [
-      "NAVN",
-      "BBBY"
+      "LOCO",
+      "ARKO"
     ],
     [
-      "TDUP",
-      "SCVL"
-    ],
-    [
-      "MCFT",
-      "SVV"
+      "MH",
+      "SFIX"
     ],
     [
       "CAL",
+      "MOV"
+    ],
+    [
+      "DIN",
+      "PTLO"
+    ],
+    [
+      "ARHS",
+      "NAVN"
+    ],
+    [
+      "HELE",
       "STRT"
     ],
     [
-      "TH",
+      "TDUP",
+      "PLAY"
+    ],
+    [
+      "BBBY",
+      "MCFT"
+    ],
+    [
+      "SCVL",
+      "TH"
+    ],
+    [
+      "ZUMZ",
+      "SVV"
+    ],
+    [
+      "GRPN",
+      "HVT"
+    ],
+    [
+      "GCO",
       "RCKY"
     ],
     [
       "NATH",
-      "HVT"
+      "SWIM"
     ],
     [
-      "ZUMZ",
+      "JOUT",
       "DNUT"
     ],
     [
-      "GRPN",
-      "BRCB"
-    ],
-    [
-      "SWIM",
+      "BRCB",
       "WOOF"
     ],
     [
       "EVGO",
-      "GCO"
-    ],
-    [
-      "JOUT",
       "HLLY"
     ],
     [
-      "CTRN",
-      "JACK"
+      "BH",
+      "CTRN"
     ],
     [
-      "CRCT",
-      "BH"
+      "POWW",
+      "CRCT"
+    ],
+    [
+      "RICK",
+      "JACK"
     ],
     [
       "JAKK",
@@ -523,35 +527,31 @@
     ],
     [
       "WEYS",
-      "POWW"
-    ],
-    [
-      "RICK",
-      "EWCZ"
-    ],
-    [
-      "INSE",
       "ESCA"
     ],
     [
-      "FLXS",
-      "XPOF"
+      "INSE",
+      "EWCZ"
     ],
     [
-      "BNED",
-      "LEGH"
+      "XPOF",
+      "FLXS"
     ],
     [
       "LOVE",
-      "FNKO"
+      "LEGH"
     ],
     [
-      "MPAA",
-      "LE"
+      "BNED",
+      "MPAA"
     ],
     [
       "PXED",
-      "HBB"
+      "FNKO"
+    ],
+    [
+      "HBB",
+      "LE"
     ],
     [
       "JILL",
@@ -566,36 +566,36 @@
       "AOUT"
     ],
     [
-      "BARK",
+      "ELA",
       "CRMT"
     ],
     [
-      "FLWS",
-      "CLAR"
+      "CLAR",
+      "KLC"
     ],
     [
-      "KLC",
+      "FLWS",
       "LAKE"
     ],
     [
-      "ELA",
+      "BARK",
+      "MPX"
+    ],
+    [
+      "CURV",
+      "NRDY"
+    ],
+    [
+      "FFAI",
       "SNBR"
     ],
     [
       "LVWR",
-      "NRDY"
-    ],
-    [
-      "MPX",
-      "FFAI"
-    ],
-    [
-      "CURV",
       "COOK"
     ],
     [
       "ZSPC",
-      "IBP"
+      "EAT"
     ]
   ],
   "sector": "Consumer Discretionary",

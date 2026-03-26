@@ -2,38 +2,38 @@
   "name": "r2k-consumer-staples",
   "description": "Russell 2000 Consumer Staples (61 companies)",
   "tickers": [
-    "CALM",
     "PSMT",
+    "CALM",
     "WDFC",
     "MZTI",
-    "COCO",
     "UNFI",
+    "COCO",
     "ANDE",
     "CHEF",
     "SPB",
     "IPAR",
-    "HLF",
     "TPB",
     "CENTA",
+    "HLF",
     "FDP",
-    "SMPL",
-    "UVV",
     "IMKTA",
-    "DOLE",
+    "UVV",
+    "SMPL",
     "JJSF",
     "ENR",
+    "DOLE",
     "EPC",
     "WMK",
     "FIZZ",
     "TR",
     "SENEA",
-    "STKL",
     "ODC",
-    "JBSS",
-    "UTZ",
+    "STKL",
     "GO",
+    "JBSS",
     "MAMA",
     "AVO",
+    "UTZ",
     "VITL",
     "CVGW",
     "NATR",
@@ -44,38 +44,38 @@
     "NGVC",
     "BYND",
     "HNST",
-    "NAGE",
     "MGPI",
-    "LMNR",
+    "NAGE",
     "ALCO",
+    "LMNR",
     "USNA",
     "OLPX",
     "WEST",
     "SKIN",
     "MED",
     "LWAY",
-    "BRCC",
     "HFFG",
+    "BRCC",
     "ZVIA",
     "HAIN",
-    "WALD",
     "LFVN",
-    "ISPR",
+    "WALD",
     "FTLF",
+    "ISPR",
     "AFRI"
   ],
   "pairs": [
     [
-      "CALM",
-      "PSMT"
+      "PSMT",
+      "CALM"
     ],
     [
       "WDFC",
       "MZTI"
     ],
     [
-      "COCO",
-      "UNFI"
+      "UNFI",
+      "COCO"
     ],
     [
       "ANDE",
@@ -86,24 +86,24 @@
       "IPAR"
     ],
     [
-      "HLF",
-      "TPB"
+      "TPB",
+      "CENTA"
     ],
     [
-      "CENTA",
+      "HLF",
       "FDP"
     ],
     [
-      "SMPL",
+      "IMKTA",
       "UVV"
     ],
     [
-      "IMKTA",
-      "DOLE"
+      "SMPL",
+      "JJSF"
     ],
     [
-      "JJSF",
-      "ENR"
+      "ENR",
+      "DOLE"
     ],
     [
       "EPC",
@@ -115,19 +115,19 @@
     ],
     [
       "SENEA",
-      "STKL"
+      "ODC"
     ],
     [
-      "ODC",
-      "JBSS"
-    ],
-    [
-      "UTZ",
+      "STKL",
       "GO"
     ],
     [
-      "MAMA",
-      "AVO"
+      "JBSS",
+      "MAMA"
+    ],
+    [
+      "AVO",
+      "UTZ"
     ],
     [
       "VITL",
@@ -150,12 +150,12 @@
       "HNST"
     ],
     [
-      "NAGE",
-      "MGPI"
+      "MGPI",
+      "NAGE"
     ],
     [
-      "LMNR",
-      "ALCO"
+      "ALCO",
+      "LMNR"
     ],
     [
       "USNA",
@@ -170,24 +170,24 @@
       "LWAY"
     ],
     [
-      "BRCC",
-      "HFFG"
+      "HFFG",
+      "BRCC"
     ],
     [
       "ZVIA",
       "HAIN"
     ],
     [
-      "WALD",
-      "LFVN"
+      "LFVN",
+      "WALD"
     ],
     [
-      "ISPR",
-      "FTLF"
+      "FTLF",
+      "ISPR"
     ],
     [
       "AFRI",
-      "CALM"
+      "PSMT"
     ]
   ],
   "sector": "Consumer Staples",

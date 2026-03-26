@@ -3,7 +3,8 @@
   "description": "S&P 500 Electronic Components (Information Technology)",
   "tickers": [
     "APH",
-    "GLW"
+    "GLW",
+    "COHR"
   ],
   "pairs": [
     [

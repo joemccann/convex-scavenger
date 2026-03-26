@@ -5,104 +5,104 @@
     "SM",
     "UEC",
     "AROC",
-    "NE",
     "RIG",
     "VAL",
+    "NE",
     "MGY",
-    "CNX",
     "CNR",
+    "CNX",
     "MUR",
-    "LBRT",
-    "CRC",
-    "KGS",
     "GLNG",
+    "KGS",
+    "CRC",
     "BTU",
+    "LBRT",
     "UUUU",
     "PBF",
-    "PTEN",
     "TDW",
-    "LEU",
-    "HP",
+    "PTEN",
     "OII",
-    "WHD",
-    "GPOR",
-    "STNG",
+    "HP",
     "CRGY",
-    "SEI",
+    "GPOR",
+    "WHD",
+    "STNG",
+    "LEU",
     "PARR",
-    "INSW",
-    "SDRL",
-    "DK",
     "NOG",
+    "SEI",
+    "SDRL",
+    "INSW",
+    "DK",
     "DHT",
+    "SOC",
     "KNTK",
-    "CLMT",
     "TALO",
+    "CLMT",
     "TNK",
     "CRK",
+    "BORR",
+    "NESR",
     "XPRO",
     "WTTR",
-    "HLX",
-    "SOC",
-    "BORR",
-    "KOS",
-    "NESR",
-    "WKC",
-    "VTOL",
-    "SFL",
-    "LPG",
     "PUMP",
-    "REX",
+    "HLX",
+    "VTOL",
+    "NEXT",
+    "SFL",
+    "KOS",
+    "LPG",
     "NBR",
+    "WKC",
+    "REX",
     "NAT",
     "GPRE",
+    "DEC",
+    "TTI",
     "AESI",
     "CVI",
-    "TTI",
     "INVX",
-    "NEXT",
-    "DEC",
     "FLNG",
     "EE",
+    "BKV",
     "CLB",
     "OIS",
-    "BKV",
-    "RES",
-    "TK",
-    "SD",
     "FET",
-    "NVGS",
+    "TK",
     "EGY",
+    "RES",
     "GEVO",
+    "NVGS",
+    "SD",
+    "REPX",
     "VTS",
     "ASC",
-    "REPX",
     "FLOC",
     "NGS",
     "CLNE",
-    "EU",
     "RNGR",
-    "WTI",
+    "EU",
     "LTBR",
+    "WTI",
     "GRNT",
-    "SMC",
     "INR",
-    "ACDC",
+    "SMC",
     "NC",
-    "NFE",
-    "HPK",
+    "ACDC",
     "KGEI",
-    "SMHI",
     "ESOA",
+    "SMHI",
+    "HPK",
+    "NFE",
     "EPM",
-    "BOOM",
     "PNRG",
-    "FF",
     "EPSN",
+    "BOOM",
+    "FF",
     "PROP",
     "TUSK",
-    "EP",
     "OPAL",
+    "EP",
     "NXXT",
     "SAFX",
     "VGAS",
@@ -115,150 +115,150 @@
     ],
     [
       "AROC",
+      "RIG"
+    ],
+    [
+      "VAL",
       "NE"
     ],
     [
-      "RIG",
-      "VAL"
-    ],
-    [
       "MGY",
-      "CNX"
+      "CNR"
     ],
     [
-      "CNR",
+      "CNX",
       "MUR"
     ],
     [
+      "GLNG",
+      "KGS"
+    ],
+    [
+      "CRC",
+      "BTU"
+    ],
+    [
       "LBRT",
-      "CRC"
-    ],
-    [
-      "KGS",
-      "GLNG"
-    ],
-    [
-      "BTU",
       "UUUU"
     ],
     [
       "PBF",
-      "PTEN"
+      "TDW"
     ],
     [
-      "TDW",
-      "LEU"
-    ],
-    [
-      "HP",
+      "PTEN",
       "OII"
     ],
     [
-      "WHD",
-      "GPOR"
-    ],
-    [
-      "STNG",
+      "HP",
       "CRGY"
     ],
     [
-      "SEI",
-      "PARR"
+      "GPOR",
+      "WHD"
     ],
     [
-      "INSW",
-      "SDRL"
+      "STNG",
+      "LEU"
     ],
     [
-      "DK",
+      "PARR",
       "NOG"
     ],
     [
+      "SEI",
+      "SDRL"
+    ],
+    [
+      "INSW",
+      "DK"
+    ],
+    [
       "DHT",
-      "KNTK"
-    ],
-    [
-      "CLMT",
-      "TALO"
-    ],
-    [
-      "TNK",
-      "CRK"
-    ],
-    [
-      "XPRO",
-      "WTTR"
-    ],
-    [
-      "HLX",
       "SOC"
     ],
     [
-      "BORR",
-      "KOS"
+      "KNTK",
+      "TALO"
+    ],
+    [
+      "CLMT",
+      "TNK"
+    ],
+    [
+      "CRK",
+      "BORR"
     ],
     [
       "NESR",
-      "WKC"
+      "XPRO"
     ],
     [
-      "VTOL",
-      "SFL"
-    ],
-    [
-      "LPG",
+      "WTTR",
       "PUMP"
     ],
     [
-      "REX",
-      "NBR"
-    ],
-    [
-      "NAT",
-      "GPRE"
-    ],
-    [
-      "AESI",
-      "CVI"
-    ],
-    [
-      "TTI",
-      "INVX"
+      "HLX",
+      "VTOL"
     ],
     [
       "NEXT",
+      "SFL"
+    ],
+    [
+      "KOS",
+      "LPG"
+    ],
+    [
+      "NBR",
+      "WKC"
+    ],
+    [
+      "REX",
+      "NAT"
+    ],
+    [
+      "GPRE",
       "DEC"
+    ],
+    [
+      "TTI",
+      "AESI"
+    ],
+    [
+      "CVI",
+      "INVX"
     ],
     [
       "FLNG",
       "EE"
     ],
     [
-      "CLB",
-      "OIS"
+      "BKV",
+      "CLB"
     ],
     [
-      "BKV",
-      "RES"
+      "OIS",
+      "FET"
     ],
     [
       "TK",
-      "SD"
+      "EGY"
     ],
     [
-      "FET",
-      "NVGS"
-    ],
-    [
-      "EGY",
+      "RES",
       "GEVO"
     ],
     [
-      "VTS",
-      "ASC"
+      "NVGS",
+      "SD"
     ],
     [
       "REPX",
+      "VTS"
+    ],
+    [
+      "ASC",
       "FLOC"
     ],
     [
@@ -266,51 +266,51 @@
       "CLNE"
     ],
     [
-      "EU",
-      "RNGR"
+      "RNGR",
+      "EU"
     ],
     [
-      "WTI",
-      "LTBR"
+      "LTBR",
+      "WTI"
     ],
     [
       "GRNT",
-      "SMC"
+      "INR"
     ],
     [
-      "INR",
-      "ACDC"
+      "SMC",
+      "NC"
     ],
     [
-      "NC",
-      "NFE"
-    ],
-    [
-      "HPK",
+      "ACDC",
       "KGEI"
     ],
     [
-      "SMHI",
-      "ESOA"
+      "ESOA",
+      "SMHI"
+    ],
+    [
+      "HPK",
+      "NFE"
     ],
     [
       "EPM",
-      "BOOM"
-    ],
-    [
-      "PNRG",
-      "FF"
+      "PNRG"
     ],
     [
       "EPSN",
+      "BOOM"
+    ],
+    [
+      "FF",
       "PROP"
     ],
     [
       "TUSK",
-      "EP"
+      "OPAL"
     ],
     [
-      "OPAL",
+      "EP",
       "NXXT"
     ],
     [

@@ -1,9 +1,32 @@
 # Status & Decision Log
 
 ## Last Updated
-2026-03-24T20:27:00-07:00
+2026-03-25T07:31:12-07:00
 
 ## Recent Evaluations
+
+### TSLA — 2026-03-25 ⛔ NO_TRADE
+- **Decision**: NO_TRADE
+- **Failing Gate**: TICKER_VALIDATION
+- **📊 Data as of**: 2026-03-25 07:31 AM PT (LIVE)
+- **Reason**: M1 failed (`fetch_ticker.py` via evaluate pipeline): `API error: Too Many Requests`.
+- **Status**: Evaluation stopped at Gate 1; no fresh options flow / OI / options-flow data fetched.
+
+### AAPL — 2026-03-25 ⛔ NO_TRADE
+- **Decision**: NO_TRADE
+- **Failing Gate**: EDGE (Milestone 4)
+- **📊 Data as of**: 2026-03-25 06:40 AM PT (LIVE)
+- **Reason**: Aggregate flow strength is 18.1 (below threshold >50) with 0 sustained days and no sustained directional edge.
+- **Dark Pool**:
+  - 2026-03-25: 36.3% buy / 27.4 DISTRIBUTION
+  - 2026-03-24: 76.4% buy / 52.8 ACCUMULATION
+  - 2026-03-23: 66.4% buy / 32.7 ACCUMULATION
+  - 2026-03-20: 63.8% buy / 27.6 ACCUMULATION
+  - 2026-03-19: 64.1% buy / 28.3 ACCUMULATION
+  - 2026-03-18: 22.3% buy / 55.5 DISTRIBUTION
+  - AGGREGATE: 59.0% buy / 18.1 ACCUMULATION
+- **OI Changes**: MASSIVE 0, LARGE 2, SIGNIFICANT 11, Total $54,868,496
+- **News**: BEARISH sentiment (-0.25), catalysts: AI_CATALYST(8), PRODUCT_LAUNCH(2), REGULATORY(2), LEGAL(2), DEAL(1)
 
 ### TSLA — 2026-03-24 ⛔ NO_TRADE
 - **Decision**: NO_TRADE

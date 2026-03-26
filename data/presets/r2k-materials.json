@@ -1,87 +1,88 @@
 {
   "name": "r2k-materials",
-  "description": "Russell 2000 Materials (82 companies)",
+  "description": "Russell 2000 Materials (83 companies)",
   "tickers": [
     "CDE",
     "HL",
     "CMC",
     "BCPC",
     "SSRM",
-    "KNF",
     "HCC",
+    "KNF",
     "CBT",
     "SXT",
     "CSTM",
-    "PRM",
     "AVNT",
-    "CENX",
-    "MTRN",
     "CC",
     "FUL",
+    "MTRN",
+    "USAR",
+    "PRM",
     "HWKN",
-    "NG",
-    "PPTA",
+    "CENX",
     "NGVT",
     "AMR",
+    "NG",
+    "PPTA",
     "MTX",
     "KALU",
     "KWR",
-    "GEF",
     "IOSP",
-    "USAR",
     "OI",
-    "SLVM",
+    "GEF",
     "ECVT",
     "USLM",
+    "SLVM",
     "IE",
-    "UAMY",
     "TRS",
+    "UAMY",
     "WS",
     "SCL",
-    "RYZ",
     "TROX",
+    "RYZ",
     "LXU",
-    "CMP",
     "MYE",
+    "CMP",
     "RYAM",
-    "KOP",
     "PCT",
-    "METC",
-    "AMBP",
+    "KOP",
     "ASIX",
     "MTUS",
+    "AMBP",
+    "METC",
+    "ASPI",
     "SXC",
     "NB",
     "GSM",
-    "MATV",
-    "DC",
-    "IDR",
     "IPI",
-    "ASPI",
+    "MATV",
     "CRML",
-    "CMCL",
+    "DC",
     "GEFB",
+    "IDR",
+    "CMCL",
     "TTAM",
     "ABAT",
+    "OEC",
     "MAGN",
     "VOXR",
-    "OEC",
     "FTK",
-    "CTGO",
     "ASPN",
-    "TG",
     "CLW",
+    "TG",
+    "CTGO",
     "USAU",
-    "CMT",
     "PACK",
+    "CMT",
     "KRO",
-    "LZM",
     "FRD",
+    "LZM",
     "SMID",
-    "AVD",
     "ACNT",
     "ARQ",
+    "AVD",
     "VHI",
+    "USGO",
     "SLSN",
     "TSEOF"
   ],
@@ -96,10 +97,10 @@
     ],
     [
       "SSRM",
-      "KNF"
+      "HCC"
     ],
     [
-      "HCC",
+      "KNF",
       "CBT"
     ],
     [
@@ -107,148 +108,152 @@
       "CSTM"
     ],
     [
-      "PRM",
-      "AVNT"
+      "AVNT",
+      "CC"
     ],
     [
-      "CENX",
+      "FUL",
       "MTRN"
     ],
     [
-      "CC",
-      "FUL"
+      "USAR",
+      "PRM"
     ],
     [
       "HWKN",
-      "NG"
+      "CENX"
     ],
     [
-      "PPTA",
-      "NGVT"
+      "NGVT",
+      "AMR"
     ],
     [
-      "AMR",
-      "MTX"
+      "NG",
+      "PPTA"
     ],
     [
-      "KALU",
-      "KWR"
+      "MTX",
+      "KALU"
     ],
     [
-      "GEF",
+      "KWR",
       "IOSP"
     ],
     [
-      "USAR",
-      "OI"
+      "OI",
+      "GEF"
+    ],
+    [
+      "ECVT",
+      "USLM"
     ],
     [
       "SLVM",
-      "ECVT"
-    ],
-    [
-      "USLM",
       "IE"
     ],
     [
-      "UAMY",
-      "TRS"
+      "TRS",
+      "UAMY"
     ],
     [
       "WS",
       "SCL"
     ],
     [
-      "RYZ",
-      "TROX"
+      "TROX",
+      "RYZ"
     ],
     [
       "LXU",
-      "CMP"
+      "MYE"
     ],
     [
-      "MYE",
+      "CMP",
       "RYAM"
     ],
     [
-      "KOP",
-      "PCT"
-    ],
-    [
-      "METC",
-      "AMBP"
+      "PCT",
+      "KOP"
     ],
     [
       "ASIX",
       "MTUS"
     ],
     [
-      "SXC",
-      "NB"
+      "AMBP",
+      "METC"
     ],
     [
-      "GSM",
-      "MATV"
+      "ASPI",
+      "SXC"
     ],
     [
-      "DC",
-      "IDR"
+      "NB",
+      "GSM"
     ],
     [
       "IPI",
-      "ASPI"
+      "MATV"
     ],
     [
       "CRML",
-      "CMCL"
+      "DC"
     ],
     [
       "GEFB",
+      "IDR"
+    ],
+    [
+      "CMCL",
       "TTAM"
     ],
     [
       "ABAT",
-      "MAGN"
-    ],
-    [
-      "VOXR",
       "OEC"
     ],
     [
-      "FTK",
-      "CTGO"
+      "MAGN",
+      "VOXR"
     ],
     [
-      "ASPN",
-      "TG"
+      "FTK",
+      "ASPN"
     ],
     [
       "CLW",
+      "TG"
+    ],
+    [
+      "CTGO",
       "USAU"
     ],
     [
-      "CMT",
-      "PACK"
+      "PACK",
+      "CMT"
     ],
     [
       "KRO",
-      "LZM"
+      "FRD"
     ],
     [
-      "FRD",
+      "LZM",
       "SMID"
     ],
     [
-      "AVD",
-      "ACNT"
+      "ACNT",
+      "ARQ"
     ],
     [
-      "ARQ",
+      "AVD",
       "VHI"
     ],
     [
-      "SLSN",
-      "TSEOF"
+      "USGO",
+      "SLSN"
+    ],
+    [
+      "TSEOF",
+      "CDE"
     ]
   ],
   "sector": "Materials",

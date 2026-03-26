@@ -4,9 +4,9 @@
   "tickers": [
     "ORA",
     "OKLO",
-    "POR",
-    "TXNM",
     "SWX",
+    "TXNM",
+    "POR",
     "NJR",
     "SR",
     "BKH",
@@ -31,8 +31,8 @@
     "CDZI",
     "PCYO",
     "RGCO",
-    "MNTK",
-    "GWRS"
+    "GWRS",
+    "MNTK"
   ],
   "pairs": [
     [
@@ -40,11 +40,11 @@
       "OKLO"
     ],
     [
-      "POR",
+      "SWX",
       "TXNM"
     ],
     [
-      "SWX",
+      "POR",
       "NJR"
     ],
     [
@@ -93,10 +93,10 @@
     ],
     [
       "RGCO",
-      "MNTK"
+      "GWRS"
     ],
     [
-      "GWRS",
+      "MNTK",
       "ORA"
     ]
   ],

@@ -2,52 +2,52 @@
   "name": "r2k-real-estate",
   "description": "Russell 2000 Real Estate (98 companies)",
   "tickers": [
-    "CTRE",
     "AHR",
-    "EPRT",
+    "CTRE",
     "TRNO",
+    "EPRT",
     "RHP",
     "KRG",
     "COMP",
     "SBRA",
     "MAC",
     "PECO",
-    "NHI",
     "OUT",
+    "NHI",
     "SKT",
     "IRT",
-    "BNL",
     "CDP",
+    "BNL",
+    "APLE",
     "LXP",
     "SLG",
-    "APLE",
     "UE",
     "AKR",
-    "JOE",
     "FCPT",
-    "IVT",
     "CURB",
+    "IVT",
+    "JOE",
     "NMRK",
     "DRH",
     "GNL",
     "GTY",
     "LTC",
-    "CWK",
     "SHO",
+    "CWK",
+    "SMA",
     "NTST",
     "DHC",
-    "IIPR",
-    "PEB",
     "VRE",
+    "PEB",
     "XHR",
-    "SILA",
+    "IIPR",
     "KW",
+    "SILA",
     "DEI",
     "UMH",
     "RLJ",
-    "SMA",
-    "AAT",
     "CSR",
+    "AAT",
     "DEA",
     "JBGS",
     "PDM",
@@ -59,33 +59,33 @@
     "MMI",
     "NXRT",
     "CTO",
-    "UHT",
     "EXPI",
     "GOOD",
+    "UHT",
     "ALX",
-    "BDN",
     "FOR",
+    "INN",
+    "BDN",
     "AHRT",
     "FPI",
-    "INN",
     "CHCT",
-    "XRN",
     "PSTL",
+    "XRN",
     "OLP",
     "TRC",
-    "LAND",
-    "BFS",
     "CLDT",
-    "ILPT",
-    "SVC",
-    "HPP",
-    "FVR",
+    "BFS",
+    "LAND",
     "REAX",
+    "ILPT",
+    "FVR",
+    "HPP",
+    "SVC",
     "SITC",
     "RMR",
+    "NLOP",
     "FRPH",
     "PINE",
-    "NLOP",
     "STRS",
     "NXDT",
     "BRT",
@@ -96,19 +96,19 @@
     "RMAX",
     "MLP",
     "STRW",
-    "TCI",
     "FSP",
+    "TCI",
     "CLPR",
     "ARL"
   ],
   "pairs": [
     [
-      "CTRE",
-      "AHR"
+      "AHR",
+      "CTRE"
     ],
     [
-      "EPRT",
-      "TRNO"
+      "TRNO",
+      "EPRT"
     ],
     [
       "RHP",
@@ -123,35 +123,35 @@
       "PECO"
     ],
     [
-      "NHI",
-      "OUT"
+      "OUT",
+      "NHI"
     ],
     [
       "SKT",
       "IRT"
     ],
     [
-      "BNL",
-      "CDP"
-    ],
-    [
-      "LXP",
-      "SLG"
+      "CDP",
+      "BNL"
     ],
     [
       "APLE",
+      "LXP"
+    ],
+    [
+      "SLG",
       "UE"
     ],
     [
       "AKR",
-      "JOE"
-    ],
-    [
-      "FCPT",
-      "IVT"
+      "FCPT"
     ],
     [
       "CURB",
+      "IVT"
+    ],
+    [
+      "JOE",
       "NMRK"
     ],
     [
@@ -163,36 +163,36 @@
       "LTC"
     ],
     [
-      "CWK",
-      "SHO"
+      "SHO",
+      "CWK"
     ],
     [
-      "NTST",
-      "DHC"
+      "SMA",
+      "NTST"
     ],
     [
-      "IIPR",
-      "PEB"
+      "DHC",
+      "VRE"
     ],
     [
-      "VRE",
+      "PEB",
       "XHR"
     ],
     [
-      "SILA",
+      "IIPR",
       "KW"
     ],
     [
-      "DEI",
-      "UMH"
+      "SILA",
+      "DEI"
     ],
     [
-      "RLJ",
-      "SMA"
+      "UMH",
+      "RLJ"
     ],
     [
-      "AAT",
-      "CSR"
+      "CSR",
+      "AAT"
     ],
     [
       "DEA",
@@ -216,59 +216,59 @@
     ],
     [
       "CTO",
+      "EXPI"
+    ],
+    [
+      "GOOD",
       "UHT"
     ],
     [
-      "EXPI",
-      "GOOD"
+      "ALX",
+      "FOR"
     ],
     [
-      "ALX",
+      "INN",
       "BDN"
     ],
     [
-      "FOR",
-      "AHRT"
-    ],
-    [
-      "FPI",
-      "INN"
+      "AHRT",
+      "FPI"
     ],
     [
       "CHCT",
-      "XRN"
+      "PSTL"
     ],
     [
-      "PSTL",
+      "XRN",
       "OLP"
     ],
     [
       "TRC",
-      "LAND"
-    ],
-    [
-      "BFS",
       "CLDT"
     ],
     [
-      "ILPT",
-      "SVC"
-    ],
-    [
-      "HPP",
-      "FVR"
+      "BFS",
+      "LAND"
     ],
     [
       "REAX",
+      "ILPT"
+    ],
+    [
+      "FVR",
+      "HPP"
+    ],
+    [
+      "SVC",
       "SITC"
     ],
     [
       "RMR",
-      "FRPH"
+      "NLOP"
     ],
     [
-      "PINE",
-      "NLOP"
+      "FRPH",
+      "PINE"
     ],
     [
       "STRS",
@@ -291,8 +291,8 @@
       "STRW"
     ],
     [
-      "TCI",
-      "FSP"
+      "FSP",
+      "TCI"
     ],
     [
       "CLPR",

@@ -3,17 +3,12 @@
   "description": "S&P 500 Human Resource & Employment Services (Industrials)",
   "tickers": [
     "ADP",
-    "PAYX",
-    "PAYC"
+    "PAYX"
   ],
   "pairs": [
     [
       "ADP",
       "PAYX"
-    ],
-    [
-      "PAYC",
-      "ADP"
     ]
   ],
   "sector": "Industrials",

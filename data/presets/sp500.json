@@ -106,6 +106,7 @@
     "CNC",
     "CNP",
     "COF",
+    "COHR",
     "COIN",
     "COO",
     "COP",
@@ -284,6 +285,7 @@
     "LHX",
     "LII",
     "LIN",
+    "LITE",
     "LLY",
     "LMT",
     "LNT",
@@ -292,7 +294,6 @@
     "LULU",
     "LUV",
     "LVS",
-    "LW",
     "LYB",
     "LYV",
     "MA",
@@ -313,7 +314,6 @@
     "MMM",
     "MNST",
     "MO",
-    "MOH",
     "MOS",
     "MPC",
     "MPWR",
@@ -325,7 +325,6 @@
     "MSFT",
     "MSI",
     "MTB",
-    "MTCH",
     "MTD",
     "MU",
     "NCLH",
@@ -358,7 +357,6 @@
     "OTIS",
     "OXY",
     "PANW",
-    "PAYC",
     "PAYX",
     "PCAR",
     "PCG",
@@ -404,6 +402,7 @@
     "RSG",
     "RTX",
     "RVTY",
+    "SATS",
     "SBAC",
     "SBUX",
     "SCHW",
@@ -475,6 +474,7 @@
     "VMC",
     "VRSK",
     "VRSN",
+    "VRT",
     "VRTX",
     "VST",
     "VTR",
@@ -1012,10 +1012,6 @@
       "PAYX"
     ],
     [
-      "PAYC",
-      "ADP"
-    ],
-    [
       "ACN",
       "IBM"
     ],
@@ -1096,10 +1092,6 @@
       "META"
     ],
     [
-      "GOOG",
-      "MTCH"
-    ],
-    [
       "AKAM",
       "GDDY"
     ],
@@ -1153,10 +1145,6 @@
     ],
     [
       "HUM",
-      "CNC"
-    ],
-    [
-      "MOH",
       "CNC"
     ],
     [
@@ -1286,10 +1274,6 @@
     [
       "HRL",
       "TSN"
-    ],
-    [
-      "LW",
-      "GIS"
     ],
     [
       "AMCR",
@@ -2085,7 +2069,8 @@
         "CIEN",
         "CSCO",
         "FFIV",
-        "MSI"
+        "MSI",
+        "LITE"
       ],
       "pairs": [
         [
@@ -2372,7 +2357,8 @@
         "ETN",
         "EMR",
         "GNRC",
-        "ROK"
+        "ROK",
+        "VRT"
       ],
       "pairs": [
         [
@@ -2395,7 +2381,8 @@
       "sector": "Information Technology",
       "tickers": [
         "APH",
-        "GLW"
+        "GLW",
+        "COHR"
       ],
       "pairs": [
         [
@@ -2807,17 +2794,12 @@
       "sector": "Industrials",
       "tickers": [
         "ADP",
-        "PAYX",
-        "PAYC"
+        "PAYX"
       ],
       "pairs": [
         [
           "ADP",
           "PAYX"
-        ],
-        [
-          "PAYC",
-          "ADP"
         ]
       ],
       "vol_driver": "Capex cycles, infrastructure spending, PMI"
@@ -3022,7 +3004,6 @@
       "tickers": [
         "GOOGL",
         "GOOG",
-        "MTCH",
         "META"
       ],
       "pairs": [
@@ -3032,7 +3013,7 @@
         ],
         [
           "GOOG",
-          "MTCH"
+          "GOOGL"
         ]
       ],
       "vol_driver": "Ad spending, streaming, telecom capex"
@@ -3150,7 +3131,6 @@
         "CNC",
         "ELV",
         "HUM",
-        "MOH",
         "UNH"
       ],
       "pairs": [
@@ -3160,10 +3140,6 @@
         ],
         [
           "HUM",
-          "CNC"
-        ],
-        [
-          "MOH",
           "CNC"
         ]
       ],
@@ -3427,7 +3403,6 @@
         "HSY",
         "HRL",
         "KHC",
-        "LW",
         "MKC",
         "MDLZ",
         "SJM",
@@ -3453,10 +3428,6 @@
         [
           "HRL",
           "TSN"
-        ],
-        [
-          "LW",
-          "GIS"
         ]
       ],
       "vol_driver": "Inflation, input costs, consumer defensives"
@@ -4103,7 +4074,8 @@
         "UBER",
         "VZ",
         "WSM",
-        "WY"
+        "WY",
+        "SATS"
       ],
       "pairs": [
         [

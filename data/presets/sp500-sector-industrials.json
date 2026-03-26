@@ -56,7 +56,6 @@
     "NSC",
     "ODFL",
     "OTIS",
-    "PAYC",
     "PAYX",
     "PCAR",
     "PH",
@@ -78,6 +77,7 @@
     "URI",
     "VLTO",
     "VRSK",
+    "VRT",
     "WAB",
     "WM",
     "XYL"
@@ -184,10 +184,6 @@
       "PAYX"
     ],
     [
-      "PAYC",
-      "ADP"
-    ],
-    [
       "MMM",
       "HON"
     ],
@@ -245,6 +241,5 @@
     ]
   ],
   "sector": "Industrials",
-  "vol_driver": "Capex cycles, infrastructure spending, PMI",
   "source": "S&P 500 GICS classification"
 }

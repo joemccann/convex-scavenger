@@ -23,7 +23,6 @@
     "KO",
     "KR",
     "KVUE",
-    "LW",
     "MDLZ",
     "MKC",
     "MNST",
@@ -93,10 +92,6 @@
       "TSN"
     ],
     [
-      "LW",
-      "GIS"
-    ],
-    [
       "EL",
       "KVUE"
     ],
@@ -118,6 +113,5 @@
     ]
   ],
   "sector": "Consumer Staples",
-  "vol_driver": "Inflation, input costs, consumer defensives",
   "source": "S&P 500 GICS classification"
 }

@@ -17,6 +17,7 @@
     "CDNS",
     "CDW",
     "CIEN",
+    "COHR",
     "CRM",
     "CRWD",
     "CSCO",
@@ -40,6 +41,7 @@
     "JBL",
     "KEYS",
     "KLAC",
+    "LITE",
     "LRCX",
     "MCHP",
     "MPWR",
@@ -229,6 +231,5 @@
     ]
   ],
   "sector": "Information Technology",
-  "vol_driver": "Tech spending, AI/cloud capex, semiconductor demand",
   "source": "S&P 500 GICS classification"
 }

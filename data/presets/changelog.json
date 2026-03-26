@@ -18,5 +18,45 @@
     ],
     "added_count": 0,
     "removed_count": 1
+  },
+  {
+    "timestamp": "2026-03-26T06:01:49.928905",
+    "index": "sp500",
+    "added": [
+      "COHR",
+      "LITE",
+      "SATS",
+      "VRT"
+    ],
+    "removed": [
+      "LW",
+      "MOH",
+      "MTCH",
+      "PAYC"
+    ],
+    "added_count": 4,
+    "removed_count": 4
+  },
+  {
+    "timestamp": "2026-03-26T06:01:52.115130",
+    "index": "r2k",
+    "added": [
+      "AKTS",
+      "ATLN",
+      "BETA",
+      "CDNL",
+      "EVMN",
+      "LMRI",
+      "PPHC",
+      "USGO",
+      "WLTH",
+      "XZO",
+      "YSS"
+    ],
+    "removed": [
+      "TGNA"
+    ],
+    "added_count": 11,
+    "removed_count": 1
   }
 ]
