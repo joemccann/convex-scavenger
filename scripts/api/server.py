@@ -130,11 +130,16 @@ AUTH_EXEMPT_PATHS = {"/health", "/ws-ticket/validate", "/docs", "/openapi.json"}
 
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
-    """Require Clerk JWT for all endpoints except exempted paths."""
+    """Require Clerk JWT for all endpoints except exempted paths and localhost."""
     if request.url.path in AUTH_EXEMPT_PATHS:
         return await call_next(request)
 
     if not os.environ.get("CLERK_JWKS_URL"):
+        return await call_next(request)
+
+    # Skip auth for server-to-server calls from localhost (Next.js → FastAPI)
+    client_host = request.client.host if request.client else None
+    if client_host in ("127.0.0.1", "::1"):
         return await call_next(request)
 
     try:
