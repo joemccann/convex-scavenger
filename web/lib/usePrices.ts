@@ -34,6 +34,8 @@ export type UsePricesOptions = {
   onPriceUpdate?: (update: PriceUpdate) => void;
   /** Callback when connection status changes */
   onConnectionChange?: (connected: boolean) => void;
+  /** Clerk getToken function for WebSocket auth */
+  getToken?: () => Promise<string | null>;
 };
 
 export type UsePricesReturn = {
@@ -82,6 +84,7 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
     enabled = true,
     onPriceUpdate,
     onConnectionChange,
+    getToken,
   } = options;
 
   const [prices, setPrices] = useState<Record<string, PriceData>>({});
@@ -116,6 +119,7 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
   // Callback refs (avoid stale closures in WS handlers)
   const onPriceUpdateRef = useRef(onPriceUpdate);
   const onConnectionChangeRef = useRef(onConnectionChange);
+  const getTokenRef = useRef(getToken);
 
   // Stable hashes for change detection
   const symbolHash = symbolKey(symbols);
@@ -151,6 +155,7 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
   };
   onPriceUpdateRef.current = onPriceUpdate;
   onConnectionChangeRef.current = onConnectionChange;
+  getTokenRef.current = getToken;
 
   const socketUrl =
     process.env.NEXT_PUBLIC_IB_REALTIME_WS_URL ??
@@ -295,6 +300,24 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
   );
 
   // ---------------------------------------------------------------------------
+  // buildAuthenticatedUrl — append ticket query param for WS auth
+  // ---------------------------------------------------------------------------
+  const buildAuthenticatedUrl = useCallback(async (baseUrl: string): Promise<string> => {
+    if (!getTokenRef.current) return baseUrl;
+    try {
+      const token = await getTokenRef.current();
+      if (!token) return baseUrl;
+      const { getWsTicket } = await import("./wsTicket");
+      const ticket = await getWsTicket(token);
+      const separator = baseUrl.includes("?") ? "&" : "?";
+      return `${baseUrl}${separator}ticket=${ticket}`;
+    } catch (err) {
+      wsLog("Failed to get WS ticket, connecting without auth:", err);
+      return baseUrl;
+    }
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // scheduleReconnect — ref-based to break circular dep with connect
   // ---------------------------------------------------------------------------
   const scheduleReconnectRef = useRef<() => void>(() => {});
@@ -327,8 +350,12 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
       wsRef.current = null;
     }
 
-    const ws = new WebSocket(socketUrl);
-    wsRef.current = ws;
+    (async () => {
+      const url = await buildAuthenticatedUrl(socketUrl);
+      if (gen !== socketGenRef.current) return; // stale connect attempt
+
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
 
     ws.onopen = () => {
       if (gen !== socketGenRef.current || !mountedRef.current) return;
@@ -438,7 +465,8 @@ export function usePrices(options: UsePricesOptions): UsePricesReturn {
       wsLog("error", { gen });
       ws.close();
     };
-  }, [enabled, socketUrl, clearReconnectTimer, clearStalenessTimer, syncSubscriptions]);
+    })();
+  }, [enabled, socketUrl, clearReconnectTimer, clearStalenessTimer, syncSubscriptions, buildAuthenticatedUrl]);
 
   // Wire scheduleReconnect via ref to avoid circular dep
   const scheduleReconnect = useCallback(() => {

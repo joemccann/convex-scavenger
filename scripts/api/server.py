@@ -21,7 +21,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Query, Request
+from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -40,6 +40,8 @@ from api.subprocess import run_script, run_module, ScriptResult
 from api.ib_gateway import check_ib_gateway, ensure_ib_gateway, restart_ib_gateway, is_docker_mode, is_cloud_mode
 from clients.ib_client import DEFAULT_GATEWAY_PORT
 from api.pool_order_manage import pool_cancel_order, pool_modify_order
+from api.auth import verify_clerk_jwt
+from api.ws_ticket import create_ticket, validate_ticket
 
 # Load .env from project root for Python scripts
 try:
@@ -117,10 +119,34 @@ app = FastAPI(title="Radon API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origin_regex=r"https://.*\.radon\.run|http://localhost:3000|http://127\.0\.0\.1:3000",
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Auth middleware — protect all routes except /health and internal ticket validation
+AUTH_EXEMPT_PATHS = {"/health", "/ws-ticket/validate", "/docs", "/openapi.json"}
+
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    """Require Clerk JWT for all endpoints except exempted paths."""
+    if request.url.path in AUTH_EXEMPT_PATHS:
+        return await call_next(request)
+
+    if not os.environ.get("CLERK_JWKS_URL"):
+        return await call_next(request)
+
+    try:
+        payload = await verify_clerk_jwt(request)
+        request.state.user = payload
+    except HTTPException as exc:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
+
+    return await call_next(request)
 
 
 # ---------------------------------------------------------------------------
@@ -633,6 +659,24 @@ async def health():
         "ib_pool": ib_pool.status() if ib_pool else {},
         "uw": uw_available,
     }
+
+
+@app.post("/ws-ticket")
+async def get_ws_ticket(payload: dict = Depends(verify_clerk_jwt)):
+    """Issue a short-lived ticket for WebSocket authentication."""
+    ticket = create_ticket(payload["sub"])
+    return {"ticket": ticket}
+
+
+@app.post("/ws-ticket/validate")
+async def validate_ws_ticket(request: Request):
+    """Validate a WebSocket ticket (called by the Node.js relay). Internal only."""
+    body = await request.json()
+    ticket = body.get("ticket", "")
+    user_id = validate_ticket(ticket)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired ticket")
+    return {"user_id": user_id}
 
 
 @app.post("/ib/restart")

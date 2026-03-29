@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { createReconnectStrategy, type ReconnectState } from "./reconnectStrategy";
 
 /* ─── Types ───────────────────────────────────────────── */
@@ -52,6 +53,7 @@ const STALENESS_THRESHOLD_MS = 60_000;
 /* ─── Provider ────────────────────────────────────────── */
 
 export function IBStatusProvider({ children }: { children: ReactNode }) {
+  const { getToken } = useAuth();
   const [wsConnected, setWsConnected] = useState(false);
   const [ibConnected, setIbConnected] = useState(true); // assume connected until told otherwise
   const [disconnectedSince, setDisconnectedSince] = useState<number | null>(null);
@@ -85,6 +87,26 @@ export function IBStatusProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
+  const buildAuthenticatedUrl = useCallback(async (baseUrl: string): Promise<string> => {
+    if (!getTokenRef.current) return baseUrl;
+    try {
+      const token = await getTokenRef.current();
+      if (!token) return baseUrl;
+      const { getWsTicket } = await import("./wsTicket");
+      const ticket = await getWsTicket(token);
+      const separator = baseUrl.includes("?") ? "&" : "?";
+      return `${baseUrl}${separator}ticket=${ticket}`;
+    } catch (err) {
+      console.debug("[IBStatus] Failed to get WS ticket, connecting without auth:", err);
+      return baseUrl;
+    }
+  }, []);
+
+  const socketGenRef = useRef(0);
+
   const connect = useCallback(() => {
     clearReconnectTimer();
 
@@ -92,8 +114,14 @@ export function IBStatusProvider({ children }: { children: ReactNode }) {
       wsRef.current.close();
     }
 
-    const ws = new WebSocket(socketUrl);
-    wsRef.current = ws;
+    const gen = ++socketGenRef.current;
+
+    (async () => {
+      const url = await buildAuthenticatedUrl(socketUrl);
+      if (gen !== socketGenRef.current) return; // stale connect attempt
+
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
 
     ws.onopen = () => {
       if (!mountedRef.current) return;
@@ -166,7 +194,8 @@ export function IBStatusProvider({ children }: { children: ReactNode }) {
       if (!mountedRef.current) return;
       ws.close();
     };
-  }, [socketUrl, clearReconnectTimer, clearStalenessTimer]);
+    })();
+  }, [socketUrl, clearReconnectTimer, clearStalenessTimer, buildAuthenticatedUrl]);
 
   useEffect(() => {
     mountedRef.current = true;

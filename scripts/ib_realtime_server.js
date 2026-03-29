@@ -17,6 +17,7 @@ dotenv.config({ path: resolve(__dirname, "../.env") });
 import process from "node:process";
 import fs from "node:fs";
 import path from "node:path";
+import http from "node:http";
 import net from "node:net";
 import { execSync } from "node:child_process";
 import { homedir } from "node:os";
@@ -211,7 +212,59 @@ if (!(await isPortAvailable(WS_HOST, cli.port))) {
   process.exit(0);
 }
 
-const wss = new WebSocketServer({ host: WS_HOST, port: cli.port });
+// Create HTTP server for WebSocket upgrade with ticket validation
+const TICKET_VALIDATE_URL = process.env.TICKET_VALIDATE_URL || "http://127.0.0.1:8321/ws-ticket/validate";
+
+const httpServer = http.createServer((_req, res) => {
+  res.writeHead(426, { "Content-Type": "text/plain" });
+  res.end("WebSocket upgrade required");
+});
+
+const wss = new WebSocketServer({ noServer: true });
+
+httpServer.on("upgrade", async (req, socket, head) => {
+  // Skip ticket validation if Clerk is not configured (local dev)
+  if (!process.env.CLERK_JWKS_URL) {
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+    return;
+  }
+
+  const url = new URL(req.url || "/", `http://${req.headers.host}`);
+  const ticket = url.searchParams.get("ticket");
+
+  if (!ticket) {
+    socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+    socket.destroy();
+    return;
+  }
+
+  try {
+    const res = await fetch(TICKET_VALIDATE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticket }),
+    });
+
+    if (!res.ok) {
+      verbose("WS ticket validation failed: " + res.status);
+      socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+      socket.destroy();
+      return;
+    }
+
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+  } catch (err) {
+    verbose("WS ticket validation error: " + (err instanceof Error ? err.message : err));
+    socket.write("HTTP/1.1 503 Service Unavailable\r\n\r\n");
+    socket.destroy();
+  }
+});
+
+httpServer.listen(cli.port, WS_HOST);
 
 const clients = new Set();
 const symbolSubscribers = new Map();
@@ -1312,5 +1365,8 @@ process.on("SIGTERM", () => {
   process.emit("SIGINT");
 });
 
+httpServer.on("listening", () => {
+  console.log(`WebSocket server listening on ${WS_HOST}:${cli.port}`);
+});
 console.log(`IB realtime server listening on ${wsUrl}`);
 console.log(`IB target ${cli.ibHost}:${cli.ibPort}`);

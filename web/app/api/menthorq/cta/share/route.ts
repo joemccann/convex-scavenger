@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { radonFetch, RadonApiError } from "@/lib/radonApi";
 
 export const runtime = "nodejs";
 
-const FASTAPI_BASE = process.env.FASTAPI_URL ?? "http://localhost:8321";
-
 export async function POST(): Promise<Response> {
   try {
-    const upstream = await fetch(`${FASTAPI_BASE}/cta/share`, { method: "POST" });
-    const data = await upstream.json() as Record<string, unknown>;
-    if (!upstream.ok) {
-      const detail = typeof data?.detail === "string" ? data.detail : "Share generation failed";
-      return NextResponse.json({ error: detail }, { status: upstream.status });
-    }
+    const { getToken } = await auth();
+    const token = await getToken() ?? undefined;
+    const data = await radonFetch("/cta/share", { method: "POST", token });
     return NextResponse.json(data);
   } catch (err) {
+    if (err instanceof RadonApiError) {
+      return NextResponse.json({ error: err.detail }, { status: err.status });
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Unknown error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { WebSocket } from "ws";
 
 /**
@@ -19,15 +20,34 @@ function cacheKey(symbol: string): string {
 /* ── IB source (via WebSocket snapshot) ─────────────────── */
 
 const IB_WS_URL = process.env.IB_REALTIME_WS_URL || "ws://localhost:8765";
+const RADON_API = process.env.RADON_API_URL || "http://localhost:8321";
+
+async function buildWsUrl(token: string | null): Promise<string> {
+  if (!token) return IB_WS_URL;
+  try {
+    const res = await fetch(`${RADON_API}/ws-ticket`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+    if (!res.ok) return IB_WS_URL;
+    const { ticket } = await res.json();
+    const sep = IB_WS_URL.includes("?") ? "&" : "?";
+    return `${IB_WS_URL}${sep}ticket=${ticket}`;
+  } catch {
+    return IB_WS_URL;
+  }
+}
 
 /**
  * Batch-fetch previous close from the IB realtime server.
  * Sends a snapshot request for all symbols and collects `close` fields.
  * Returns a map of symbol → close for symbols that had data.
  */
-async function fetchFromIB(symbols: string[]): Promise<Record<string, number>> {
+async function fetchFromIB(symbols: string[], token: string | null): Promise<Record<string, number>> {
   const results: Record<string, number> = {};
   if (symbols.length === 0) return results;
+
+  const wsUrl = await buildWsUrl(token);
 
   return new Promise<Record<string, number>>((resolve) => {
     let ws: WebSocket;
@@ -38,7 +58,7 @@ async function fetchFromIB(symbols: string[]): Promise<Record<string, number>> {
     }, 3000);
 
     try {
-      ws = new WebSocket(IB_WS_URL);
+      ws = new WebSocket(wsUrl);
     } catch {
       clearTimeout(timeout);
       resolve(results);
@@ -169,6 +189,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ closes: {} });
     }
 
+    const { getToken } = await auth();
+    const token = await getToken();
+
     const batch = symbols.slice(0, 30).map((s: string) => s.toUpperCase());
 
     // Check cache first, collect uncached symbols
@@ -188,7 +211,7 @@ export async function POST(req: Request) {
     }
 
     // 1st priority: IB (batch snapshot via WebSocket)
-    const ibResults = await fetchFromIB(uncached);
+    const ibResults = await fetchFromIB(uncached, token);
     const stillMissing: string[] = [];
     for (const sym of uncached) {
       if (ibResults[sym] != null) {

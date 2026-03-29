@@ -1,8 +1,8 @@
 /**
  * Radon FastAPI client — minimal fetch helper for Next.js routes.
  *
- * All POST operations go through FastAPI on localhost:8321.
- * No spawn fallback — on failure, callers serve cached data from disk.
+ * All POST operations go through FastAPI.
+ * Attaches Clerk JWT when available for authenticated requests.
  */
 
 const RADON_API = process.env.RADON_API_URL || "http://localhost:8321";
@@ -19,11 +19,16 @@ export class RadonApiError extends Error {
 
 export async function radonFetch<T = Record<string, unknown>>(
   path: string,
-  opts?: RequestInit & { timeout?: number },
+  opts?: RequestInit & { timeout?: number; token?: string },
 ): Promise<T> {
-  const { timeout = 30_000, ...fetchOpts } = opts ?? {};
+  const { timeout = 30_000, token, ...fetchOpts } = opts ?? {};
+  const headers = new Headers(fetchOpts.headers);
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
   const res = await fetch(`${RADON_API}${path}`, {
     ...fetchOpts,
+    headers,
     cache: fetchOpts.cache ?? "no-store",
     signal: AbortSignal.timeout(timeout),
   });
