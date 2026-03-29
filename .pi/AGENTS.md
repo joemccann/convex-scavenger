@@ -1557,7 +1557,7 @@ Next.js API routes call a local FastAPI server (`scripts/api/server.py` on `loca
 
 **Graceful degradation:** FastAPI down → Next.js serves cached files with `is_stale: true`. No spawn fallback.
 
-**IB Gateway:** Runs on Hetzner cloud VM via Tailscale MagicDNS at `ib-gateway:4001`. `IB_GATEWAY_MODE=cloud` disables all local restart/lifecycle logic — health check is TCP probe only. `POST /ib/restart` returns 503 in cloud mode. For Docker/launchd modes, FastAPI detects Gateway down and auto-restarts. Stale tick detection in WS relay disconnects and reconnects (no restart in cloud mode).
+**IB Gateway:** Runs locally via Docker (`IB_GATEWAY_MODE=docker`, default). `scripts/docker_ib_gateway.sh start` manages the container. Autoheal sidecar restarts unhealthy containers. `POST /ib/restart` runs `docker compose restart`. Cloud mode (`IB_GATEWAY_MODE=cloud`) connects to Hetzner via Tailscale at `ib-gateway:4001` with TCP-only health check and no restart capability. Stale tick detection in WS relay disconnects and reconnects.
 
 **Health check:** `curl http://localhost:8321/health` — returns `ib_gateway` (including `upstream_dead` for CLOSE_WAIT detection), `ib_pool`, `uw`, and `test_mode` status.
 
@@ -1707,8 +1707,8 @@ This workflow triggers on ANY of these events:
 
 | Mode | Default | Behavior |
 |------|---------|----------|
-| `cloud` | **Yes** | Remote Gateway on Hetzner via Tailscale (`ib-gateway:4001`). Health = TCP probe. No restart. |
-| `docker` | | Local Docker Compose. `restart: unless-stopped` handles crashes. |
+| `docker` | **Yes** | Local Docker Compose. `restart: unless-stopped` + autoheal sidecar handles crashes. |
+| `cloud` | | Remote Gateway on Hetzner via Tailscale (`ib-gateway:4001`). Health = TCP probe. No restart. |
 | `launchd` | | Legacy IBC/launchd scripts. Full auto-restart on failure. |
 
 ### Auto-Recovery (FastAPI)

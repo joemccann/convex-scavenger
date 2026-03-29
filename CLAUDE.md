@@ -656,9 +656,23 @@ Full spec: `docs/unusual_whales_api.md`
 
 ## IB Gateway
 
-Three modes controlled by `IB_GATEWAY_MODE` env var (default: `cloud`):
+Three modes controlled by `IB_GATEWAY_MODE` env var (default: `docker`):
 
-### Cloud Mode (Primary — Tailscale)
+### Docker Mode (Primary)
+
+Image: `ghcr.io/gnzsnz/ib-gateway` (pinned to digest). Config: `docker/ib-gateway/`.
+
+| Command | Action |
+|---------|--------|
+| `scripts/docker_ib_gateway.sh start` | Start (validates secrets, checks launchd not running) |
+| `scripts/docker_ib_gateway.sh stop` | Stop |
+| `scripts/docker_ib_gateway.sh restart` | Restart |
+| `scripts/docker_ib_gateway.sh status` | Status |
+| `npm run ib:start` (from web/) | Convenience alias |
+
+Docker handles reliability via `restart: unless-stopped` + healthcheck. `READ_ONLY_API=no` (Radon places orders). Password via Docker secrets (`docker/ib-gateway/secrets/ib_password.txt`, chmod 600).
+
+### Cloud Mode (Tailscale)
 
 Gateway runs on a Hetzner VM accessible via Tailscale MagicDNS at `ib-gateway:4001`. Set `IB_GATEWAY_HOST=ib-gateway` and `IB_GATEWAY_MODE=cloud` in root `.env`. Both Python (`ib_client.py` loads dotenv at import) and Node (`ib_realtime_server.js` loads dotenv at startup) read this automatically. All scripts import `DEFAULT_HOST` from `ib_client` — no hardcoded `127.0.0.1` in IB connection code.
 
@@ -708,8 +722,8 @@ Global service: `local.ibc-gateway` (shared with market-data-warehouse). Install
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `IB_GATEWAY_MODE` | `cloud` | `cloud` (remote, no restart), `docker`, or `launchd` |
-| `IB_GATEWAY_HOST` | `127.0.0.1` (fallback), `ib-gateway` (cloud, in `.env`) | Gateway host |
+| `IB_GATEWAY_MODE` | `docker` | `docker`, `cloud` (remote, no restart), or `launchd` |
+| `IB_GATEWAY_HOST` | `127.0.0.1` | Gateway host (`ib-gateway` for cloud mode) |
 | `IB_GATEWAY_PORT` | `4001` | Gateway port |
 
 ### Ports

@@ -388,7 +388,7 @@ function isUSMarketHours() {
   return timeMinutes >= 9 * 60 + 30 && timeMinutes <= 16 * 60;
 }
 
-const GATEWAY_MODE = process.env.IB_GATEWAY_MODE || "cloud";
+const GATEWAY_MODE = process.env.IB_GATEWAY_MODE || "docker";
 
 async function restartIBGateway() {
   if (ibGatewayRestarting) return;

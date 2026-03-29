@@ -162,9 +162,9 @@ MENTHORQ_USER=your-menthorq-email
 MENTHORQ_PASS=your-menthorq-password
 
 # IB Gateway connection
-IB_GATEWAY_HOST=ib-gateway    # Cloud (Tailscale MagicDNS) or 127.0.0.1 (local)
+IB_GATEWAY_HOST=127.0.0.1     # Local Docker (or ib-gateway for cloud/Tailscale)
 IB_GATEWAY_PORT=4001
-IB_GATEWAY_MODE=cloud          # "cloud" | "docker" | "launchd"
+IB_GATEWAY_MODE=docker         # "docker" | "cloud" | "launchd"
 
 # Clerk JWT validation (FastAPI + WS relay)
 CLERK_JWKS_URL=https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json
@@ -418,11 +418,11 @@ Three deployment modes controlled by `IB_GATEWAY_MODE` in the root `.env`:
 
 | Mode | Description |
 |------|-------------|
-| **`cloud`** (default) | Gateway runs on a Hetzner VM via Tailscale MagicDNS at `ib-gateway:4001`. No local restart capability — health check is TCP port probe only. |
-| `docker` | Local Docker Compose with `restart: unless-stopped` and healthcheck. |
+| **`docker`** (default) | Local Docker Compose with `restart: unless-stopped`, healthcheck, and autoheal sidecar. |
+| `cloud` | Gateway runs on a Hetzner VM via Tailscale MagicDNS at `ib-gateway:4001`. No local restart capability — health check is TCP port probe only. |
 | `launchd` | Legacy IBC launchd service on macOS. |
 
-**Cloud setup** requires Tailscale on both the Gateway host and development machine. The Gateway host runs `ghcr.io/gnzsnz/ib-gateway` in Docker with IBC for automated 2FA handling.
+**Docker setup** runs `ghcr.io/gnzsnz/ib-gateway` locally via `scripts/docker_ib_gateway.sh start`. Secrets in `docker/ib-gateway/secrets/ib_password.txt` (chmod 600). VNC available at `localhost:5901`.
 
 **How it connects:** `ib_client.py` loads the root `.env` via `dotenv` at import time, setting `DEFAULT_HOST` before any module reads it. The Node WS relay (`ib_realtime_server.js`) also loads `.env` at startup. All scripts use `DEFAULT_HOST` — no hardcoded `127.0.0.1` in IB connection code.
 
