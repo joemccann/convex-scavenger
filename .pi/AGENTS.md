@@ -1553,6 +1553,8 @@ Next.js API routes call a local FastAPI server (`scripts/api/server.py` on `loca
 | IB WS relay | 8765 | `ib_realtime_server.js` (real-time price streaming) |
 | FastAPI | 8321 | `uvicorn scripts.api.server:app` (Python script execution) |
 
+**Authentication (Clerk):** All FastAPI routes are protected by Clerk JWT middleware (`scripts/api/auth.py`). Next.js routes are protected by Clerk middleware (`web/middleware.ts`). WS connections use ticket-based auth (`scripts/api/ws_ticket.py` — 30s TTL, single-use) to avoid JWTs in URLs. Auth-exempt: `/health`, `/ws-ticket/validate`, `/docs`, `/openapi.json`. Public share routes (`/api/regime/share`, `/api/vcg/share`, etc.) exempt in Next.js middleware. When `CLERK_JWKS_URL` is unset, auth is bypassed (local dev). Tests: `scripts/api/tests/test_auth.py`, `web/tests/auth-integration.test.ts`.
+
 **Graceful degradation:** FastAPI down → Next.js serves cached files with `is_stale: true`. No spawn fallback.
 
 **IB Gateway:** Runs on Hetzner cloud VM via Tailscale MagicDNS at `ib-gateway:4001`. `IB_GATEWAY_MODE=cloud` disables all local restart/lifecycle logic — health check is TCP probe only. `POST /ib/restart` returns 503 in cloud mode. For Docker/launchd modes, FastAPI detects Gateway down and auto-restarts. Stale tick detection in WS relay disconnects and reconnects (no restart in cloud mode).
@@ -1563,7 +1565,9 @@ Next.js API routes call a local FastAPI server (`scripts/api/server.py` on `loca
 
 | FastAPI File | Purpose |
 |------|---------|
-| `scripts/api/server.py` | FastAPI app — 17 endpoints, CORS, IB pool, health check |
+| `scripts/api/server.py` | FastAPI app — 26 endpoints, CORS, Clerk JWT auth middleware, IB pool, health check |
+| `scripts/api/auth.py` | Clerk JWT verification via JWKS, single-tenant `ALLOWED_USER_IDS` allowlist, graceful bypass when unconfigured |
+| `scripts/api/ws_ticket.py` | Short-lived single-use WS tickets (30s TTL) — avoids JWTs in WebSocket URLs |
 | `scripts/api/ib_pool.py` | Role-based IB connection pool (sync=3, orders=4, data=5), retry with backoff |
 | `scripts/api/ib_gateway.py` | IB Gateway health — cloud (TCP probe), docker (compose), launchd (IBC scripts) |
 | `scripts/api/subprocess.py` | Async subprocess helper (`run_script`, `run_module`) |
@@ -1591,7 +1595,7 @@ Next.js API routes call a local FastAPI server (`scripts/api/server.py` on `loca
 | `scripts/ib_reconcile.py` | Reconcile IB trades with local trade log (runs at startup) |
 | `scripts/blotter.py` | Trade blotter - reconcile today's fills, calculate P&L |
 | `scripts/trade_blotter/flex_query.py` | Fetch historical trades via IB Flex Query (up to 365 days) |
-| `scripts/ib_realtime_server.js` | Node.js WebSocket server for real-time IB price streaming |
+| `scripts/ib_realtime_server.js` | Node.js WebSocket server for real-time IB price streaming, ticket-based auth on upgrade |
 | `scripts/test_ib_realtime.py` | Tests for IB real-time connectivity |
 | `scripts/leap_iv_scanner.py` | LEAP IV mispricing scanner (IB connection required) |
 | `scripts/leap_scanner_uw.py` | LEAP IV scanner using UW (Yahoo as last resort for HV data) |

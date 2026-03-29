@@ -57,8 +57,8 @@ GATE 4 — NO NAKED SHORTS: Never naked short stock, calls, futures, or bonds. E
 
 | File | Loader | Contains |
 |------|--------|----------|
-| `.env` (root) | `python-dotenv` | `MENTHORQ_USER`, `MENTHORQ_PASS` |
-| `web/.env` | Next.js | `ANTHROPIC_API_KEY`, `UW_TOKEN`, `EXA_API_KEY`, `CEREBRAS_API_KEY` |
+| `.env` (root) | `python-dotenv` | `MENTHORQ_USER`, `MENTHORQ_PASS`, `CLERK_JWKS_URL`, `CLERK_ISSUER`, `ALLOWED_USER_IDS` |
+| `web/.env` | Next.js | `ANTHROPIC_API_KEY`, `UW_TOKEN`, `EXA_API_KEY`, `CEREBRAS_API_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` |
 
 ## Market Hours
 
@@ -170,7 +170,9 @@ Next.js routes call FastAPI (`localhost:8321`) via `radonFetch()` (`web/lib/rado
 
 | File | Purpose |
 |------|---------|
-| `server.py` | 21 endpoints, CORS, IB pool, health, auto-restart. `POST /performance/background` = fire-and-forget, 202, dedup |
+| `server.py` | 26 endpoints, CORS, Clerk JWT auth middleware, IB pool, health, auto-restart. `POST /performance/background` = fire-and-forget, 202, dedup |
+| `auth.py` | Clerk JWT verification — JWKS validation, single-tenant allowlist (`ALLOWED_USER_IDS`), graceful bypass when unconfigured |
+| `ws_ticket.py` | Short-lived single-use WS tickets (30s TTL) — avoids passing JWTs in WebSocket URLs |
 | `ib_pool.py` | Role-based IB pool (sync/orders/data), auto-reconnect |
 | `ib_gateway.py` | Health check + auto-restart via IBC launchd. Detects CLOSE_WAIT (upstream dead) |
 | `subprocess.py` | Async `run_script()`, `run_module()` — uses `sys.executable` (not `python3`) to match server interpreter |
@@ -185,6 +187,26 @@ Next.js routes call FastAPI (`localhost:8321`) via `radonFetch()` (`web/lib/rado
 | FastAPI down | Cached from disk, `is_stale: true` |
 
 No spawn fallback. Always try FastAPI first.
+
+### Authentication (Clerk)
+
+All FastAPI routes are protected by Clerk JWT middleware. Next.js routes are protected by Clerk middleware (`web/middleware.ts`). WebSocket connections use a ticket-based flow to avoid leaking JWTs in URLs.
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| FastAPI auth middleware | `scripts/api/auth.py` | Validates Clerk JWTs via JWKS, enforces `ALLOWED_USER_IDS` allowlist |
+| WS ticket service | `scripts/api/ws_ticket.py` | Issues 30s single-use tickets for WS auth |
+| Next.js middleware | `web/middleware.ts` | Clerk `auth.protect()` on all routes except public share pages |
+| WS ticket client | `web/lib/wsTicket.ts` | Browser obtains ticket before WS connect |
+| `radonApi.ts` | `web/lib/radonApi.ts` | Attaches Clerk Bearer token to all `radonFetch()` calls |
+
+**Auth-exempt paths:** `/health`, `/ws-ticket/validate`, `/docs`, `/openapi.json`.
+
+**Graceful fallback:** When `CLERK_JWKS_URL` is not set, auth middleware passes all requests through (local dev without Clerk).
+
+**Public share routes:** `/api/regime/share`, `/api/vcg/share`, `/api/internals/share`, `/api/menthorq/cta/share` are public (no auth).
+
+**Tests:** `scripts/api/tests/test_auth.py` (Python), `web/tests/auth-integration.test.ts` (TS).
 
 ### IB Gateway Auto-Recovery
 
@@ -426,7 +448,7 @@ Use **interpolated values** for edge determination, but flag confidence level:
 | `scripts/generate_vcg_share.py` | VCG X share report (4 cards + preview) |
 | `scripts/fetch_menthorq_cta.py` | MenthorQ CTA (S3 + Vision) |
 | `scripts/fetch_menthorq_dashboard.py` | MenthorQ dashboards (S3/screenshot + Vision) |
-| `scripts/ib_realtime_server.js` | WS relay — batched, 100ms flush |
+| `scripts/ib_realtime_server.js` | WS relay — batched, 100ms flush, ticket-based auth on upgrade |
 | `scripts/utils/atomic_io.py` | Atomic JSON save/load + SHA-256 |
 | `scripts/utils/vectorized_greeks.py` | NumPy portfolio delta/gamma |
 | `scripts/utils/incremental_sync.py` | Diff-based portfolio sync |

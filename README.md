@@ -147,6 +147,12 @@ python scripts/scanner.py --top 15
 ANTHROPIC_API_KEY=your-anthropic-key
 UW_TOKEN=your-unusual-whales-key
 EXA_API_KEY=your-exa-key
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ```
 
 **Python scripts and IB Gateway** in the project root `.env`:
@@ -159,6 +165,11 @@ MENTHORQ_PASS=your-menthorq-password
 IB_GATEWAY_HOST=ib-gateway    # Cloud (Tailscale MagicDNS) or 127.0.0.1 (local)
 IB_GATEWAY_PORT=4001
 IB_GATEWAY_MODE=cloud          # "cloud" | "docker" | "launchd"
+
+# Clerk JWT validation (FastAPI + WS relay)
+CLERK_JWKS_URL=https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json
+CLERK_ISSUER=https://your-clerk-instance.clerk.accounts.dev
+ALLOWED_USER_IDS=user_...      # Comma-separated allowlist
 ```
 
 The dedicated CTA sync service and wrapper scripts source the project root `.env` directly. Keep MenthorQ credentials there so the scheduled `4:15 PM ET` and `5:00 PM ET` CTA runs, plus any `RunAtLoad` catch-up execution after reboot/login/wake, use the same auth context as manual CLI fetches.
@@ -192,6 +203,10 @@ npm run dev
 ```
 
 Visit `http://localhost:3000`.
+
+### Authentication
+
+Radon uses [Clerk](https://clerk.com) for authentication. All Next.js routes are protected by Clerk middleware (public share routes are exempt). The FastAPI backend validates Clerk JWTs on every request. WebSocket connections use a short-lived ticket flow (30s TTL, single-use) to avoid passing JWTs in URLs. When Clerk is not configured (`CLERK_JWKS_URL` unset), auth is bypassed for local development.
 
 **Key capabilities**
 
