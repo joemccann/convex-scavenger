@@ -185,7 +185,7 @@ async def historical_bars(req: HistoricalBarsRequest, request: Request):
             bars = await asyncio.to_thread(
                 client.get_historical_data,
                 contract,
-                end_date_time=req.end_date_time,
+                end_date=req.end_date_time,
                 duration=req.duration,
                 bar_size=req.bar_size,
                 what_to_show=req.what_to_show,
