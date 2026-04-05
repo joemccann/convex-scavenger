@@ -161,11 +161,11 @@ async function setupApiMocks(page: import("@playwright/test").Page) {
 async function injectMockWebSocket(page: import("@playwright/test").Page) {
   await page.addInitScript(() => {
     // Tracking counters for assertions
-    (window as Record<string, unknown>).__wsConstructorCount = 0;
-    (window as Record<string, unknown>).__wsMaxConcurrent = 0;
-    (window as Record<string, unknown>).__wsActiveCount = 0;
-    (window as Record<string, unknown>).__wsSubscribeCount = 0;
-    (window as Record<string, unknown>).__wsSubscribeInstanceIds = new Set<number>();
+    (window as unknown as Record<string, unknown>).__wsConstructorCount = 0;
+    (window as unknown as Record<string, unknown>).__wsMaxConcurrent = 0;
+    (window as unknown as Record<string, unknown>).__wsActiveCount = 0;
+    (window as unknown as Record<string, unknown>).__wsSubscribeCount = 0;
+    (window as unknown as Record<string, unknown>).__wsSubscribeInstanceIds = new Set<number>();
 
     class MockWebSocket {
       public static CONNECTING = 0;
@@ -183,7 +183,7 @@ async function injectMockWebSocket(page: import("@playwright/test").Page) {
 
       constructor(url: string) {
         this.url = url;
-        const w = window as Record<string, unknown>;
+        const w = window as unknown as Record<string, unknown>;
         w.__wsConstructorCount = (w.__wsConstructorCount as number) + 1;
         this._instanceId = w.__wsConstructorCount as number;
         w.__wsActiveCount = (w.__wsActiveCount as number) + 1;
@@ -312,7 +312,7 @@ async function injectMockWebSocket(page: import("@playwright/test").Page) {
           const msg = JSON.parse(_message);
           if (msg.action === "subscribe") {
             // Track which WS instances receive subscribe actions (usePrices pattern)
-            const w = window as Record<string, unknown>;
+            const w = window as unknown as Record<string, unknown>;
             const ids = w.__wsSubscribeInstanceIds as Set<number>;
             if (!ids.has(this._instanceId)) {
               ids.add(this._instanceId);
@@ -333,7 +333,7 @@ async function injectMockWebSocket(page: import("@playwright/test").Page) {
 
       close() {
         this.readyState = MockWebSocket.CLOSED;
-        const w = window as Record<string, unknown>;
+        const w = window as unknown as Record<string, unknown>;
         w.__wsActiveCount = Math.max(0, (w.__wsActiveCount as number) - 1);
         this.onclose?.(new Event("close"));
       }
@@ -447,14 +447,14 @@ test.describe("WebSocket connection stability on ticker detail page", () => {
     //
     // Count WS instances that received a "subscribe" action (the usePrices pattern).
     // useIBStatus sends "status" pings, TickerSearch sends "search", getSnapshot sends "snapshot".
-    const subscribeWsCount = await page.evaluate(() => (window as Record<string, unknown>).__wsSubscribeCount ?? 0);
+    const subscribeWsCount = await page.evaluate(() => (window as unknown as Record<string, unknown>).__wsSubscribeCount ?? 0);
 
     // usePrices should create exactly 1 WS that receives subscribe messages.
     // Before the fix, this would be 3+ (one per subscription change: portfolio → orders → chain).
     expect(subscribeWsCount).toBeLessThanOrEqual(1);
 
     // Verify max concurrent is bounded (usePrices + useIBStatus + possible getSnapshot/TickerSearch)
-    const maxConcurrent = await page.evaluate(() => (window as Record<string, unknown>).__wsMaxConcurrent);
+    const maxConcurrent = await page.evaluate(() => (window as unknown as Record<string, unknown>).__wsMaxConcurrent);
     expect(maxConcurrent).toBeLessThanOrEqual(4);
   });
 
