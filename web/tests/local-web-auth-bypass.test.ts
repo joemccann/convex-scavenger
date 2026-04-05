@@ -13,12 +13,18 @@ vi.mock("@clerk/nextjs/server", () => ({
 }));
 
 describe("web auth bypass middleware", () => {
+  type MiddlewareHandler = (
+    auth: { protect: () => Promise<void> | void },
+    request: { nextUrl: { pathname: string } },
+  ) => Promise<void> | void;
+
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    delete process.env.CLERK_JWKS_URL;
-    delete process.env.RADON_BYPASS_WEB_AUTH;
-    delete process.env.NODE_ENV;
+    vi.unstubAllEnvs();
+    Reflect.deleteProperty(process.env, "CLERK_JWKS_URL");
+    Reflect.deleteProperty(process.env, "RADON_BYPASS_WEB_AUTH");
+    Reflect.deleteProperty(process.env, "NODE_ENV");
 
     clerkMiddlewareMock.mockImplementation((handler: unknown) => handler);
     createRouteMatcherMock.mockImplementation((patterns: string[]) => {
@@ -30,10 +36,7 @@ describe("web auth bypass middleware", () => {
 
   it("protects local app routes by default when bypass is not explicitly enabled", async () => {
     const protect = vi.fn();
-    const middleware = (await import("@/middleware")).default as (
-      auth: { protect: () => Promise<void> },
-      request: { nextUrl: { pathname: string } },
-    ) => Promise<void>;
+    const middleware = (await import("@/middleware")).default as unknown as MiddlewareHandler;
 
     await middleware({ protect }, { nextUrl: { pathname: "/kit" } });
 
@@ -41,13 +44,10 @@ describe("web auth bypass middleware", () => {
   });
 
   it("does not protect local app routes when bypass is explicitly enabled", async () => {
-    process.env.RADON_BYPASS_WEB_AUTH = "1";
+    vi.stubEnv("RADON_BYPASS_WEB_AUTH", "1");
 
     const protect = vi.fn();
-    const middleware = (await import("@/middleware")).default as (
-      auth: { protect: () => Promise<void> },
-      request: { nextUrl: { pathname: string } },
-    ) => Promise<void>;
+    const middleware = (await import("@/middleware")).default as unknown as MiddlewareHandler;
 
     await middleware({ protect }, { nextUrl: { pathname: "/kit" } });
 
@@ -55,13 +55,10 @@ describe("web auth bypass middleware", () => {
   });
 
   it("keeps public routes unprotected when Clerk is configured", async () => {
-    process.env.CLERK_JWKS_URL = "https://clerk.example/jwks";
+    vi.stubEnv("CLERK_JWKS_URL", "https://clerk.example/jwks");
 
     const protect = vi.fn();
-    const middleware = (await import("@/middleware")).default as (
-      auth: { protect: () => Promise<void> },
-      request: { nextUrl: { pathname: string } },
-    ) => Promise<void>;
+    const middleware = (await import("@/middleware")).default as unknown as MiddlewareHandler;
 
     await middleware({ protect }, { nextUrl: { pathname: "/api/orders" } });
 
@@ -69,14 +66,11 @@ describe("web auth bypass middleware", () => {
   });
 
   it("ignores the bypass flag in production mode", async () => {
-    process.env.RADON_BYPASS_WEB_AUTH = "1";
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("RADON_BYPASS_WEB_AUTH", "1");
+    vi.stubEnv("NODE_ENV", "production");
 
     const protect = vi.fn();
-    const middleware = (await import("@/middleware")).default as (
-      auth: { protect: () => Promise<void> },
-      request: { nextUrl: { pathname: string } },
-    ) => Promise<void>;
+    const middleware = (await import("@/middleware")).default as unknown as MiddlewareHandler;
 
     await middleware({ protect }, { nextUrl: { pathname: "/kit" } });
 
