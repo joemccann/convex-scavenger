@@ -204,6 +204,31 @@ class TestOperatorAllowlistInterlock:
         env_vars = parse_env_vars(read_env_example(root))
         assert env_vars.get("RADON_REQUIRE_OPERATOR_ALLOWLIST") == "1"
 
+    def test_check_env_pins_the_interlock_value(self, root):
+        """Every enforcement point compares the value exactly to "1"
+        (middleware.ts, routeAccess.ts, auth.py), so a typo'd value like
+        "true" passes required-env presence yet silently disables the
+        fail-closed gate. check-env.py must pin the literal value too.
+        """
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "radon_check_env", root / "scripts" / "check-env.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        assert mod.PRODUCTION_INVARIANTS.get("RADON_REQUIRE_OPERATOR_ALLOWLIST") == "1"
+        errors = mod.production_invariant_errors(
+            {
+                "IB_GATEWAY_MODE": "cloud",
+                "RADON_MODE": "hetzner",
+                "NODE_ENV": "production",
+                "RADON_HOST_ROLE": "combined",
+                "RADON_REQUIRE_OPERATOR_ALLOWLIST": "true",
+            }
+        )
+        assert any("RADON_REQUIRE_OPERATOR_ALLOWLIST" in e for e in errors)
+
 
 class TestDemoMigrationEnvContract:
     """R-300 (REL-102b): the demo migration cannot start without its keys.
