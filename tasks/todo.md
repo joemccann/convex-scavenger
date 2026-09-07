@@ -42,6 +42,27 @@ Apply every verified P0/P1 CI-performance finding from today's audit without cha
 
 - [x] `RADON_WEEKEND_REDUCED=1` constrained this phase to P0/P1; no lower-priority experiment was implemented.
 - [x] `87 passed` workflow safety contracts; no test inventory, gate, provenance, deploy, rollback, or health behavior changed.
+# Task: Document optional Dropbox research credentials [IN PROGRESS]
+
+Keep the optional private research worker configurable without making its
+credentials mandatory for every production deployment.
+
+## Dependency graph
+
+- T1 depends_on: [] - Reproduce the missing environment-template inventory.
+- T2 depends_on: [T1] - Add the optional credentials and a focused parity guard.
+- T3 depends_on: [T2] - Run documentation and cloud configuration validation.
+
+## Checklist
+
+- [x] T1 Reproduce missing template inventory
+- [x] T2 Update template and parity guard
+- [x] T3 Validate and commit
+
+## Review
+
+- [x] The optional worker remains outside `required-env.txt`.
+- [x] Focused validation: 97 passed; detached full-cloud stage could not survive the CLI process boundary.
 
 ---
 # Task: Reliability remediate 2026-09-07 [IN PROGRESS]
@@ -5360,9 +5381,9 @@ Reduced-capability rung: remediate P1 findings only.
 - T5 depends_on: [T4] - Repair PR342 and verify its exact-head CI green.
 - T6 depends_on: [T2,T3,T4,T5] - Merge339,340,341,342 in order; refresh each against preceding merges, regenerate source maps, repeat exact-head checks, notify once per PR, and supervise each main deployment.
 - [x] T1 Four-way merge-tree audit; task-ledger and source-map conflicts form a sequential chain.
-- [ ] T2 PR339 green.
-- [ ] T3 PR340 green.
-- [ ] T4 PR341 green.
-- [ ] T5 PR342 green.
+- [x] T2 PR339 preparation green.
+- [x] T3 PR340 green and merged externally as 125b4655; deployment passed.
+- [x] T4 PR341 preparation green: 31 successful checks.
+- [x] T5 PR342 preparation green on f6092bb8.
 - [ ] T6 All four merged and production verified.
 - PR339 integration: both task histories retained; diff against current main remains two documentation files. CI gate/path/concurrency checks passed 87/87.
