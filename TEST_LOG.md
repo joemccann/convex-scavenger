@@ -732,3 +732,31 @@ pre-existing — verified byte-identical at untouched HEAD `92341347` (0.11s).
 
 Closing 3× gate counts for THIS pass appended below after the runs (the
 morning pass's promised counts never landed; superseded by these).
+
+**Closing gates (second pass, serial, detached; load 8–12 throughout; resolved
+`bash` 5.3.9 via `/opt/homebrew/bin` first, `caddy` ABSENT, `sha256sum` absent
+(`gsha256sum` only)):**
+
+| Round | pytest | vitest | cloud |
+|---|---|---|---|
+| 1 | 11813 passed / 1 failed (2003s) | 914 files, 9018 passed / 0 failed | 5 failed / 1824 passed / 7 skipped (436s) |
+| 2 | 11814 passed / 0 failed (1941s) | 914 files, 9018 passed / 0 failed | 5 failed / 1824 passed / 7 skipped (436s) |
+| 3 | 11814 passed / 0 failed (1985s) | 914 files, 9018 passed / 0 failed | 5 failed / 1824 passed / 7 skipped (382s) |
+| 4 (pytest only) | 11814 passed / 0 failed (1793s) | — | — |
+
+- Round-1 pytest red = the docs-ownership guard correctly firing on this
+  branch's own T-441 cloud-script change (owner doc not updated); fixed by
+  documenting the gate change in `cloud/CLAUDE.md` (`df3dfa98`), then three
+  consecutive clean pytest runs (r2–r4). The guard working, not flake.
+- Cloud FAILED list byte-identical ×3: all 5 in `test_caddy_edge_timeouts.py`
+  (caddy absent — environment class per T-484; matches the 2026-09-05
+  second-pass 5-list under a bash≥4 PATH). Zero new, zero gone.
+- vitest exit 0 ×3 — T-485's `EnvironmentTeardownError` exit-1 did NOT recur
+  after the morning fix (`281e31a0`).
+- Post-gate `git status --porcelain` clean ×10 (T-275).
+- Observation (not a finding this cycle): the 3
+  `test_refresh_control_plane.py` preflight-hash tests are red ISOLATED at
+  HEAD on this host (0.11s) yet green in the full cloud suite ×3 — the
+  inverse of the T-311 shape; environment-tool dependence
+  (`sha256sum` absent) satisfied by some earlier fixture in the full run.
+  Left for the next audit to triage.
