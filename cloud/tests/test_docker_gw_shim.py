@@ -222,7 +222,11 @@ def _run_preflight_env(tmp_path: Path, *, sudo_grants: bool, docker_exit: int = 
         "RADON_HOST_ROLE=combined\n"
         "IB_GATEWAY_HOST=127.0.0.1\n"
         "TRADING_MODE=paper\n"
-        "IB_GATEWAY_PORT=4002\n",
+        "IB_GATEWAY_PORT=4002\n"
+        # A PRODUCTION_INVARIANT since the 2026-09-06 security merge
+        # (cloud/scripts/check-env.py). Without it the preflight fails at the
+        # env check and never reaches the compose render these tests assert on.
+        "RADON_REQUIRE_OPERATOR_ALLOWLIST=1\n",
         encoding="utf-8",
     )
     env_file.chmod(0o600)
