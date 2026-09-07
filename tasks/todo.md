@@ -1,3 +1,27 @@
+# Task: CI performance audit 2026-09-07 [IN PROGRESS]
+
+Record the current production critical path and every safe, source-actionable optimization candidate.
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify dedicated runner, lock, branch, ledger baseline, and GitHub access.
+- T2 depends_on: [T1] - Measure 20 recent Actions runs and audit gate/deploy safety closure.
+- T3 depends_on: [T2] - Rank candidates, append the ledger, verify, commit, and push the audit branch.
+
+## Checklist
+
+- [x] T1 Runner and baseline verification
+- [x] T2 Actions and safety audit
+- [x] T3 Ledger and branch publication
+
+## Review
+
+- [x] Fetched 30 recent push runs and measured 20 Deploy-job completion clocks.
+- [x] Verified protected gate closure, Production policy, immutable action pins, and deploy safety rails.
+- [x] Rejected non-material or safety-reducing changes; audit ledger is append-only.
+
+---
+
 # Task: Merge main into testing/2026-09-06 [IN PROGRESS]
 
 Resolve the current branch's merge conflicts against `main` and re-verify the conflicted surfaces.
