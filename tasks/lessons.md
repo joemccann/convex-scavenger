@@ -912,3 +912,8 @@ malformed pathspec — merge conflicts in files I never touched. Rules:
 - Preserve the operator-approved selection method in `scripts/research/policy.md`: incremental measured positioning/flow/volatility/market-structure evidence, specific macro transmission, counterevidence, source dates and explicit conditionality; no quota or repetitive summaries.
 - Research media must reuse the live feed presentation: original chart region, complete titles/axes/legends/source, lead preview and secondary thumbnails, article-context enlargement. Full pages are supplementary evidence; state when evidence is text-only.
 - A model reviewing a full page beside a crop can falsely attribute the original page’s missing labels to the crop. Inspect crops independently, require visible label transcription, retain failed attempts, and verify real rendered examples before enabling unattended publication.
+
+## 2026-09-07 - Sequence final frontend verification
+
+- Run the full suite only after implementation agents finish and focused/browser fixes are complete. Starting it while source files are changing can produce mixed-revision results and force an expensive restart.
+- Bound test workers on the shared workstation. Run Next route type generation after the dev server has stopped, then typecheck the completed generated files; do not race typechecking against regeneration.

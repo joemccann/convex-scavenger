@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-07T19:55:11Z",
-  "node_count": 3221,
-  "edge_count": 6501,
+  "generated_at": "2026-09-07T20:33:20Z",
+  "node_count": 3226,
+  "edge_count": 6507,
   "areas": {
-    "web": 1894,
+    "web": 1899,
     "site": 151,
     "scripts": 1062,
     "cloud": 66,
@@ -20,12 +20,12 @@
     {
       "id": "web/components",
       "area": "web",
-      "count": 239
+      "count": 240
     },
     {
       "id": "web/e2e",
       "area": "web",
-      "count": 186
+      "count": 187
     },
     {
       "id": "web",
@@ -35,7 +35,7 @@
     {
       "id": "web/lib",
       "area": "web",
-      "count": 373
+      "count": 374
     },
     {
       "id": "web/public",
@@ -50,7 +50,7 @@
     {
       "id": "web/tests",
       "area": "web",
-      "count": 876
+      "count": 878
     },
     {
       "id": "site/app",
