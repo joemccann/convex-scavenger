@@ -22,6 +22,29 @@ Record the current production critical path and every safe, source-actionable op
 
 ---
 
+# Task: CI performance remediate 2026-09-07 [COMPLETE]
+
+Apply every verified P0/P1 CI-performance finding from today's audit without changing protected delivery guarantees.
+
+## Dependency graph
+
+- T1 depends_on: [] - Resume the dated branch, integrate current main, and take the runner lock.
+- T2 depends_on: [T1] - Recheck reduced-cap P0/P1 eligibility against the audit evidence and protected gate closure.
+- T3 depends_on: [T2] - Validate workflow contracts, append the remediation result, and publish the dated branch.
+
+## Checklist
+
+- [x] T1 Branch synchronized with `origin/main`; exclusive runner lock held.
+- [x] T2 No verified P0/P1 source-actionable finding; protected 40s stability, exact-SHA images, and full gate closure retained.
+- [x] T3 Workflow contracts green and remediation ledger recorded.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1` constrained this phase to P0/P1; no lower-priority experiment was implemented.
+- [x] `87 passed` workflow safety contracts; no test inventory, gate, provenance, deploy, rollback, or health behavior changed.
+
+---
+
 # Task: Merge main into testing/2026-09-06 [IN PROGRESS]
 
 Resolve the current branch's merge conflicts against `main` and re-verify the conflicted surfaces.
