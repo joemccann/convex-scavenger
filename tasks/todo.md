@@ -5167,4 +5167,11 @@ Reduced-capability rung: remediate P1 findings only.
 - [x] T2 Catalog implementation.
 - [x] T3 Pipeline red test.
 - [x] T4 Pipeline implementation.
-- [ ] T5 Verification and log.
+- [x] T5 Focused verification and log; full Python gate baseline recorded.
+
+## Review
+
+- [x] REL-251 fault injection: error and stale `dropbox-research` rows are actionable in both catalogs.
+- [x] REL-252 100-page fault injection: document lease stops new reviewer calls and emits completed-stage heartbeats.
+- [x] Focused gates: Python 103 passed; Vitest 139 passed.
+- [x] Full Python run: 12,093 passed, 95 failed, 14 errors; failures are pre-existing remote, fixture, and host-wrapper environment surfaces.
