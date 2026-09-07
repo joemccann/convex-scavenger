@@ -1,3 +1,23 @@
+# Task: Reliability remediate 2026-09-07 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify P0/P1 backlog completion on the dated reliability branch.
+- T2 depends_on: [T1] - Run permanent drills and three sequential full-gate baselines.
+- T3 depends_on: [T2] - Append durable gate evidence and commit/push the phase record.
+
+## Checklist
+
+- [x] T1 Verify REL-251 and REL-252 completion.
+- [ ] T2 Permanent drills green; full gates incomplete because the runner terminated the required stage.
+- [x] T3 Record durable gate-stage evidence.
+
+## Review
+
+- [x] Reduced scope contains no un-DONE P0/P1 items.
+- [x] Permanent drills: Python 94 passed; Vitest 12 passed.
+- [ ] Full-gate stage has no DONE sentinel; continuation required.
+
 # Task: Merge main into testing/2026-09-06 [IN PROGRESS]
 
 Resolve the current branch's merge conflicts against `main` and re-verify the conflicted surfaces.
