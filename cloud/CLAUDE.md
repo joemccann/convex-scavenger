@@ -62,19 +62,37 @@ under `/var/lib/radon` keep their ownership) and `scripts/jvm_forensics.py`.
 The compose body it runs lives at `/etc/radon/ib-gateway-compose.yml`, a
 control-plane artifact, NOT `cloud/docker-compose.yml` in the checkout: root
 acting on a file its caller can rewrite is the same escalation with extra
-steps. The shim refuses a symlinked or non-root-owned body, and
+steps. The shim refuses a symlinked or non-root-owned body, and likewise refuses
+`/etc/radon/env` when it is a symlink, not root-owned, or group/other-writable
+(`require_trusted_env_file`, REL-234 — both refusals exit 78; an exit 78 from
+`ib-gateway-control.sh` during recovery means fix the file's ownership/perms,
+not the Gateway), and
 `--project-name cloud` is pinned so the `cloud_ib-config` volume — the
 Gateway's Jts settings and 2FA state — survives the move.
 
 `config-check` is `deploy.sh`'s preflight compose render. It takes no
 env-file argument on purpose — a caller-supplied path is the one thing the
 shim refuses — and pins the same `/etc/radon/env` the deploy's
-`ENV_FILE_DEFAULT` resolves to in production. `preflight_env` falls back to a
-direct `docker compose config` only for a dev or test invocation against some
-other env file, where the caller brings its own docker access. Note the
+`ENV_FILE_DEFAULT` resolves to in production. When the shim refuses (or for a
+dev/test invocation against some other env file), `preflight_env` falls back to
+a direct `docker compose config` — including in production, where a shim
+refusal that the direct render covers emits the countable journal line
+`[preflight] compose-render: shim refused (exit N), direct render covered`
+(R-647/REL-242: the fallback deliberately does not abort the deploy, because
+the shim's sudoers verb arrives with the release being promoted). A compose
+body that fails both paths still fails preflight: preferring one path
+would deadlock the deploy across the sudoers-verb / docker-group transition,
+since whichever mechanism the current host lacks would abort the promote that
+installs it (`deploy.sh:204-231`, bd7d7e4c). Note the
 narrowing: preflight now renders the INSTALLED compose body, not the incoming
 release's. The incoming body is gated at install time instead, by provenance
 (git blob at the deployed commit) plus `compose_body_is_valid`.
+
+That validator's deny-list refuses EVERY host-namespace join, not only
+`pid:` — `ipc:`, `userns_mode:`, `uts:` and `cgroup:` widen the container's
+runtime the same way (R-668/REL-249). The three copies (deploy-root-helper,
+bootstrap-control-plane, setup-vps) stay byte-identical; a parity test in
+`cloud/tests/test_rel234_compose_gate.py` pins them.
 
 **The broker host gets none of this from CI.** `.github/workflows/ci.yml`
 deploys to a single `secrets.VPS_HOST`, and `sync-control-plane` reads
@@ -161,7 +179,7 @@ The journal helper is loaded from the immutable runner so rollback to a commit
 that predates `cloud/` cannot delete its own recovery implementation. Root
 topology state is durable across reboot under `/var/lib/radon/deploy`.
 
-**Auto-deploy mechanics (moved from root `CLAUDE.md`).** `.github/workflows/ci.yml` runs the Vitest + pytest gate (including `cloud/tests`) then deploys on green: it SSHes to Hetzner, materializes an immutable `cloud/` runner from the release SHA under `~/.radon-deploy-runners/`, and runs that runner's `deploy.sh '$SHA'`. The deploy job remains bound to the GitHub Environment `Production` for deployment history, URL metadata, environment-scoped configuration, and a main-only deployment branch policy; it has no required-reviewer rule, so no manual approval is needed after the automated gates pass. Host secrets stay at `~/radon-cloud/.env` (`RADON_DEPLOY_ENV_FILE`). After root bootstrap publishes `/var/lib/radon/control-plane-ready`, legacy dual-checkout deploy is retired for new releases; pre-ready SHAs still use the compatibility path. Before `deploy.sh`, the deploy job runs `cloud/scripts/sync-control-plane.sh` → `radon-deploy-root sync-control-plane`, which installs the GitHub-main-tip control-plane bundle (helper, sudoers, polkit, control-plane units, drop-ins) via that tip's own bootstrap, so control-plane edits and root hot-patches need no manual bootstrap (R-430, 2026-08-29). Confirm: `gh run list --workflow=ci.yml --limit 1`. Migration/rollback: `docs/monorepo-cloud-migration.md`. Cutover lessons: `tasks/lessons.md` (2026-07-11). The deploy health-gates the relay restart: before tearing services down (while the current radon-api still serves `/health`), `wait_for_gateway_ready` confirms the IB gateway is authenticated + port_listening (bounded 60s, warn-and-proceed). The relay self-heals on reconnect and raises a `service_health` row (`ib-realtime-relay`) instead of looping silently on no-ticks.
+**Auto-deploy mechanics (moved from root `CLAUDE.md`).** `.github/workflows/ci.yml` runs the Vitest + pytest gate (including `cloud/tests`) then deploys on green: it SSHes to Hetzner, materializes an immutable `cloud/` runner from the release SHA under `~/.radon-deploy-runners/`, and runs that runner's `deploy.sh '$SHA'`. The deploy job remains bound to the GitHub Environment `Production` for deployment history, URL metadata, environment-scoped configuration, and a main-only deployment branch policy; it has no required-reviewer rule, so no manual approval is needed after the automated gates pass. Host secrets stay at `~/radon-cloud/.env` (`RADON_DEPLOY_ENV_FILE`). After root bootstrap publishes `/var/lib/radon/control-plane-ready`, legacy dual-checkout deploy is retired for new releases; pre-ready SHAs still use the compatibility path. Before `deploy.sh`, the deploy job runs `cloud/scripts/sync-control-plane.sh` → `radon-deploy-root sync-control-plane`, which installs the GitHub-main-tip control-plane bundle (helper, sudoers, polkit, control-plane units, drop-ins) via that tip's own bootstrap, so control-plane edits and root hot-patches need no manual bootstrap (R-430, 2026-08-29). Confirm: `gh run list --workflow=ci.yml --limit 1`. Migration/rollback: `docs/monorepo-cloud-migration.md`. `deploy.sh` then `publish-caddy`: stage, `caddy validate`, atomic install, `systemctl reload caddy` (30s), then `systemctl restart caddy` (60s) if reload is TERMed. The helper supervisor budget for publish-caddy is 300s so reload+restart both fit; 180s was consumed by a wedged reload and restart never ran (`11a0575d`, `868ee0f2`). `mcp.radon.run` is `http://mcp.radon.run` until HTTPS ACME can run against a process that already answers that Host on :80. Do not add a new `/var/log/caddy/*.log` path: root `caddy validate` creates that file as root:root and the caddy user cannot start (`mcp.log` took the edge down on 8628705d). Cutover lessons: `tasks/lessons.md` (2026-07-11). The deploy health-gates the relay restart: before tearing services down (while the current radon-api still serves `/health`), `wait_for_gateway_ready` confirms the IB gateway is authenticated + port_listening (bounded 60s, warn-and-proceed). The relay self-heals on reconnect and raises a `service_health` row (`ib-realtime-relay`) instead of looping silently on no-ticks.
 
 ## Privileged Bootstrap
 

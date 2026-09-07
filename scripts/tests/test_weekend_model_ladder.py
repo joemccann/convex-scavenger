@@ -85,6 +85,14 @@ MARKERS = (
 )
 
 
+# 2026-09-06: the claude model ladder now exists in ONE loop. The other four
+# left the claude.ai subscription entirely — it is reserved for the security
+# loop — and run codex, then grok, then NVIDIA, then Cerebras. Their ladder
+# behaviour is asserted in test_provider_failover.py; what stays here is the
+# claude-rung behaviour, against the loop that still has claude rungs.
+CLAUDE_LOOPS = ["security"]
+
+
 def _clone(tmp_path: Path, wrapper: Path) -> Path:
     repo = tmp_path / "clone"
     (repo / "scripts").mkdir(parents=True)
@@ -103,6 +111,7 @@ def _stub_bin(
     exhausted: Path,
     gh_log: Path,
     exhausted_line: str = QUOTA_LINE,
+    exhausted_exit: int = 1,
 ) -> Path:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -130,7 +139,7 @@ def _stub_bin(
             f'printf "%s\\n" "${{RADON_WEEKEND_MODEL:-<unset>}}" >> "{env_models}"\n'
             f'if grep -qxF -- "$model" "{exhausted}"; then\n'
             f"  echo \"{exhausted_line}\"\n"
-            "  exit 1\n"
+            f"  exit {exhausted_exit}\n"
             "fi\n"
             f'echo "{COMPLETION}"\n'
             "exit 0\n"
@@ -174,6 +183,7 @@ def _run(
     exhausted_models,
     ladder: str | None = None,
     exhausted_line: str = QUOTA_LINE,
+    exhausted_exit: int = 1,
 ):
     wrapper = LOOPS[loop]
     models_log = tmp_path / "models.txt"
@@ -181,7 +191,8 @@ def _run(
     exhausted = tmp_path / "exhausted.txt"
     exhausted.write_text("".join(f"{m}\n" for m in exhausted_models), encoding="utf-8")
     bin_dir = _stub_bin(
-        tmp_path, models_log, exhausted, gh_log, exhausted_line=exhausted_line
+        tmp_path, models_log, exhausted, gh_log, exhausted_line=exhausted_line,
+        exhausted_exit=exhausted_exit,
     )
     repo = _clone(tmp_path, wrapper)
     env = {
@@ -203,7 +214,7 @@ def _run(
     return proc, models, calls
 
 
-@pytest.mark.parametrize("loop", sorted(LOOPS))
+@pytest.mark.parametrize("loop", CLAUDE_LOOPS)
 class TestTheLoopPinsItsModel:
     def test_the_wrapper_passes_an_explicit_model(self, loop):
         body = LOOPS[loop].read_text(encoding="utf-8")
@@ -221,7 +232,7 @@ class TestTheLoopPinsItsModel:
         assert default.split() == LADDER, (default.split(), LADDER)
 
 
-@pytest.mark.parametrize("loop", sorted(LOOPS))
+@pytest.mark.parametrize("loop", CLAUDE_LOOPS)
 class TestAnExhaustedQuotaDropsARung:
     def test_it_drops_to_opus_1m_when_the_default_model_is_out(self, tmp_path, loop):
         proc, models, _calls = _audit(tmp_path, loop, [LADDER[0]])
@@ -253,7 +264,7 @@ class TestAnExhaustedQuotaDropsARung:
             f"models attempted: {models!r}"
         )
         assert proc.returncode != 0, (proc.returncode, proc.stdout, proc.stderr)
-        assert "all model quotas exhausted" in calls, (
+        assert "all agent providers exhausted" in calls, (
             f"{loop}: the dead-man must name the cause, or the operator sees a "
             f"bare FAILED and re-fires into the same wall: {calls!r}"
         )
@@ -285,7 +296,9 @@ class TestAnExhaustedQuotaDropsARung:
 
     def test_quota_matcher_is_the_cli_strings_not_bare_words(self, loop):
         body = LOOPS[loop].read_text(encoding="utf-8")
-        start = body.index("is_quota_exhausted()")
+        # 2026-09-06: the patterns live in quota_regex(), one arm per
+        # provider; the claude arm is the one this test has always been about.
+        start = body.index("quota_regex()")
         fn = body[start:body.index("\n}\n", start)]
         assert "rate.limit" not in fn, (
             f"{loop}: bare rate.limit matches tool-skip (rate-limited) and "
@@ -332,7 +345,7 @@ class TestAnExhaustedQuotaDropsARung:
 # wall eight times over.
 
 
-@pytest.mark.parametrize("loop", sorted(LOOPS))
+@pytest.mark.parametrize("loop", CLAUDE_LOOPS)
 class TestAnExhaustedLadderStopsTheRemediateRounds:
     def test_remediate_walks_the_ladder_once_not_once_per_round(
         self, tmp_path, loop
@@ -345,7 +358,7 @@ class TestAnExhaustedLadderStopsTheRemediateRounds:
             f"{proc.stdout}{proc.stderr}"
         )
         assert proc.returncode != 0, (proc.returncode, proc.stdout, proc.stderr)
-        assert "all model quotas exhausted" in calls, (
+        assert "all agent providers exhausted" in calls, (
             f"{loop}: the remediate dead-man must name the cause too: {calls!r}"
         )
 
@@ -427,7 +440,7 @@ class TestAnExhaustedLadderIsAProviderSpendStop:
             "a spend stop is the skill's INCOMPLETE/resume case, which exits "
             f"75 like every other incomplete phase: {proc.returncode}"
         )
-        assert "INCOMPLETE (all model quotas exhausted" in calls, calls
+        assert "INCOMPLETE (all agent providers exhausted" in calls, calls
         assert "FAILED" not in calls, (
             "the skill says a provider budget/spend stop is never reported "
             f"failed: {calls!r}"
@@ -444,8 +457,8 @@ class TestAnExhaustedLadderIsAProviderSpendStop:
 
     def test_the_dead_man_carries_the_resume_facts(self, tmp_path):
         _proc, _models, calls = _audit(tmp_path, "security", LADDER)
-        assert "the audited SHA was NOT advanced" in calls, calls
-        assert "resumes" in calls, (
+        assert "nothing was advanced" in calls, calls
+        assert "retries" in calls, (
             "an exhausted quota refills, so the operator must be told the next "
             f"fire picks the same private run back up: {calls!r}"
         )

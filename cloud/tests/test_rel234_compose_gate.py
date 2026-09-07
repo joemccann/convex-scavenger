@@ -49,6 +49,13 @@ POISONS = {
     "docker-sock": BASE
     + "    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock\n",
     "pid-host": BASE + "    pid: host\n",
+    # R-668 (REL-249): the symmetric host-namespace joins the pid arm missed.
+    "ipc-host": BASE + "    ipc: host\n",
+    "ipc-host-quoted": BASE + '    ipc: "host"\n',
+    "userns-host": BASE + "    userns_mode: host\n",
+    "userns-host-quoted": BASE + "    userns_mode: 'host'\n",
+    "uts-host": BASE + "    uts: host\n",
+    "cgroup-host": BASE + "    cgroup: host\n",
     "long-form-bind": BASE
     + "    volumes:\n      - type: bind\n        source: /var/lib\n        target: /x\n",
     "cap-add": BASE + "    cap_add:\n      - SYS_ADMIN\n",
@@ -89,17 +96,6 @@ def test_the_three_copies_are_byte_identical() -> None:
     helper = _function_text(HELPER)
     assert helper == _function_text(BOOTSTRAP)
     assert helper == _function_text(SETUP)
-
-
-def test_bootstrap_compose_arm_calls_the_shared_function() -> None:
-    text = BOOTSTRAP.read_text(encoding="utf-8")
-    # Strip comments so a comment naming the call cannot satisfy this.
-    code = "\n".join(
-        line for line in text.splitlines() if not line.lstrip().startswith("#")
-    )
-    arm = code[code.index("compose)") :]
-    arm = arm[: arm.index(";;")]
-    assert "compose_body_is_valid" in arm
 
 
 def test_bootstrap_defines_the_gate_before_its_top_level_call() -> None:

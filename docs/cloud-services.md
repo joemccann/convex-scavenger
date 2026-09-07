@@ -174,7 +174,7 @@ Related: `scripts/db/migrate.py` (radon-api `ExecStartPre`) retries transport-cl
 
 ### Runtime planes
 
-Production is three planes: host, broker, and app. IB Gateway runs from `cloud/docker-compose.yml`; the five long-lived app services run from exact-SHA `docker/app` images through installed per-unit `runtime-container.conf` drop-ins; timer-owned oneshots remain host systemd. Main CI gates deploy on both app images, pre-pulls them in parallel with prestage, and the runtime refuses `latest`. Do not install the fleet `radon-.service.d` example because it would override Gateway and health. The former `docker/services/` tree was deleted as decoy units in `40cfff2a` and is not a scheduler alternative.
+Production is three planes: host, broker, and app. IB Gateway runs from the control-plane artifact `/etc/radon/ib-gateway-compose.yml` via the root-owned `radon-docker-gw` shim (installed from `cloud/docker-compose.yml` by `bootstrap-control-plane.sh`/`setup-vps.sh` at the deployed commit — the checkout copy is the source, not what runs); the five long-lived app services run from exact-SHA `docker/app` images through installed per-unit `runtime-container.conf` drop-ins; timer-owned oneshots remain host systemd. Main CI gates deploy on both app images, pre-pulls them in parallel with prestage, and the runtime refuses `latest`. Do not install the fleet `radon-.service.d` example because it would override Gateway and health. The former `docker/services/` tree was deleted as decoy units in `40cfff2a` and is not a scheduler alternative.
 
 ## Trades — single source of truth
 
@@ -221,7 +221,7 @@ marked deprecated. Don't extend them.
 | Scenario | Recovery |
 |----------|----------|
 | Cold-start a new laptop | Clone repo, `bun install`, set `TURSO_DB_URL` + `TURSO_AUTH_TOKEN`, run `bun run db:migrate`, then `scripts/cloud.sh`. No replica file to seed — every process talks directly to the cloud DB. |
-| Cold-start a new VPS | Run `radon-cloud/scripts/setup-vps.sh`, configure the production `.env`, then use `/usr/local/bin/radon start`. Setup installs the lease-aware Gateway helper and every `radon-*.service`; no raw Compose start is permitted. Laptop's `scripts/cloud.sh` flips IB host to the new VPS through the same helper. |
+| Cold-start a new VPS | Run `cloud/scripts/setup-vps.sh`, configure the production `.env`, then use `/usr/local/bin/radon start`. Setup installs the lease-aware Gateway helper and every `radon-*.service`; no raw Compose start is permitted. Laptop's `scripts/cloud.sh` flips IB host to the new VPS through the same helper. |
 | Stale `data/replica.db` from a pre-2026-05-20 host | `rm data/replica.db*` — nothing reads from it anymore. The libsql client opens cloud connections regardless of whether the file exists. |
 | Turso outage | Read paths fall through to JSON files (dual-write retains them). Writes queue in the libsql client and replay when cloud returns. |
 | Hetzner outage | Switch to `scripts/local.sh`. Laptop becomes self-sufficient against local Docker IB Gateway. |
@@ -248,7 +248,7 @@ Service health for every dual-writing scheduler lands in the `service_health` ta
 The health daemon's `radon-nextjs` probe is TCP-liveness only, so a process
 that is alive but cannot read Turso (the 2026-07-02 destroy-storm class)
 looked healthy to every monitoring layer. `radon-nextjs-db-watchdog.timer`
-(radon-cloud `services/`, 60s, 24/7) closes the gap: it GETs
+(`cloud/services/`, 60s, 24/7) closes the gap: it GETs
 `localhost:3000/api/service-health` with
 `Authorization: Bearer $RADON_PROBE_FRESHNESS_TOKEN` (the route is not
 public) and judges the **body**. HTTP 200 with a synthetic `turso-db`
@@ -258,8 +258,8 @@ wedge cycles plus a Python-side canary read (proving Turso itself is fine,
 so a restart will actually help) → solo `systemctl restart radon-nextjs`
 (no PartOf/BindsTo — no cascade), 10 min restart cooldown. Heartbeats the
 `nextjs-db-read` service_health row every clean cycle; state in
-`radon-cloud/state/nextjs-db-watchdog.json`. Script:
-`radon-cloud/scripts/nextjs_db_watchdog.py`.
+`/home/radon/radon-cloud/state/nextjs-db-watchdog.json` (legacy state dir,
+still the script's default). Script: `cloud/scripts/nextjs_db_watchdog.py`.
 
 ### CRI read-stall incident (2026-07-12)
 
@@ -315,7 +315,7 @@ does not mean Turso necessarily failed.
 
 ### Host metrics (DUR-12)
 
-`scripts/host_metrics_sampler.py` (main repo, stdlib-only) runs every minute on the VPS via `radon-host-metrics.timer` (radon-cloud) and writes one row per run to the Turso `host_metrics` table (migration 0012): CPU % from a 1s `/proc/stat` delta, memory + swap from `/proc/meminfo`, `load1`, per-`radon-*`-unit ActiveState/NRestarts, and the FastAPI event-loop lag exposed as `loop_lag_ms` on `/health/lite`. Writes ride the bounded hrana path (`scripts/db/hrana_http.py`) with a capped JSONL fallback at `data/host_metrics_fallback.jsonl`; every run heartbeats `service_health[host-metrics]` (10-min freshness window). Retention is 14 days, pruned hourly by the sampler. The `/admin` page renders the latest values + 1h sparkline via `GET /api/admin/host-metrics`.
+`scripts/host_metrics_sampler.py` (main repo, stdlib-only) runs every minute on the VPS via `radon-host-metrics.timer` (`cloud/services/`) and writes one row per run to the Turso `host_metrics` table (migration 0012): CPU % from a 1s `/proc/stat` delta, memory + swap from `/proc/meminfo`, `load1`, per-`radon-*`-unit ActiveState/NRestarts, and the FastAPI event-loop lag exposed as `loop_lag_ms` on `/health/lite`. Writes ride the bounded hrana path (`scripts/db/hrana_http.py`) with a capped JSONL fallback at `data/host_metrics_fallback.jsonl`; every run heartbeats `service_health[host-metrics]` (10-min freshness window). Retention is 14 days, pruned hourly by the sampler. The `/admin` page renders the latest values + 1h sparkline via `GET /api/admin/host-metrics`.
 
 ### Bounded vs process-bound Turso writes (R5 partial)
 
@@ -389,22 +389,31 @@ JSON-RPC), documented for consumers at radon.run `/developers/mcp`.
   a caller past the cap gets a retryable `503 authentication unavailable`
   rather than queueing, and a kid that fails verification is negatively cached
   for `JWKS_NEGATIVE_TTL_SECONDS` so a bad token cannot drive repeated
-  upstream fetches.
+  upstream fetches. Only a PyJWT-class signature failure is a VERDICT that
+  gets negatively cached; a JWKS upstream outage (timeout/5xx) returns a
+  retryable `503 authentication temporarily unavailable` and leaves the kid
+  re-probeable, with refetches rate-limited per kid by
+  `JWKS_REFRESH_COOLDOWN_SECONDS` (`scripts/mcp_hosted/auth.py`, R-606,
+  398c8636).
 - **Env**: `CLERK_JWKS_URL` / `CLERK_ISSUER` / `ALLOWED_USER_IDS` from
   `/etc/radon/mcp.env`, a stripped file `deploy.sh:write_mcp_env` (and
   `setup-vps.sh`) derives from `/etc/radon/env` on every deploy; the unit
   never loads the full secret set and runs with `/etc/radon/env`
   inaccessible. Optional overrides `RADON_MCP_{HOST,PORT,SITE_BASE,EDGE_BASE,APP_BASE,DEMO_BASE}`
-  and `RADON_MCP_ALLOWED_HOSTS` (comma list; default
-  `app.radon.run,app.radon.run:*,127.0.0.1:*,localhost:*` — the SDK's
-  DNS-rebinding protection 421s any Host not on it, so a serving-host change
-  must update this list) are copied through when present in `/etc/radon/env`.
+  `RADON_MCP_ALLOWED_HOSTS` (comma list; default
+  `app.radon.run,app.radon.run:*,mcp.radon.run,mcp.radon.run:*,127.0.0.1:*,localhost:*`
+  — the SDK's DNS-rebinding protection 421s any Host not on it), and
+  `RADON_MCP_ALLOWED_ORIGINS` (default
+  `https://app.radon.run,https://mcp.radon.run`) are copied through when
+  present in `/etc/radon/env`.
 - **First enable** (install-units only auto-enables new timers):
   `sudo systemctl enable --now radon-mcp.service`, then
   `curl -s -X POST https://app.radon.run/mcp -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`.
-- **`mcp.radon.run` does not exist** (no DNS record, no Caddy site block);
-  the published URL is the path-based one above. Moving to a dedicated host
-  needs a human DNS record first, then a Caddyfile site block.
+- **Dedicated host `mcp.radon.run`**: Vercel A record to the same VPS as
+  `app.radon.run`. Caddy site block proxies only `/mcp*` (and `/` rewritten
+  to `/mcp`) to `127.0.0.1:8334` — no Next.js, no FastAPI. The published
+  consumer URL remains `https://app.radon.run/mcp` until TLS on the dedicated
+  host is verified.
 
 ## MenthorQ Playwright session refresh
 

@@ -240,3 +240,54 @@ media.radon.run {
         }
     }
 }
+
+# http://mcp.radon.run — dedicated Streamable HTTP MCP host (issue #232).
+# HTTP only: an HTTPS site address makes Caddy obtain a cert during
+# `systemctl reload caddy`. The still-running old process 308s HTTP-01
+# for this new hostname, ACME never completes, and publish-caddy TERMs
+# the reload (45s, 180s, on_demand, ask-on-self, ask-on-health). Once
+# this HTTP site is live, a later HTTPS site can ACME against a process
+# that already answers Host: mcp.radon.run on :80.
+http://mcp.radon.run {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+
+    # Same contract as app.radon.run /mcp*: keep the /mcp prefix, bound the
+    # anonymous POST body, no retry loop (POST JSON-RPC has no idempotency key).
+    handle /mcp* {
+        request_body {
+            max_size 1MB
+        }
+        reverse_proxy 127.0.0.1:8334 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 30s
+                read_timeout 300s
+            }
+        }
+    }
+
+    # https://mcp.radon.run (no path) is a valid connector URL. Rewrite to
+    # /mcp so FastMCP's streamable_http_path still sees the prefix.
+    @mcp_root path /
+    handle @mcp_root {
+        rewrite * /mcp
+        request_body {
+            max_size 1MB
+        }
+        reverse_proxy 127.0.0.1:8334 {
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 30s
+                read_timeout 300s
+            }
+        }
+    }
+}

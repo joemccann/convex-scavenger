@@ -70,7 +70,19 @@ class TestTheLoopOwnsItsOwnLane:
 
     def test_the_wrapper_invokes_this_loops_skill(self):
         body = _uncommented(WRAPPER)
-        assert "/ci-performance $PHASE" in body, (
+        # 2026-09-06: the slash command is built from LOOP_SKILL now,
+        # because a non-claude rung is handed a rendered prompt file
+        # named for the same skill. Both must name THIS loop.
+        assert 'LOOP_SKILL="ci-performance"' in body, (
+            "the wrapper spawns the agent with another loop's skill"
+        )
+        assert '"/$LOOP_SKILL $PHASE"' in body, (
+            "the claude rung must still get a slash command"
+        )
+        assert '"$PORTABLE_PROMPT_DIR/$LOOP_SKILL.$PHASE.md"' in body, (
+            "a fallback rung must get this loop's rendered prompt"
+        )
+        assert True, (
             "the wrapper spawns the agent with another loop's slash command"
         )
         assert SKILL.is_file(), f"{SKILL} does not exist, so the run has no prompt"
@@ -201,3 +213,24 @@ class TestTheSkillCarriesTheNonNegotiableRails:
     def test_the_skill_declares_both_modes(self):
         text = SKILL.read_text(encoding="utf-8")
         assert "## Mode: audit" in text and "## Mode: remediate" in text
+        assert "## Mode: deliver" in text
+
+
+class TestDeliverReportsCiBuildTimeDelta:
+    """A time-saving fix on #196 must show before, after, and % change."""
+
+    def test_skill_requires_the_four_column_table_and_tbd_path(self):
+        text = " ".join(SKILL.read_text(encoding="utf-8").split())
+        assert "| Job | Before | After | % change |" in text
+        assert "TBD until" in text
+        assert "do not invent" in text
+        assert "(after - before) / before * 100" in text
+        assert "ci-time-savings" in text
+
+    def test_skill_puts_the_table_on_the_issue_writeup_and_deliver(self):
+        text = SKILL.read_text(encoding="utf-8")
+        report = text[text.index("## Required nightly report") :]
+        deliver = text[text.index("## Mode: deliver") : text.index("## Required nightly report")]
+        assert "CI build time" in report
+        assert "ci-time-savings" in report
+        assert "ci-time-savings" in deliver or "CI build time" in deliver

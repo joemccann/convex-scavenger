@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import re
 import shlex
 import subprocess
 import sys
@@ -568,6 +569,66 @@ def test_caddy_validation_output_is_not_relayed_to_the_unprivileged_caller(tmp_p
     assert leaked not in result.stderr + result.stdout, (
         "caddy validate output reached the unprivileged caller, leaking the "
         "content of whatever file the candidate imported"
+    )
+
+
+def test_publish_caddy_restarts_when_reload_fails(tmp_path):
+    """TERMing a hung reload leaves Type=notify in `reloading`. Later
+    `systemctl reload caddy` waits out the helper timeout and rolls back
+    (db69ccb4 through 3866d693, HTTP-only included). Restart unwedes and
+    loads the already-installed candidate."""
+    env, source, config, systemctl_log, _caddy_log = _publish_fixture(tmp_path)
+    fake_systemctl = tmp_path / "systemctl"
+    _write_executable(
+        fake_systemctl,
+        f"""#!/bin/bash
+printf '%s\\n' "$*" >> {shlex.quote(str(systemctl_log))}
+if [[ "${{1:-}}" == "reload" ]]; then
+  exit 1
+fi
+exit 0
+""",
+    )
+
+    result = _run_publish(env)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    commands = systemctl_log.read_text(encoding="utf-8")
+    assert "reload caddy" in commands
+    assert "restart caddy" in commands
+    assert config.read_text(encoding="utf-8") == source.read_text(encoding="utf-8")
+
+
+def test_publish_caddy_action_timeout_outlasts_reload_and_restart():
+    """publish-caddy is supervised at ROOT_MUTATION_ACTION_TIMEOUT (180s).
+
+    reload_caddy used that full 180s, so the supervisor killed the helper
+    before restart_caddy ran (11a0575d and 868ee0f2 both failed at 180s
+    with no restart). The action budget must cover reload + restart.
+    """
+    text = ROOT_HELPER.read_text(encoding="utf-8")
+    reload_s = int(
+        re.search(
+            r'kill-after=2s\s+(\d+)s\s+"\$SYSTEMCTL"\s+reload caddy', text
+        ).group(1)
+    )
+    restart_s = int(
+        re.search(
+            r'kill-after=2s\s+(\d+)s\s+"\$SYSTEMCTL"\s+restart caddy', text
+        ).group(1)
+    )
+    start = text.index("root_action_timeout() {")
+    body = text[start : text.index("\n}", start) + 2]
+    assert "publish-caddy" in body
+    # Dedicated publish budget, or the shared mutation timeout if not split.
+    dedicated = re.search(
+        r'ROOT_PUBLISH_CADDY_ACTION_TIMEOUT=(\d+)', text
+    )
+    mutation = int(re.search(r'(?m)^  readonly ROOT_MUTATION_ACTION_TIMEOUT=(\d+)', text).group(1))
+    action_s = int(dedicated.group(1)) if dedicated else mutation
+    assert action_s >= reload_s + restart_s + 20, (
+        f"publish-caddy action {action_s}s cannot fit reload {reload_s}s "
+        f"+ restart {restart_s}s"
     )
 
 

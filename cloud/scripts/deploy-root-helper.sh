@@ -113,6 +113,7 @@ if [[ "${RADON_DEPLOY_HELPER_TEST_MODE:-0}" == "1" ]]; then
   readonly ROOT_LOCK_FILE="${RADON_TEST_ROOT_LOCK_FILE:-${ACTIVE_STATE_FILE}.lock}"
   readonly TIMEOUT="${RADON_TEST_TIMEOUT:-}"
   readonly ROOT_MUTATION_ACTION_TIMEOUT="${RADON_TEST_ROOT_MUTATION_ACTION_TIMEOUT:-${RADON_TEST_ROOT_ACTION_TIMEOUT:-180}}"
+  readonly ROOT_PUBLISH_CADDY_ACTION_TIMEOUT="${RADON_TEST_ROOT_PUBLISH_CADDY_ACTION_TIMEOUT:-${RADON_TEST_ROOT_ACTION_TIMEOUT:-300}}"
   readonly ROOT_VERIFY_ACTION_TIMEOUT="${RADON_TEST_ROOT_VERIFY_ACTION_TIMEOUT:-${RADON_TEST_ROOT_ACTION_TIMEOUT:-30}}"
   readonly ROOT_COMMIT_ACTION_TIMEOUT="${RADON_TEST_ROOT_COMMIT_ACTION_TIMEOUT:-${RADON_TEST_ROOT_ACTION_TIMEOUT:-30}}"
   readonly ROOT_SYNC_ACTION_TIMEOUT="${RADON_TEST_ROOT_SYNC_ACTION_TIMEOUT:-${RADON_TEST_ROOT_ACTION_TIMEOUT:-300}}"
@@ -174,6 +175,7 @@ else
   readonly NODE=/usr/bin/node
   readonly DOCKER=/usr/bin/docker
   readonly ROOT_MUTATION_ACTION_TIMEOUT=180
+  readonly ROOT_PUBLISH_CADDY_ACTION_TIMEOUT=300
   readonly ROOT_VERIFY_ACTION_TIMEOUT=30
   readonly ROOT_COMMIT_ACTION_TIMEOUT=30
   readonly ROOT_SYNC_ACTION_TIMEOUT=300
@@ -642,7 +644,21 @@ reload_caddy() {
   if (( HELPER_TEST_MODE == 1 )); then
     "$SYSTEMCTL" reload caddy
   else
-    "$TIMEOUT" --signal=TERM --kill-after=2s 45s "$SYSTEMCTL" reload caddy
+    # Detect a wedged Type=notify `reloading` quickly. 180s filled the
+    # publish-caddy supervisor budget so restart_caddy never ran
+    # (11a0575d, 868ee0f2). grace_period is 20s; 30s is enough headroom.
+    "$TIMEOUT" --signal=TERM --kill-after=2s 30s "$SYSTEMCTL" reload caddy
+  fi
+}
+
+restart_caddy() {
+  # TERMing a hung reload leaves Type=notify in `reloading`. Later reloads
+  # wait out the helper timeout (HTTP-only mcp.radon.run still hung 180s
+  # on 3866d693). Restart unwedes and loads whatever is in CADDY_CONFIG.
+  if (( HELPER_TEST_MODE == 1 )); then
+    "$SYSTEMCTL" restart caddy
+  else
+    "$TIMEOUT" --signal=TERM --kill-after=2s 60s "$SYSTEMCTL" restart caddy
   fi
 }
 
@@ -714,10 +730,18 @@ publish_caddy() {
     [[ -z "$rollback" ]] || "$RM" -f "$rollback"
     return 0
   fi
+  # Candidate is already live on disk. Restart the wedged unit so it
+  # actually loads it instead of rolling back and leaving the old
+  # Caddyfile in a still-reloading process.
+  if restart_caddy; then
+    [[ -z "$rollback" ]] || "$RM" -f "$rollback"
+    echo "caddy reload timed out; restarted caddy onto the candidate" >&2
+    return 0
+  fi
   if [[ -n "$rollback" ]]; then
     mv -f -- "$rollback" "$CADDY_CONFIG"
     "$SYNC" -f "$CADDY_CONFIG"
-    reload_caddy || echo "known-good caddy reload reconciliation also failed" >&2
+    restart_caddy || echo "known-good caddy restart reconciliation also failed" >&2
   else
     "$RM" -f "$CADDY_CONFIG"
   fi
@@ -1449,8 +1473,10 @@ compose_body_is_valid() {
     echo "compose validation failed: ${dest} mounts the docker socket" >&2
     return 1
   fi
-  if printf '%s\n' "$body" | grep -Eq '^[[:space:]]*pid:'; then
-    echo "compose validation failed: ${dest} joins a pid namespace" >&2
+  # R-668 (REL-249): every host-namespace join is denied, not only pid — ipc,
+  # userns_mode, uts and cgroup widen the container's runtime the same way.
+  if printf '%s\n' "$body" | grep -Eq '^[[:space:]]*(pid|ipc|userns_mode|uts|cgroup):'; then
+    echo "compose validation failed: ${dest} joins a host namespace (pid/ipc/userns_mode/uts/cgroup)" >&2
     return 1
   fi
   if printf '%s\n' "$body" | grep -Eq "^[[:space:]]*network_mode:[[:space:]]*[\"']?host"; then
@@ -1853,7 +1879,12 @@ root_action_timeout() {
     stop-clean|restart-managed|recover)
       printf '%s\n' "$ROOT_MUTATION_ACTION_TIMEOUT"
       ;;
-    publish-caddy|sync-scheduled-units)
+    publish-caddy)
+      # Must outlast reload_caddy + restart_caddy. Shared 180s mutation
+      # budget was consumed by a wedged reload, so restart never ran.
+      printf '%s\n' "$ROOT_PUBLISH_CADDY_ACTION_TIMEOUT"
+      ;;
+    sync-scheduled-units)
       # Bounded like a mutation (stage/install/reload) but deliberately
       # outside the release-lifecycle job-cancel class above. A rejected
       # allowlist or hash mismatch must not cancel an in-flight deploy.

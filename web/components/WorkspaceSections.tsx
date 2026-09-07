@@ -108,6 +108,7 @@ import { computeLegImpliedValue, computeOrderImpliedValue } from "@/lib/impliedV
 import { useRiskFreeRate } from "@/lib/useRiskFreeRate";
 import { useColumnVisibility } from "@/lib/useColumnVisibility";
 import { useViewport } from "@/lib/useViewport";
+import { useRealtimePrices } from "@/lib/RealtimePricesContext";
 import { ColumnsToggle, type ColumnsToggleEntry } from "./ColumnsToggle";
 import MobileOrderList from "./mobile/MobileOrderList";
 import MobileBlotterList from "./mobile/MobileBlotterList";
@@ -126,7 +127,6 @@ import AdminWorkspace from "./admin/AdminWorkspace";
 import PreferencesSection from "./PreferencesSection";
 import ProfileContent from "./profile/ProfileContent";
 import WatchlistContent from "./watchlist/WatchlistContent";
-import PerformancePanel from "./PerformancePanel";
 import OptionsWorkspacePanel from "./OptionsWorkspacePanel";
 import InfoTooltip from "./InfoTooltip";
 import SharePnlButton, { type SharePnlData } from "./SharePnlButton";
@@ -1172,7 +1172,7 @@ function FlowSectionsBody() {
                 <span
                   style={{
                     marginLeft: 4,
-                    fontSize: 10,
+                    fontSize: "var(--text-meta)",
                     fontFamily: "var(--font-mono)",
                     opacity: 0.7,
                   }}
@@ -1676,7 +1676,7 @@ function ScannerSections({ defaultMode }: { defaultMode?: ScannerMode } = {}) {
         <div className="m-scanner-header">
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Sparkles size={13} style={{ color: "var(--text-muted)" }} />
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "var(--text-primary)", textTransform: "uppercase" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-meta)", fontWeight: 600, letterSpacing: "0.08em", color: "var(--text-primary)", textTransform: "uppercase" }}>
               Scanner
             </span>
             <InfoTooltip
@@ -1688,7 +1688,7 @@ function ScannerSections({ defaultMode }: { defaultMode?: ScannerMode } = {}) {
             <span
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 10,
+                fontSize: "var(--text-meta)",
                 fontWeight: 600,
                 padding: "1px 6px",
                 borderRadius: 4,
@@ -1700,7 +1700,7 @@ function ScannerSections({ defaultMode }: { defaultMode?: ScannerMode } = {}) {
               {data?.signals_found ?? 0}
             </span>
             {lastSync && (
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--text-muted)", marginLeft: 4 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-meta)", color: "var(--text-muted)", marginLeft: 4 }}>
                 {new Date(lastSync).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
@@ -1716,7 +1716,7 @@ function ScannerSections({ defaultMode }: { defaultMode?: ScannerMode } = {}) {
               alignItems: "center",
               gap: 4,
               fontFamily: "var(--font-mono)",
-              fontSize: 11,
+              fontSize: "var(--text-meta)",
               fontWeight: 600,
               color: syncing ? "var(--text-muted)" : "var(--signal-core)",
               background: "none",
@@ -2359,7 +2359,7 @@ function JournalSections() {
               {syncing ? "SYNCING..." : "SYNC IB"}
             </button>
             {lastSyncResult && (
-              <span className="pill defined" style={{ fontSize: "9px" }}>
+              <span className="pill defined" style={{ fontSize: "var(--text-meta)" }}>
                 {lastSyncResult.imported > 0
                   ? `+${lastSyncResult.imported} IMPORTED`
                   : "UP TO DATE"}
@@ -2956,6 +2956,9 @@ function OrdersSections({
   portfolio?: PortfolioData | null;
 }) {
   const { pendingCancels, pendingModifies, cancelledOrders, requestCancel, requestModify } = useOrderActions();
+  // T-462: the feed-disconnect arm of quoteSubmitGate is dead unless the
+  // owner surface supplies real connectivity.
+  const { connected: feedConnected } = useRealtimePrices();
   const { isMobile, hasMounted } = useViewport();
   const showMobileOrders = isMobile && hasMounted;
   const riskFreeRate = useRiskFreeRate();
@@ -3260,6 +3263,7 @@ function OrdersSections({
         portfolio={portfolio}
         // R-112: the close-out branch must know what is already working.
         openOrders={orders}
+        feedConnected={feedConnected}
         onConfirm={handleModify}
         onClose={() => setModifyTarget(null)}
       />
@@ -3498,7 +3502,7 @@ function OrdersSections({
                             style={{
                               marginLeft: "8px",
                               fontFamily: "var(--font-mono)",
-                              fontSize: "11px",
+                              fontSize: "var(--text-meta)",
                               color: "var(--text-secondary)",
                             }}
                           >
@@ -3629,7 +3633,7 @@ function OrdersSections({
                             style={{
                               marginLeft: "8px",
                               fontFamily: "var(--font-mono)",
-                              fontSize: "11px",
+                              fontSize: "var(--text-meta)",
                               color: "var(--text-secondary)",
                             }}
                           >
@@ -3792,7 +3796,7 @@ function OrdersSections({
                         </td>
                         <td>
                           <TickerLink ticker={group.symbol} />
-                          <span style={{ marginLeft: "8px", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-secondary)" }}>
+                          <span style={{ marginLeft: "8px", fontFamily: "var(--font-mono)", fontSize: "var(--text-meta)", color: "var(--text-secondary)" }}>
                             {group.description.replace(/^(Opened|Closed)\s+\w+\s*/, "")}
                           </span>
                           {isCancelled && <XCircle size={12} className="cancelled-icon" />}
@@ -3827,12 +3831,12 @@ function OrdersSections({
                           <tr key={`${e.execId}-${i}`} className="exec-fill-row">
                             <td></td>
                             <td style={{ paddingLeft: "24px" }}>
-                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-secondary)" }}>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: "var(--text-meta)", color: "var(--text-secondary)" }}>
                                 {isBAG ? `${e.symbol}` : e.symbol}
                               </span>
                             </td>
                             <td>
-                              <span className={`pill ${displaySide === "BUY" ? "accum" : "distrib"}`} style={{ fontSize: "9px" }}>
+                              <span className={`pill ${displaySide === "BUY" ? "accum" : "distrib"}`} style={{ fontSize: "var(--text-meta)" }}>
                                 {displaySide}
                               </span>
                             </td>
@@ -4219,7 +4223,7 @@ type WorkspaceSectionsProps = {
   marketState?: MarketState;
 };
 
-function WorkspaceSections({ section, portfolio, portfolioLastSync, orders, prices, depths, tape, tickerParam, theme, marketState }: WorkspaceSectionsProps) {
+function WorkspaceSections({ section, portfolio, orders, prices, depths, tape, tickerParam, theme, marketState }: WorkspaceSectionsProps) {
   switch (section) {
     case "dashboard":
       return null;
@@ -4233,7 +4237,9 @@ function WorkspaceSections({ section, portfolio, portfolioLastSync, orders, pric
       // into every non-portfolio workspace bundle.
       return null;
     case "performance":
-      return <PerformancePanel portfolioLastSync={portfolioLastSync} marketState={marketState} />;
+      // WorkspaceShell loads the isolated performance chunk directly, just
+      // as it does for portfolio. No scanner/order bundle is needed here.
+      return null;
     case "orders":
       return <OrdersSections orders={orders ?? null} prices={prices} portfolio={portfolio} />;
     case "scanner":
