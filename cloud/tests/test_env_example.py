@@ -178,6 +178,18 @@ class TestGitignore:
         env_patterns = [line.strip() for line in lines if not line.strip().startswith("#")]
         assert ".env" in env_patterns, ".gitignore must include .env"
 
+    def test_gitignore_includes_env_scrub(self, root):
+        # Nightly wrappers stage a scrubbed copy of web/.env at web/.env.scrub
+        # between create and rm; a crash in that window must not leave a
+        # commit-visible secret file in a PR-opening clone.
+        gitignore = root.parent / ".gitignore"
+        patterns = [
+            line.strip()
+            for line in gitignore.read_text().splitlines()
+            if not line.strip().startswith("#")
+        ]
+        assert ".env.scrub" in patterns, ".gitignore must include .env.scrub"
+
 
 class TestOperatorAllowlistInterlock:
     """REL-029 (R-054): the fail-closed allowlist interlock must be enforced.
