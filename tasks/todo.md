@@ -5165,6 +5165,6 @@ Reduced-capability rung: remediate P1 findings only.
 
 - [x] T1 Catalog red test.
 - [x] T2 Catalog implementation.
-- [ ] T3 Pipeline red test.
-- [ ] T4 Pipeline implementation.
+- [x] T3 Pipeline red test.
+- [x] T4 Pipeline implementation.
 - [ ] T5 Verification and log.
