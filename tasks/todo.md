@@ -5387,3 +5387,14 @@ Reduced-capability rung: remediate P1 findings only.
 - [x] T5 PR342 preparation green on f6092bb8.
 - [ ] T6 All four merged and production verified.
 - PR339 integration: both task histories retained; diff against current main remains two documentation files. CI gate/path/concurrency checks passed 87/87.
+
+## Required-check repair replan
+
+- T7 depends_on: [T2] - Ensure docs-only pull requests execute every branch-protected matrix check; add regression coverage without weakening gates.
+- T8 depends_on: [T7] - Run focused and full suites, regenerate maps if necessary, publish and verify all required contexts before resuming T6.
+- [x] T7 Missing matrix-check repair; 88 focused contracts pass, live protection unchanged.
+- [ ] T8 Required-context validation and resumed merges.
+
+Review: PR339 merge was rejected because skipped matrices emit template names rather than required shard names; no bypass attempted. PR340 notification accepted HTTP200; PR339 notification accepted before this missing-context issue was discovered, so do not send a duplicate.
+
+Verification: full root Python 12,282 passed, 19 skipped, 16 subtests. Full cloud 1,860 passed, 7 skipped, 6 failures; five missing-Caddy failures reproduce on unchanged main, and the operator-concurrency timing test passed unchanged on serial rerun (also green on baseline).
