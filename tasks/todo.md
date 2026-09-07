@@ -21,6 +21,25 @@ credentials mandatory for every production deployment.
 - [x] Focused validation: 97 passed; detached full-cloud stage could not survive the CLI process boundary.
 
 ---
+# Task: Reliability remediate 2026-09-07 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify P0/P1 backlog completion on the dated reliability branch.
+- T2 depends_on: [T1] - Run permanent drills and three sequential full-gate baselines.
+- T3 depends_on: [T2] - Append durable gate evidence and commit/push the phase record.
+
+## Checklist
+
+- [x] T1 Verify REL-251 and REL-252 completion.
+- [ ] T2 Permanent drills green; full gates incomplete because the runner terminated the required stage.
+- [x] T3 Record durable gate-stage evidence.
+
+## Review
+
+- [x] Reduced scope contains no un-DONE P0/P1 items.
+- [x] Permanent drills: Python 94 passed; Vitest 12 passed.
+- [ ] Full-gate stage has no DONE sentinel; continuation required.
 
 # Task: Merge main into testing/2026-09-06 [IN PROGRESS]
 
@@ -5127,7 +5146,7 @@ Approved reference: ~/.radon/dropbox-research/calibration-policy.md and batch-20
 - [x] T3 Feed integration.
 - [x] T4 Automated evidence pipeline.
 - [x] T5 Verification.
-- [ ] T6 Runtime activation.
+- [x] T6 Runtime activation.
 
 ## Contract
 Research posts reuse canonical posts table, with companion research_post_sources(post_id, provenance_json). API source object: kind="dropbox", publisher, url (same-origin authenticated original PDF), documentDate, folderDate, pages:number[], figures:{url,page,caption}[], fileId, revision, contentHash. Private URLs /api/newsfeed/research/files/<sha256>.<png|pdf>. Python authenticated files endpoint /newsfeed/research/files/{asset}. Persistent worker state under RADON_RESEARCH_DIR (default /var/lib/radon/research), never public media. Every source asset is content-addressed and validated; no Next image optimizer for private media.
@@ -5149,3 +5168,163 @@ Research posts reuse canonical posts table, with companion research_post_sources
 - Post-integration checks on main 1f4b9331 plus this change: 311 focused Python/API/contracts passed with 16 subtests; 30 codemap tests passed. All three full-Python contract failures are resolved. Staged secret scan found no leaks. Runtime activation remains pending deployment.
 
 - PR #333 first head: all checks passed except clean-checkout codemap freshness. Regression reproduced from ignored generated next-env.d.ts; collector excludes that generated file. Red/green test, 31 codemap tests and clean archive graph equivalence passed. Rolling/demo absent-research-table regression fixed; 242 web tests and typecheck passed.
+
+---
+
+# Task: Reliability delta audit 2026-09-07 [COMPLETE]
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify the ledger anchor and changed surface.
+- T2 depends_on: [T1] - Recheck standing money-path and health-catalog invariants.
+- T3 depends_on: [T1,T2] - Record deduplicated findings and actionable backlog rows.
+
+## Checklist
+
+- [x] T1 Verify `7a7ca4ae..0b77a6af`.
+- [x] T2 Recheck guards and catalog coverage.
+- [x] T3 Record R-672/R-673 and REL-251/REL-252.
+
+## Review
+
+- [x] Research worker health writer is absent from both freshness catalogs.
+- [x] Research document processing has no whole-document bound.
+
+---
+
+# Task: Reliability remediation 2026-09-07 [IN PROGRESS]
+
+Reduced-capability rung: remediate P1 findings only.
+
+## Dependency graph
+
+- T1 depends_on: [] - Add red catalog tests for `dropbox-research`.
+- T2 depends_on: [T1] - Register matching continuous freshness windows.
+- T3 depends_on: [] - Add red bounded-document and progress-heartbeat tests.
+- T4 depends_on: [T3] - Bound review work and preserve timed-out work for retry.
+- T5 depends_on: [T2,T4] - Run focused and required full gates; append reliability log.
+
+## Checklist
+
+- [x] T1 Catalog red test.
+- [x] T2 Catalog implementation.
+- [x] T3 Pipeline red test.
+- [x] T4 Pipeline implementation.
+- [x] T5 Focused verification and log; full Python gate baseline recorded.
+
+## Review
+
+- [x] REL-251 fault injection: error and stale `dropbox-research` rows are actionable in both catalogs.
+- [x] REL-252 100-page fault injection: document lease stops new reviewer calls and emits completed-stage heartbeats.
+- [x] Focused gates: Python 103 passed; Vitest 139 passed.
+- [x] Full Python run: 12,093 passed, 95 failed, 14 errors; failures are pre-existing remote, fixture, and host-wrapper environment surfaces.
+
+## Production verification (2026-09-07)
+- PR #333 head 63fba7aa: 31 successful checks, seven non-applicable skips; Pushover accepted HTTP 200. Squash release 0b77a6af6e586b5702f4e8dac70f4cc37942a2b4 deployed successfully in run 34152165447.
+- Six approved posts and eleven ordered figures verified in canonical production tables; repeated publication wrote zero additional posts. All sixteen private assets returned matching hashes internally; both public media paths rejected anonymous access with HTTP 401.
+- Optional research service enabled and active at the exact release with zero restarts; September 6/7 cursors and eighteen eligible PDFs persisted. First unattended document completed against 3,862 feed items; three candidates held after crop correction failed inspection. Remaining queue continues in the background.
+- Approved relevance and chart presentation retained in policy and private profile. Production browser visual review awaits operator sign-in; production-build browser preflight passed 9/9.
+
+## Signed-in production verification (2026-09-07)
+- V1 depends_on: [] - Verify signed-in feed images, thumbnail switching and source context.
+- V2 depends_on: [] - Read watcher status and audit the first automatic publication against its retained source.
+- V3 depends_on: [V1,V2] - Record evidence and report any remaining operator action.
+- Live source-aware lightbox visually verified; original chart, caption/page, secondary thumbnails and article context render in production.
+
+# Research publication-date gate (2026-09-07)
+- D1 depends_on: [] - Disable automatic publication and preserve/retract unsupported automatic rows.
+- D2 depends_on: [] - Add source-literal publication-date evidence gate with red/green regressions for folder dates and copyright-only dates.
+- D3 depends_on: [D2,D5] - Run focused/full verification, regenerate source map, and deliver through exact-head green CI/deployment.
+- D4 depends_on: [D1,D3] - Revalidate pending output against corrected gate, resume watcher, and verify runtime.
+
+- D5 depends_on: [] - Correct existing original-bank attribution and enforce the same rule for future generated copy and seeds; regression tests required.
+
+- [x] D1 Automatic publication disabled; worker stopped and disabled. Unsupported automatic row backed up privately, retracted and cancelled in outbox; zero pending publication payloads.
+- [x] D2 Literal source-date gate implemented; retained failing production audit now fails independently of model approval.
+- [x] D5 Original-bank attribution corrected live and guarded for future rendered copy.
+- [ ] D3 Full verification and release.
+- [ ] D4 Corrected runtime reactivation.
+- Focused verification: 233 passed, 100% pipeline/publisher/seed coverage; independent review eight probes passed after closing named-month ranges and Unicode format-character bypasses.
+
+- Full Python follow-up: 12,273 passed, 11 failed, one skipped and 16 subtests passed. Failures are untouched process-timeout regressions; filing-forensics rerun passed unchanged (1/1). Wrapper baseline reruns are recorded in the release PR.
+- Integrated current main d13f982d (marketing-only implementation changes); regenerated source map has 3,222 nodes and 6,502 edges. Research, codemap and updated public-asset checks passed 266/266; staged secret scan found no leaks.
+- All ten wrapper failures passed serially against pristine d13f982d (10/10, 38.70s); five wrappers and their test module match the integrated worktree. Full-run timeout cause remains unknown; no implementation/test changes were needed.
+- D3a depends_on: [D3] - Main advanced to e4eaa255 during green PR checks; integrate its independently tested loop changes, regenerate conflicting source-map artifacts, run integrated research/contract tests, and repeat exact-head CI before merge.
+- D3a integrated validation passed 320/320; upstream e4eaa255 full CI and production deployment completed successfully. Research implementation is unchanged from the full-suite run.
+
+# PR #337 conflict resolution
+- C1 depends_on: [] - Merge current main in an isolated checkout; preserve research date/attribution gates and the PR's budget/freshness protections.
+- C2 depends_on: [C1] - Regenerate source maps, review semantic integration, and run focused/full verification.
+- C3 depends_on: [C2,C2b] - Push the resolution to PR #337 and supervise all exact-head checks to green.
+- [x] C1 Resolve conflicts.
+- [x] C2 Verify integrated behavior.
+- [ ] C3 Push and verify CI.
+- C2a depends_on: [C1] - Broader checks found nine standalone crop-review deadline failures; add a bounded lazy-initialization regression and fix before full verification.
+- C2a red/green: the prior PR's standalone crop failures were deadline-initialization regressions, not unrelated fixture failures. Eleven crop cases failed before the fix, including two new budget controls; independent crop/runtime/date/publication checks passed 204/204 with no skips afterward.
+- Generated source maps are fresh; focused codemap suite passed 31/31.
+- C2b depends_on: [C2] - Main advanced to c8ae8fa8 during verification; integrate feed-sharing changes, regenerate combined artifacts, and verify the final web tree before pushing.
+- Full Python verification passed: 12,299 tests, one skip, 16 subtests (1,262.32s). Full web: 8,529 passed and 16 timed out; unchanged affected-file/freshness rerun passed 411/411. Typecheck and staged secret scan passed.
+
+# News feed social sharing (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Inspect feed, media, authentication, platform export requirements.
+- T2 depends_on: [T1] - Build client-side image/video export and caption helpers with tests.
+- T3 depends_on: [T1] - Add accessible share controls to feed and lightbox, retaining selected chart.
+- T4 depends_on: [T2, T3] - Verify focused/full tests, typecheck, desktop/mobile E2E and rendered exports.
+
+## Checklist
+- [x] T1 Scope: X composer; 1080x1920 image and MP4 downloads for Stories/Reels/TikTok; editable captions, source attribution; no publishing or public research endpoint.
+- [x] T2 Export engine and tests.
+- [x] T3 Share interface and integration.
+- [x] T4 Verification and review.
+
+## News sharing review
+- Local sharing only: X composer and caption copy; 1080x1920 PNG for Stories and six-second MP4 for Reels/TikTok. No external publishing or new public research endpoints.
+- Selected chart, publisher, document date and page/caption retained; original chart aspect ratio preserved. Unsupported MP4 browsers offer PNG; errors support retry; caption drafts survive feed refresh and chart selection.
+- Focused verification: 81 passed across six suites; 4 Playwright desktop/mobile scenarios passed, including real PNG header/dimensions and MP4 header/dimensions/duration decoding.
+- Visual inspection: portrait export and desktop/mobile sharing controls checked. Independent review approved with no remaining material findings.
+- Platform references: https://docs.x.com/x-for-websites/web-intents/overview ; https://www.postman.com/meta/instagram/folder/f95kq5e/reels-publishing ; https://developers.tiktok.com/docs/en/content-posting-api-reference-upload-video .
+- Final full suite: 865 files, 8,583 passed / 1 failed, using four workers and 30-second test/hook budgets. The unrelated order-dedup-surfaces lookup failure passed an isolated rerun: 8/8. Full-suite log: /tmp/radon-share-verified-full.log; rerun: /tmp/radon-share-order-rerun.log.
+- TypeScript, targeted ESLint and git diff --check passed. Next route types regenerated after browser checks. PR publication is authorized; no merge or deployment requested.
+
+# News sharing pull request (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Verify branch, original work ownership, completed tests and CI requirements.
+- T2 depends_on: [T1] - Isolate the sharing diff on current main, commit and publish a pull request.
+- T3 depends_on: [T2] - Verify registered checks on the exact PR head, monitor to completion and repair failures.
+- T4 depends_on: [T3] - Send the required Pushover notification, confirm acceptance and document final evidence.
+
+## Checklist
+- [x] T1 Branch and verification inspection.
+- [x] T2 Focused commit and PR.
+- [ ] T3 Latest-head CI green.
+- [ ] T4 Notification and review.
+
+## PR integration review
+- PR https://github.com/joemccann/radon/pull/338 had 31 passing checks on f5c55ab6.
+- Integrated source-date main update ff2b31f8; retained both task records and regenerated the combined code map. Sharing implementation files are unchanged. Latest merge-head checks and notification pending.
+
+## PR #337 integration review
+- Latest main c8ae8fa8 integrated; Python implementation is unchanged from the 12,299-test full run. Final combined checks passed 267 research/codemap tests and 171 sharing/freshness tests. Existing source-date and attribution guards remain intact.
+- Latest main test gates passed but deployment rolled back to ff2b31f8 on research-worker stop timeout (run 34160677389); this PR conflict update does not constitute deployment.
+
+# Repair production deployment stop deadline (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Reproduce research stop timeout and inspect lifecycle budgets.
+- T2 depends_on: [T1] - Add failing regression and align bounded shutdown wait with research service.
+- T3 depends_on: [T2] - Run full cloud suite, shell checks, and independent review.
+- T4 depends_on: [T3] - Publish repair PR, verify CI green, merge and verify production deployment.
+
+## Checklist
+- [x] T1 Run 34160677389 fails waiting for research inactive; recovery restores ff2b31f8.
+- [x] T2 Regression and fix: red 3 failed / 9 passed; green 12/12.
+- [x] T3 Verification: 12 focused passed, independent approval, full cloud 1821 passed / 44 failed / 7 skipped.
+- [ ] T4 Production repair.
+
+## Review
+- Research-only production inactive wait now 150s, with unchanged 60s startup/other-unit waits and 180s outer mutation deadline. Canonical unit allows 120s shutdown plus cleanup.
+- Independent review approved; 12 focused tests pass, including simulated 125s stop and persistent-stop exit 71. Shell syntax and diff checks pass.
+- Full cloud suite completed: 1821 passed, 44 failed, 7 skipped in 435.39s. Failures are in unchanged Caddy/runtime/supervisor/Gateway test surfaces (missing local Caddy and subprocess/timing fixtures); representative supervisor TimeoutExpired(3s) reproduced on clean parent. Full log: /private/tmp/radon-deploy-final-cloud.log. Linux CI remains the authoritative release gate.
