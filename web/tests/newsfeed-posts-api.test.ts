@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClient, type Client } from "@libsql/client";
 
 const SCHEMA_SQL = `
@@ -14,12 +14,16 @@ CREATE TABLE IF NOT EXISTS posts (
   tags_vision TEXT,
   created_at  TEXT    NOT NULL,
   updated_at  TEXT    NOT NULL
-);
+ );
+CREATE TABLE research_post_sources (post_id TEXT PRIMARY KEY, provenance_json TEXT NOT NULL);
 `;
 
+const guard = vi.hoisted(() => vi.fn());
+vi.mock("../lib/routeAccess", () => ({ requireRouteAccess: guard }));
 let db: Client;
 
 beforeEach(async () => {
+  guard.mockResolvedValue({ok:true, principal:{kind:"operator"}});
   db = createClient({ url: ":memory:" });
   for (const stmt of SCHEMA_SQL.split(";").map((s) => s.trim()).filter(Boolean)) {
     await db.execute(stmt);
@@ -137,4 +141,19 @@ describe("/api/newsfeed/posts", () => {
     expect(data[0].images).toEqual([]);
     expect(data[0].tags).toEqual([]);
   });
+});
+
+describe("research post visibility", () => {
+ it("joins provenance for operators but excludes research from demo responses", async () => {
+  const base = "/api/newsfeed/research/files/" + "a".repeat(64);
+  const source = {kind:"dropbox",publisher:"Synthetic Bank",url:base+".pdf",documentDate:"2026-09-07",folderDate:"2026-09-07",pages:[2],figures:[],fileId:"id:fixture",revision:"r1",contentHash:"a".repeat(64)};
+  await db.execute({sql:"INSERT INTO posts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",args:["research-fixture","Private research","Evidence","2026-09-07T16:00:00Z","[]","[]","[]","[]","[]","2026-09-07T16:00:00Z","2026-09-07T16:00:00Z"]});
+  await db.execute({sql:"INSERT INTO research_post_sources VALUES (?, ?)",args:["research-fixture",JSON.stringify(source)]});
+  const {GET} = await import("../app/api/newsfeed/posts/route");
+  const response = await GET();
+  expect((await response.json())[0].source).toEqual(source);
+  expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+  guard.mockResolvedValue({ok:true,principal:{kind:"demo"}});
+  expect(await (await GET()).json()).toEqual([]);
+ });
 });
