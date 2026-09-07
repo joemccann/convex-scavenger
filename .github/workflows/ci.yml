@@ -551,7 +551,7 @@ jobs:
           ver="2.11.4"
           # The expected digest is pinned HERE, in a reviewed file, not read
           # from the same host that serves the tarball. Fetching
-          # caddy_<ver>_checksums.txt alongside the artifact verified only that
+          # the release's own checksum file alongside the artifact verified only that
           # the download matched whatever that endpoint served in the same
           # breath: an attacker who can replace one can replace the other, and
           # the check passes. This literal was captured on 2026-09-07 and
