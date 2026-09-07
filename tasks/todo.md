@@ -5125,3 +5125,24 @@ Research posts reuse canonical posts table, with companion research_post_sources
 - Post-integration checks on main 1f4b9331 plus this change: 311 focused Python/API/contracts passed with 16 subtests; 30 codemap tests passed. All three full-Python contract failures are resolved. Staged secret scan found no leaks. Runtime activation remains pending deployment.
 
 - PR #333 first head: all checks passed except clean-checkout codemap freshness. Regression reproduced from ignored generated next-env.d.ts; collector excludes that generated file. Red/green test, 31 codemap tests and clean archive graph equivalence passed. Rolling/demo absent-research-table regression fixed; 242 web tests and typecheck passed.
+
+---
+
+# Task: Reliability delta audit 2026-09-07 [COMPLETE]
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify the ledger anchor and changed surface.
+- T2 depends_on: [T1] - Recheck standing money-path and health-catalog invariants.
+- T3 depends_on: [T1,T2] - Record deduplicated findings and actionable backlog rows.
+
+## Checklist
+
+- [x] T1 Verify `7a7ca4ae..0b77a6af`.
+- [x] T2 Recheck guards and catalog coverage.
+- [x] T3 Record R-672/R-673 and REL-251/REL-252.
+
+## Review
+
+- [x] Research worker health writer is absent from both freshness catalogs.
+- [x] Research document processing has no whole-document bound.
