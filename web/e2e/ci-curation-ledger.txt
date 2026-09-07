@@ -191,11 +191,10 @@ ws-connection-stability.spec.ts
 # commit in the range, for every held-out spec modified since the merge-base.
 # Re-stamp the date when you change the spec again; a stale date reds.
 #
-# REVIEWED 2026-09-04 chat-launcher-focus.spec.ts — held out (chat launcher is
-#   dev-server-only focus behaviour). T-419/T-427 rewrote it onto a hydration
-#   marker plus a single real key press and off CSS-module locators; run locally
-#   under `next start` (production server, 4 passed) with a screenshot captured.
-#   Curate it if it stabilises in the shared CI runner.
+# REVIEWED 2026-09-07 chat-launcher-focus.spec.ts — held out (chat launcher is
+#   dev-server-only focus behaviour). The pending-turn geometry regression ran
+#   locally with the focus and safe-error checks (3 passed); dark-theme panel
+#   screenshot captured. Curate it if it stabilises in the shared CI runner.
 # REVIEWED 2026-09-04 open-order-combo.spec.ts — held out (combo blotter row
 #   needs a seeded open combo order the CI fixture does not provide). T-427/T-437
 #   moved it onto testids and a window-relative expiry; run locally under
@@ -271,3 +270,15 @@ ws-connection-stability.spec.ts
 #   verification passed in the 65/65 mobile financial group.
 # REVIEWED 2026-09-06 mobile-short-strangle-skew.spec.ts — compiled mobile
 #   Chromium next start verification passed in the 65/65 mobile group.
+# REVIEWED 2026-09-06 book-montage-spacing.spec.ts — T-454 moved the screenshot
+#   off a hardcoded /tmp path onto testInfo.outputPath and attached it to the
+#   report. Compiled Chromium passed locally against next start (7 passed in
+#   the T-454 remediation group).
+# REVIEWED 2026-09-06 mobile-combo-instrument-switcher.spec.ts — T-454 moved
+#   the VIX desktop cockpit test off bare CSS-class locators (.cockpit-host,
+#   .cockpit-head, .book-window, .book-kind, .act-ticket) onto data-testids
+#   with a visibility guard ahead of the negative act-ticket assertion.
+#   Compiled Chromium passed locally against next start (7 passed).
+# REVIEWED 2026-09-06 demo-headlines.spec.ts — T-455 replaced the pinned
+#   2026-09-04 headline timestamp with a window-relative Date.now() fixture.
+#   Demo compile passed; Chromium passed locally against a demo next start.
