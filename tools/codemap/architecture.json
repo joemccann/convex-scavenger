@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-07T19:26:50Z",
-  "node_count": 3232,
-  "edge_count": 6512,
+  "generated_at": "2026-09-07T19:33:14Z",
+  "node_count": 3229,
+  "edge_count": 6501,
   "areas": {
     "web": 1902,
-    "site": 154,
+    "site": 151,
     "scripts": 1062,
     "cloud": 66,
     "lib": 28,
@@ -70,7 +70,7 @@
     {
       "id": "site/e2e",
       "area": "site",
-      "count": 6
+      "count": 5
     },
     {
       "id": "site",
@@ -80,7 +80,7 @@
     {
       "id": "site/lib",
       "area": "site",
-      "count": 53
+      "count": 51
     },
     {
       "id": "site/scripts",
@@ -453,13 +453,6 @@
       "test": false
     },
     {
-      "id": "site/lib/seo.ts",
-      "area": "site",
-      "in": 32,
-      "out": 1,
-      "test": false
-    },
-    {
       "id": "web/lib/OrderActionsContext.tsx",
       "area": "web",
       "in": 31,
@@ -478,6 +471,13 @@
       "area": "scripts",
       "in": 32,
       "out": 0,
+      "test": false
+    },
+    {
+      "id": "site/lib/seo.ts",
+      "area": "site",
+      "in": 31,
+      "out": 1,
       "test": false
     },
     {
