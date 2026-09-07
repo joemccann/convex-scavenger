@@ -5123,7 +5123,7 @@ Approved reference: ~/.radon/dropbox-research/calibration-policy.md and batch-20
 - [x] T3 Feed integration.
 - [x] T4 Automated evidence pipeline.
 - [x] T5 Verification.
-- [ ] T6 Runtime activation.
+- [x] T6 Runtime activation.
 
 ## Contract
 Research posts reuse canonical posts table, with companion research_post_sources(post_id, provenance_json). API source object: kind="dropbox", publisher, url (same-origin authenticated original PDF), documentDate, folderDate, pages:number[], figures:{url,page,caption}[], fileId, revision, contentHash. Private URLs /api/newsfeed/research/files/<sha256>.<png|pdf>. Python authenticated files endpoint /newsfeed/research/files/{asset}. Persistent worker state under RADON_RESEARCH_DIR (default /var/lib/radon/research), never public media. Every source asset is content-addressed and validated; no Next image optimizer for private media.
@@ -5195,3 +5195,77 @@ Reduced-capability rung: remediate P1 findings only.
 - [x] REL-252 100-page fault injection: document lease stops new reviewer calls and emits completed-stage heartbeats.
 - [x] Focused gates: Python 103 passed; Vitest 139 passed.
 - [x] Full Python run: 12,093 passed, 95 failed, 14 errors; failures are pre-existing remote, fixture, and host-wrapper environment surfaces.
+
+## Production verification (2026-09-07)
+- PR #333 head 63fba7aa: 31 successful checks, seven non-applicable skips; Pushover accepted HTTP 200. Squash release 0b77a6af6e586b5702f4e8dac70f4cc37942a2b4 deployed successfully in run 34152165447.
+- Six approved posts and eleven ordered figures verified in canonical production tables; repeated publication wrote zero additional posts. All sixteen private assets returned matching hashes internally; both public media paths rejected anonymous access with HTTP 401.
+- Optional research service enabled and active at the exact release with zero restarts; September 6/7 cursors and eighteen eligible PDFs persisted. First unattended document completed against 3,862 feed items; three candidates held after crop correction failed inspection. Remaining queue continues in the background.
+- Approved relevance and chart presentation retained in policy and private profile. Production browser visual review awaits operator sign-in; production-build browser preflight passed 9/9.
+
+## Signed-in production verification (2026-09-07)
+- V1 depends_on: [] - Verify signed-in feed images, thumbnail switching and source context.
+- V2 depends_on: [] - Read watcher status and audit the first automatic publication against its retained source.
+- V3 depends_on: [V1,V2] - Record evidence and report any remaining operator action.
+- Live source-aware lightbox visually verified; original chart, caption/page, secondary thumbnails and article context render in production.
+
+# Research publication-date gate (2026-09-07)
+- D1 depends_on: [] - Disable automatic publication and preserve/retract unsupported automatic rows.
+- D2 depends_on: [] - Add source-literal publication-date evidence gate with red/green regressions for folder dates and copyright-only dates.
+- D3 depends_on: [D2,D5] - Run focused/full verification, regenerate source map, and deliver through exact-head green CI/deployment.
+- D4 depends_on: [D1,D3] - Revalidate pending output against corrected gate, resume watcher, and verify runtime.
+
+- D5 depends_on: [] - Correct existing original-bank attribution and enforce the same rule for future generated copy and seeds; regression tests required.
+
+- [x] D1 Automatic publication disabled; worker stopped and disabled. Unsupported automatic row backed up privately, retracted and cancelled in outbox; zero pending publication payloads.
+- [x] D2 Literal source-date gate implemented; retained failing production audit now fails independently of model approval.
+- [x] D5 Original-bank attribution corrected live and guarded for future rendered copy.
+- [ ] D3 Full verification and release.
+- [ ] D4 Corrected runtime reactivation.
+- Focused verification: 233 passed, 100% pipeline/publisher/seed coverage; independent review eight probes passed after closing named-month ranges and Unicode format-character bypasses.
+
+- Full Python follow-up: 12,273 passed, 11 failed, one skipped and 16 subtests passed. Failures are untouched process-timeout regressions; filing-forensics rerun passed unchanged (1/1). Wrapper baseline reruns are recorded in the release PR.
+- Integrated current main d13f982d (marketing-only implementation changes); regenerated source map has 3,222 nodes and 6,502 edges. Research, codemap and updated public-asset checks passed 266/266; staged secret scan found no leaks.
+- All ten wrapper failures passed serially against pristine d13f982d (10/10, 38.70s); five wrappers and their test module match the integrated worktree. Full-run timeout cause remains unknown; no implementation/test changes were needed.
+- D3a depends_on: [D3] - Main advanced to e4eaa255 during green PR checks; integrate its independently tested loop changes, regenerate conflicting source-map artifacts, run integrated research/contract tests, and repeat exact-head CI before merge.
+- D3a integrated validation passed 320/320; upstream e4eaa255 full CI and production deployment completed successfully. Research implementation is unchanged from the full-suite run.
+
+# News feed social sharing (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Inspect feed, media, authentication, platform export requirements.
+- T2 depends_on: [T1] - Build client-side image/video export and caption helpers with tests.
+- T3 depends_on: [T1] - Add accessible share controls to feed and lightbox, retaining selected chart.
+- T4 depends_on: [T2, T3] - Verify focused/full tests, typecheck, desktop/mobile E2E and rendered exports.
+
+## Checklist
+- [x] T1 Scope: X composer; 1080x1920 image and MP4 downloads for Stories/Reels/TikTok; editable captions, source attribution; no publishing or public research endpoint.
+- [x] T2 Export engine and tests.
+- [x] T3 Share interface and integration.
+- [x] T4 Verification and review.
+
+## News sharing review
+- Local sharing only: X composer and caption copy; 1080x1920 PNG for Stories and six-second MP4 for Reels/TikTok. No external publishing or new public research endpoints.
+- Selected chart, publisher, document date and page/caption retained; original chart aspect ratio preserved. Unsupported MP4 browsers offer PNG; errors support retry; caption drafts survive feed refresh and chart selection.
+- Focused verification: 81 passed across six suites; 4 Playwright desktop/mobile scenarios passed, including real PNG header/dimensions and MP4 header/dimensions/duration decoding.
+- Visual inspection: portrait export and desktop/mobile sharing controls checked. Independent review approved with no remaining material findings.
+- Platform references: https://docs.x.com/x-for-websites/web-intents/overview ; https://www.postman.com/meta/instagram/folder/f95kq5e/reels-publishing ; https://developers.tiktok.com/docs/en/content-posting-api-reference-upload-video .
+- Final full suite: 865 files, 8,583 passed / 1 failed, using four workers and 30-second test/hook budgets. The unrelated order-dedup-surfaces lookup failure passed an isolated rerun: 8/8. Full-suite log: /tmp/radon-share-verified-full.log; rerun: /tmp/radon-share-order-rerun.log.
+- TypeScript, targeted ESLint and git diff --check passed. Next route types regenerated after browser checks. PR publication is authorized; no merge or deployment requested.
+
+# News sharing pull request (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Verify branch, original work ownership, completed tests and CI requirements.
+- T2 depends_on: [T1] - Isolate the sharing diff on current main, commit and publish a pull request.
+- T3 depends_on: [T2] - Verify registered checks on the exact PR head, monitor to completion and repair failures.
+- T4 depends_on: [T3] - Send the required Pushover notification, confirm acceptance and document final evidence.
+
+## Checklist
+- [x] T1 Branch and verification inspection.
+- [x] T2 Focused commit and PR.
+- [ ] T3 Latest-head CI green.
+- [ ] T4 Notification and review.
+
+## PR integration review
+- PR https://github.com/joemccann/radon/pull/338 had 31 passing checks on f5c55ab6.
+- Integrated source-date main update ff2b31f8; retained both task records and regenerated the combined code map. Sharing implementation files are unchanged. Latest merge-head checks and notification pending.
