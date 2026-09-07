@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-07T19:44:18Z",
-  "node_count": 3215,
-  "edge_count": 6489,
+  "generated_at": "2026-09-07T20:46:18Z",
+  "node_count": 3222,
+  "edge_count": 6502,
   "areas": {
     "web": 1894,
-    "site": 145,
-    "scripts": 1062,
+    "site": 151,
+    "scripts": 1063,
     "cloud": 66,
     "lib": 28,
     "tests": 17,
@@ -60,7 +60,7 @@
     {
       "id": "site/components",
       "area": "site",
-      "count": 60
+      "count": 63
     },
     {
       "id": "site/e2e",
@@ -75,7 +75,7 @@
     {
       "id": "site/lib",
       "area": "site",
-      "count": 48
+      "count": 51
     },
     {
       "id": "site/scripts",
@@ -190,7 +190,7 @@
     {
       "id": "scripts/tests",
       "area": "scripts",
-      "count": 527
+      "count": 528
     },
     {
       "id": "scripts/trade_blotter",
@@ -469,6 +469,13 @@
       "test": false
     },
     {
+      "id": "site/lib/seo.ts",
+      "area": "site",
+      "in": 31,
+      "out": 1,
+      "test": false
+    },
+    {
       "id": "scripts/perf_twr_builder.py",
       "area": "scripts",
       "in": 21,
@@ -487,13 +494,6 @@
       "area": "web",
       "in": 31,
       "out": 0,
-      "test": false
-    },
-    {
-      "id": "site/lib/seo.ts",
-      "area": "site",
-      "in": 30,
-      "out": 1,
       "test": false
     },
     {
