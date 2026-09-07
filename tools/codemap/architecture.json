@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-07T22:19:22Z",
-  "node_count": 3230,
-  "edge_count": 6508,
+  "generated_at": "2026-09-07T23:29:29Z",
+  "node_count": 3242,
+  "edge_count": 6515,
   "areas": {
-    "web": 1899,
+    "web": 1911,
     "site": 152,
     "scripts": 1065,
     "cloud": 66,
@@ -13,9 +13,14 @@
   },
   "groups": [
     {
+      "id": "web/.claude-design",
+      "area": "web",
+      "count": 8
+    },
+    {
       "id": "web/app",
       "area": "web",
-      "count": 206
+      "count": 207
     },
     {
       "id": "web/components",
@@ -35,7 +40,7 @@
     {
       "id": "web/lib",
       "area": "web",
-      "count": 374
+      "count": 375
     },
     {
       "id": "web/public",
@@ -50,7 +55,7 @@
     {
       "id": "web/tests",
       "area": "web",
-      "count": 878
+      "count": 880
     },
     {
       "id": "site/app",
@@ -289,7 +294,7 @@
     {
       "id": "web/lib/routeAccess.ts",
       "area": "web",
-      "in": 86,
+      "in": 87,
       "out": 4,
       "test": false
     },
