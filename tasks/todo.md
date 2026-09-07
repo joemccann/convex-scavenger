@@ -5146,3 +5146,25 @@ Research posts reuse canonical posts table, with companion research_post_sources
 
 - [x] Research worker health writer is absent from both freshness catalogs.
 - [x] Research document processing has no whole-document bound.
+
+---
+
+# Task: Reliability remediation 2026-09-07 [IN PROGRESS]
+
+Reduced-capability rung: remediate P1 findings only.
+
+## Dependency graph
+
+- T1 depends_on: [] - Add red catalog tests for `dropbox-research`.
+- T2 depends_on: [T1] - Register matching continuous freshness windows.
+- T3 depends_on: [] - Add red bounded-document and progress-heartbeat tests.
+- T4 depends_on: [T3] - Bound review work and preserve timed-out work for retry.
+- T5 depends_on: [T2,T4] - Run focused and required full gates; append reliability log.
+
+## Checklist
+
+- [x] T1 Catalog red test.
+- [x] T2 Catalog implementation.
+- [ ] T3 Pipeline red test.
+- [ ] T4 Pipeline implementation.
+- [ ] T5 Verification and log.
