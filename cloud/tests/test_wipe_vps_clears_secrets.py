@@ -94,7 +94,19 @@ def test_setup_has_not_added_a_secret_path_the_wipe_does_not_know_about():
         match
         for match in re.findall(r"/etc/(?:radon|credstore\.encrypted)[\w./-]*", setup)
     }
-    unwiped = sorted(target for target in referenced if not _removes(body, target))
+    # /etc/credstore.encrypted is the SHARED systemd credential store, not ours:
+    # the wipe removes this deployment's key from inside it and rmdirs the
+    # directory only if that left it empty. A path is therefore also covered
+    # when the wipe removes something beneath it.
+    def _covered(target: str) -> bool:
+        if _removes(body, target):
+            return True
+        return any(
+            other.startswith(target.rstrip("/") + "/") and _removes(body, other)
+            for other in referenced
+        )
+
+    unwiped = sorted(target for target in referenced if not _covered(target))
     assert not unwiped, (
         "setup-vps.sh creates or reads these secret paths and wipe-vps.sh does "
         f"not remove them: {unwiped}"
