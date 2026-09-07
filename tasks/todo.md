@@ -5234,10 +5234,55 @@ Reduced-capability rung: remediate P1 findings only.
 - C2 depends_on: [C1] - Regenerate source maps, review semantic integration, and run focused/full verification.
 - C3 depends_on: [C2,C2b] - Push the resolution to PR #337 and supervise all exact-head checks to green.
 - [x] C1 Resolve conflicts.
-- [ ] C2 Verify integrated behavior.
+- [x] C2 Verify integrated behavior.
 - [ ] C3 Push and verify CI.
 - C2a depends_on: [C1] - Broader checks found nine standalone crop-review deadline failures; add a bounded lazy-initialization regression and fix before full verification.
 - C2a red/green: the prior PR's standalone crop failures were deadline-initialization regressions, not unrelated fixture failures. Eleven crop cases failed before the fix, including two new budget controls; independent crop/runtime/date/publication checks passed 204/204 with no skips afterward.
 - Generated source maps are fresh; focused codemap suite passed 31/31.
 - C2b depends_on: [C2] - Main advanced to c8ae8fa8 during verification; integrate feed-sharing changes, regenerate combined artifacts, and verify the final web tree before pushing.
 - Full Python verification passed: 12,299 tests, one skip, 16 subtests (1,262.32s). Full web: 8,529 passed and 16 timed out; unchanged affected-file/freshness rerun passed 411/411. Typecheck and staged secret scan passed.
+
+# News feed social sharing (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Inspect feed, media, authentication, platform export requirements.
+- T2 depends_on: [T1] - Build client-side image/video export and caption helpers with tests.
+- T3 depends_on: [T1] - Add accessible share controls to feed and lightbox, retaining selected chart.
+- T4 depends_on: [T2, T3] - Verify focused/full tests, typecheck, desktop/mobile E2E and rendered exports.
+
+## Checklist
+- [x] T1 Scope: X composer; 1080x1920 image and MP4 downloads for Stories/Reels/TikTok; editable captions, source attribution; no publishing or public research endpoint.
+- [x] T2 Export engine and tests.
+- [x] T3 Share interface and integration.
+- [x] T4 Verification and review.
+
+## News sharing review
+- Local sharing only: X composer and caption copy; 1080x1920 PNG for Stories and six-second MP4 for Reels/TikTok. No external publishing or new public research endpoints.
+- Selected chart, publisher, document date and page/caption retained; original chart aspect ratio preserved. Unsupported MP4 browsers offer PNG; errors support retry; caption drafts survive feed refresh and chart selection.
+- Focused verification: 81 passed across six suites; 4 Playwright desktop/mobile scenarios passed, including real PNG header/dimensions and MP4 header/dimensions/duration decoding.
+- Visual inspection: portrait export and desktop/mobile sharing controls checked. Independent review approved with no remaining material findings.
+- Platform references: https://docs.x.com/x-for-websites/web-intents/overview ; https://www.postman.com/meta/instagram/folder/f95kq5e/reels-publishing ; https://developers.tiktok.com/docs/en/content-posting-api-reference-upload-video .
+- Final full suite: 865 files, 8,583 passed / 1 failed, using four workers and 30-second test/hook budgets. The unrelated order-dedup-surfaces lookup failure passed an isolated rerun: 8/8. Full-suite log: /tmp/radon-share-verified-full.log; rerun: /tmp/radon-share-order-rerun.log.
+- TypeScript, targeted ESLint and git diff --check passed. Next route types regenerated after browser checks. PR publication is authorized; no merge or deployment requested.
+
+# News sharing pull request (2026-09-07)
+
+## Dependency graph
+- T1 depends_on: [] - Verify branch, original work ownership, completed tests and CI requirements.
+- T2 depends_on: [T1] - Isolate the sharing diff on current main, commit and publish a pull request.
+- T3 depends_on: [T2] - Verify registered checks on the exact PR head, monitor to completion and repair failures.
+- T4 depends_on: [T3] - Send the required Pushover notification, confirm acceptance and document final evidence.
+
+## Checklist
+- [x] T1 Branch and verification inspection.
+- [x] T2 Focused commit and PR.
+- [ ] T3 Latest-head CI green.
+- [ ] T4 Notification and review.
+
+## PR integration review
+- PR https://github.com/joemccann/radon/pull/338 had 31 passing checks on f5c55ab6.
+- Integrated source-date main update ff2b31f8; retained both task records and regenerated the combined code map. Sharing implementation files are unchanged. Latest merge-head checks and notification pending.
+
+## PR #337 integration review
+- Latest main c8ae8fa8 integrated; Python implementation is unchanged from the 12,299-test full run. Final combined checks passed 267 research/codemap tests and 171 sharing/freshness tests. Existing source-date and attribution guards remain intact.
+- Latest main test gates passed but deployment rolled back to ff2b31f8 on research-worker stop timeout (run 34160677389); this PR conflict update does not constitute deployment.
