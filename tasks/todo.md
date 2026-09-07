@@ -5123,3 +5123,5 @@ Research posts reuse canonical posts table, with companion research_post_sources
 - Production web build and trace audit passed (197 manifests); production-server browser preflight 9/9. Research E2E is curated in CI. Final web focused 194/194 and typecheck passed.
 
 - Post-integration checks on main 1f4b9331 plus this change: 311 focused Python/API/contracts passed with 16 subtests; 30 codemap tests passed. All three full-Python contract failures are resolved. Staged secret scan found no leaks. Runtime activation remains pending deployment.
+
+- PR #333 first head: all checks passed except clean-checkout codemap freshness. Regression reproduced from ignored generated next-env.d.ts; collector excludes that generated file. Red/green test, 31 codemap tests and clean archive graph equivalence passed. Rolling/demo absent-research-table regression fixed; 242 web tests and typecheck passed.
