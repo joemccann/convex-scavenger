@@ -1056,10 +1056,22 @@ def run(
         )
         return {**payload, "partial": True}
 
+    dropped_names = sorted(
+        {e["ticker"] for e in errors if e.get("code") in ("timeout", "budget")}
+    )
+    prior_series = (prior or {}).get("series") or {}
     if tickers:
-        merged, carried = dict(series_by_ticker), []
+        # --tickers is a deliberate slice: only carry the names this run
+        # actually deferred (R-558), not the whole prior snapshot.
+        merged = dict(series_by_ticker)
+        carried = [
+            name for name in dropped_names
+            if name not in merged and prior_series.get(name)
+        ]
+        for name in carried:
+            merged[name] = prior_series[name]
     else:
-        merged, carried = _merge_prior_series(series_by_ticker, (prior or {}).get("series"))
+        merged, carried = _merge_prior_series(series_by_ticker, prior_series)
     if carried:
         payload = {
             **build_payload(merged, scan_time, errors),
