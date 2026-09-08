@@ -43,3 +43,7 @@ Regression fixtures pin an ordinary hour, the UTC midnight boundary and daily re
 ## Integration with updated main
 
 Main advanced to `00b6aa22` during review. The merge affected only generated code maps; both branches' source changes were retained. The updated full application partition completed with 11,759 passing tests and one documentation-ownership failure, alongside the unchanged 634-test subscription partition. The missing cloud owner documentation was added; all 146 ownership, code-map and merged Equibles regressions then passed. This covers 12,394 application tests after integration, with 19 skipped and 16 subtests. No test gate was weakened.
+
+## Pull request release gate
+
+[PR #346](https://github.com/joemccann/radon/pull/346) passed every applicable check on `5fa75a9b910ff9cd31a4ea5c90f49a08e135db1e`, including both coverage gates, image builds, the production perimeter and Playwright. The completion ledger is documentation-only; the final documentation head is checked again before notification. The standalone visual handoff contains 15 embedded actual-source captures; seven selectors and desktop/mobile report layouts passed with zero errors or overflow. Source eligibility and predictive limitations remain unchanged.

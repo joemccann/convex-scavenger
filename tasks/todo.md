@@ -5406,7 +5406,7 @@ Verification: full root Python 12,282 passed, 19 skipped, 16 subtests. Full clou
 - [x] T3 Comparable transforms, financial reconciliation, legacy preservation. depends_on: [T2]
 - [x] T4 Four-view UI, source evidence, dashboard/ticker handoff. depends_on: [T3]
 - [x] T5 Publication-time shadow evaluation and limitation report. depends_on: [T2,T3]
-- [ ] T6 Focused tests, full suites, browser verification, PR green, show-me handoff. depends_on: [T4,T5]
+- [x] T6 Focused tests, full suites, browser verification, PR green, show-me handoff. depends_on: [T4,T5]
 Graph: T1 -> T2 -> T3 -> T4 -> T6; T2 -> T5; T3 -> T5 -> T6.
 Specification: docs/ai-infrastructure-plan.md; execution contract: docs/ai-infrastructure-contract.md.
 Worktree: /Users/joemccann/dev/apps/finance/radon-ai-infrastructure, branch feat/ai-infrastructure-evidence.
@@ -5421,3 +5421,4 @@ Enabled observations must be reproducible; unentitled/experimental sources stay 
 - Full cloud rerun: 1,873 passed, six skipped; deployment inventory/bootstrap and optional-env contracts repaired. Final focused AI/code-map/watchdog/order-worker contracts: 140 passed.
 - Full root Vitest: 9,103 passed across 924 files; final TypeScript check passed. Exact-head PR checks remain pending before final handoff.
 - PR346 integration: merged main00b6aa22, regenerated maps; updated application partition 11,759 passed plus one owner-doc failure, repaired with146/146 ownership/code-map/Equibles regressions. Combined application coverage now12,394 tests including the unchanged634-test partition.
+- Release verification: PR346 head5fa75a9b has all applicable CI checks green, including coverage and Playwright; 15-image show-me artifact verified with seven selectors and desktop/mobile checks. Final documentation-head status is tracked on PR346 before notification.
