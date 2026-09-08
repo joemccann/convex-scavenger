@@ -49,6 +49,8 @@ readonly CADDY_GPG_FINGERPRINT="65760C51EDEA2017CEA2CA15155B6D79CA56EA34"
 readonly CADDY_VERSION="2.11.4"
 
 readonly SERVICE_FILES=(
+  radon-ai-cycle.service
+  radon-ai-cycle.timer
   radon-ib-gateway.service
   radon-ib-gateway-preheld-restart.service
   radon-ib-gateway-remote.service

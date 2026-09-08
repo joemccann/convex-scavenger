@@ -5398,3 +5398,25 @@ Reduced-capability rung: remediate P1 findings only.
 Review: PR339 merge was rejected because skipped matrices emit template names rather than required shard names; no bypass attempted. PR340 notification accepted HTTP200; PR339 notification accepted before this missing-context issue was discovered, so do not send a duplicate.
 
 Verification: full root Python 12,282 passed, 19 skipped, 16 subtests. Full cloud 1,860 passed, 7 skipped, 6 failures; five missing-Caddy failures reproduce on unchanged main, and the operator-concurrency timing test passed unchanged on serial rerun (also green on baseline).
+
+
+## AI infrastructure implementation (PR126 follow-up)
+- [x] T1 Source contracts and reproducible retrieval verification. depends_on: []
+- [x] T2 Versioned observations, durable storage, collectors and scheduling. depends_on: [T1]
+- [x] T3 Comparable transforms, financial reconciliation, legacy preservation. depends_on: [T2]
+- [x] T4 Four-view UI, source evidence, dashboard/ticker handoff. depends_on: [T3]
+- [x] T5 Publication-time shadow evaluation and limitation report. depends_on: [T2,T3]
+- [ ] T6 Focused tests, full suites, browser verification, PR green, show-me handoff. depends_on: [T4,T5]
+Graph: T1 -> T2 -> T3 -> T4 -> T6; T2 -> T5; T3 -> T5 -> T6.
+Specification: docs/ai-infrastructure-plan.md; execution contract: docs/ai-infrastructure-contract.md.
+Worktree: /Users/joemccann/dev/apps/finance/radon-ai-infrastructure, branch feat/ai-infrastructure-evidence.
+Enabled observations must be reproducible; unentitled/experimental sources stay explicit unavailable and never fabricate values. Shadow validation ships as a reproducible evaluator; no invented history or claimed predictive validity.
+
+### Review
+- Implemented in the isolated worktree with collector, core and UI agents; all feature work reviewed and frozen.
+- Verified 1,962 source observations, five issuer cash-flow mappings and 25 rolling TTM coverage points. Three of 15 indicator groups have available evidence; missing entitlements/cohorts remain explicit.
+- Production build and typecheck pass; six Playwright scenarios and an actual-source capture sweep pass, with 15 screenshots and zero page errors or horizontal overflow.
+- Full suites and exact-head PR CI remain release gates. No production collection, order execution, merge or deployment performed.
+- Final full application Python: 12,392 passed, 19 skipped, 16 subtests passed across two disjoint partitions; all initial failures resolved and rerun green.
+- Full cloud rerun: 1,873 passed, six skipped; deployment inventory/bootstrap and optional-env contracts repaired. Final focused AI/code-map/watchdog/order-worker contracts: 140 passed.
+- Full root Vitest: 9,103 passed across 924 files; final TypeScript check passed. Exact-head PR checks remain pending before final handoff.
