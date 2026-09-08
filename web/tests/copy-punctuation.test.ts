@@ -29,4 +29,9 @@ describe("authored copy punctuation", () => {
     expect(withoutEmDashes("— First observation\n  — Supporting evidence"))
       .toBe("- First observation\n  - Supporting evidence");
   });
+
+  it("preserves nested URL parentheses without treating following prose as the destination", () => {
+    expect(withoutEmDashes("[Evidence — August](https://example.com/research/(fx(spot))—flows)—Read more."))
+      .toBe("[Evidence, August](https://example.com/research/(fx(spot))%E2%80%94flows), Read more.");
+  });
 });

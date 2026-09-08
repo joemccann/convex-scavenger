@@ -5870,10 +5870,12 @@ Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
 ## Checklist
 
 - [x] T1 Read voice profile and source samples; create isolated worktree.
-- [ ] T2 Research generation and publication.
-- [ ] T3 Web rendering and social exports.
+- [x] T2 Research generation and publication.
+- [x] T3 Web rendering and social exports.
 - [ ] T4 GitHub-runner validation, visual verification, and delivery.
 
 ## Review
 
 - No local test suites. Original PDF/chart evidence remains intact; changes apply to authored text. Preserve all financial grounding gates.
+- PR: https://github.com/joemccann/radon/pull/378. RED: GitHub run 34291166890, head 3a07ebdb, reproduced four voice-output failures and additional research/share regressions before production changes.
+- Added 62 unit regressions and browser assertions. Static review added nested URL-parentheses coverage; promoted social browser tests to CI and removed their held-out ledger entry.
