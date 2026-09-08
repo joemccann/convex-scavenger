@@ -121,6 +121,7 @@ class TestAtsPriorityUniverse:
     coverage is scored against the core (portfolio ∪ watchlist) and the
     index tail rotates. Duplicates keep the first (highest-priority) seat.
     """
+    """
 
     def test_priority_order_is_unique_and_stable(self):
         merged = mod.merge_ats_universe(
