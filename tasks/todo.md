@@ -5420,3 +5420,4 @@ Enabled observations must be reproducible; unentitled/experimental sources stay 
 - Final full application Python: 12,392 passed, 19 skipped, 16 subtests passed across two disjoint partitions; all initial failures resolved and rerun green.
 - Full cloud rerun: 1,873 passed, six skipped; deployment inventory/bootstrap and optional-env contracts repaired. Final focused AI/code-map/watchdog/order-worker contracts: 140 passed.
 - Full root Vitest: 9,103 passed across 924 files; final TypeScript check passed. Exact-head PR checks remain pending before final handoff.
+- PR346 integration: merged main00b6aa22, regenerated maps; updated application partition 11,759 passed plus one owner-doc failure, repaired with146/146 ownership/code-map/Equibles regressions. Combined application coverage now12,394 tests including the unchanged634-test partition.

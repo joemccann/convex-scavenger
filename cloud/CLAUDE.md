@@ -345,6 +345,16 @@ Immutable runners under `~/.radon-deploy-runners/` are extracted `a-w`.
 
 ## Systemd And Drift
 
+`setup-vps.sh` includes `radon-ai-cycle.service` and its timer in the full-host
+installation inventory. Setup installs both units and enables only the timer;
+existing hosts receive the same pair through the hash-pinned `install-units`
+path. The timer collects AI infrastructure observations daily at 07:15 UTC
+with up to five minutes of jitter. Provider credentials are optional source
+entitlements; missing keys leave those measurements unavailable. Collection,
+reviewed disclosures and source limits are documented in
+[`docs/ai-infrastructure-operations.md`](../docs/ai-infrastructure-operations.md).
+
+
 Canonical unit files are copied root-owned to `/etc/systemd/system`; they are
 not symlinked from the checkout.
 
