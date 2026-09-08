@@ -30,6 +30,8 @@ SOURCES = (
 )
 KEYS = ("OPENROUTER_API_KEY", "ARTIFICIAL_ANALYSIS_API_KEY", "SEC_USER_AGENT", "EIA_API_KEY", "VAST_API_KEY")
 OPERATOR_FIELDS = (*KEYS, "RADON_AI_CYCLE_AA_BASKET")
+HEALTH_SERVICE = "ai-cycle"
+BACKFILL_HEALTH_SERVICE = "ai-cycle-backfill"
 SOURCE_HISTORY_STARTS = {
     "sec": "2009-01-01",
     "noaa": "2018-07-01",
@@ -226,7 +228,7 @@ def main(argv=None):
     import sys
 
     flags = list(sys.argv[1:] if argv is None else argv)
-    health_service = "ai-cycle-backfill" if "--backfill" in flags else "ai-cycle"
+    backfill = "--backfill" in flags
     production = (
         "--record" in flags
         and not any(flag == "--database" or flag.startswith("--database=") for flag in flags)
@@ -237,29 +239,32 @@ def main(argv=None):
         code = _main(flags)
     except BaseException:
         if production:
-            from scripts.db.hrana_http import write_service_health_http
-
-            write_service_health_http(
-                health_service,
+            _write_health(
+                backfill,
                 "error",
-                started_at=started,
-                finished_at=now_iso(),
-                error={"message": "Collection failed; inspect sanitized source statuses"},
-                timeout=8,
+                started,
+                {"message": "Collection failed; inspect sanitized source statuses"},
             )
         raise
     if production:
-        from scripts.db.hrana_http import write_service_health_http
-
-        write_service_health_http(
-            health_service,
+        _write_health(
+            backfill,
             "ok" if code == 0 else "error",
-            started_at=started,
-            finished_at=now_iso(),
-            error=None if code == 0 else {"message": "Enabled publisher collection failed; inspect source statuses"},
-            timeout=8,
+            started,
+            None if code == 0 else {"message": "Enabled publisher collection failed; inspect source statuses"},
         )
     return code
+
+
+def _write_health(backfill, state, started, error):
+    """Keep both literal health identities discoverable by fleet parity checks."""
+    from scripts.db.hrana_http import write_service_health_http
+
+    kwargs = dict(started_at=started, finished_at=now_iso(), error=error, timeout=8)
+    if backfill:
+        write_service_health_http(BACKFILL_HEALTH_SERVICE, state, **kwargs)
+    else:
+        write_service_health_http(HEALTH_SERVICE, state, **kwargs)
 
 
 if __name__ == "__main__":
