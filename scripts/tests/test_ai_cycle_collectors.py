@@ -3,6 +3,9 @@
 import hashlib
 import json
 import os
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -215,6 +218,48 @@ def test_environment_loads_only_provider_credentials(tmp_path, monkeypatch):
     env = environment(path)
     assert env["EIA_API_KEY"] == "selected"
     assert "PUSHOVER_TOKEN" not in env
+
+
+def test_environment_prefers_profile_credential_store(tmp_path, monkeypatch):
+    from scripts.secret_store import SecretStore
+
+    monkeypatch.setenv("RADON_SECRET_STORE_PATH", str(tmp_path / "secrets.db"))
+    monkeypatch.setenv("RADON_SECRET_STORE_KEY_FILE", str(tmp_path / "secret.key"))
+    monkeypatch.setenv("OPENROUTER_API_KEY", "stale-env-key")
+    store = SecretStore()
+    store.set_secrets(
+        {
+            "OPENROUTER_API_KEY": "profile-key",
+            "RADON_AI_CYCLE_AA_BASKET": "openai/gpt-a,anthropic/model-b",
+        },
+        actor="test",
+    )
+
+    env = environment()
+
+    assert env["OPENROUTER_API_KEY"] == "profile-key"
+    assert env["RADON_AI_CYCLE_AA_BASKET"] == "openai/gpt-a,anthropic/model-b"
+
+
+def test_environment_resolves_secret_store_from_package_invocation(tmp_path):
+    repo = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from scripts.ai_cycle.collect import environment; environment()",
+        ],
+        cwd=repo,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(repo),
+            "RADON_SECRET_STORE_PATH": str(tmp_path / "secrets.db"),
+            "RADON_SECRET_STORE_KEY_FILE": str(tmp_path / "secret.key"),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_transport_hashes_raw_and_sanitizes_errors(tmp_path):
