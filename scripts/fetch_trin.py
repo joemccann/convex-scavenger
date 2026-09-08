@@ -556,6 +556,24 @@ def _nothing_to_persist(payload: dict[str, Any], new_samples: list[Sample], new_
     return not new_samples and not new_daily and not payload["hourly"] and not payload["daily"]
 
 
+def _heartbeat(payload: dict[str, Any], health_error: Optional[dict[str, Any]]) -> None:
+    """Best-effort service_health write. A 4s Hrana timeout must not fail the
+    oneshot (2026-09-08 21:27Z: TimeoutError on the no-new-rows path paged
+    P1 with NRestarts=0). Siblings (ivrank, vol-cone) already swallow this.
+    """
+    try:
+        if health_error is None:
+            writer.record_service_health(
+                SERVICE, "ok", finished_at=payload["scan_time"]
+            )
+        else:
+            writer.record_service_health(
+                SERVICE, "error", finished_at=payload["scan_time"], error=health_error,
+            )
+    except Exception as exc:  # noqa: BLE001 — best-effort mirror
+        _log(f"heartbeat non-fatal: {exc}")
+
+
 def persist_result(
     payload: dict[str, Any],
     new_samples: list[Sample],
@@ -587,14 +605,7 @@ def persist_result(
         # — but the SNAPSHOT is not rewritten, so `scan_time` keeps naming
         # the last cycle that actually produced data.
         writer.ensure_no_replica_for_writers()
-        if health_error is None:
-            writer.record_service_health(
-                SERVICE, "ok", finished_at=payload["scan_time"]
-            )
-        else:
-            writer.record_service_health(
-                SERVICE, "error", finished_at=payload["scan_time"], error=health_error,
-            )
+        _heartbeat(payload, health_error)
         _log("no new samples or daily rows; leaving the stored scan_time untouched")
         _write_json_cache(payload)
         return
@@ -605,12 +616,7 @@ def persist_result(
     if new_daily_rows:
         writer.upsert_trin_daily_rows(new_daily_rows, recorded_at=scan_time)
     writer.upsert_scan_snapshot(SERVICE, scan_time, payload)
-    if health_error is None:
-        writer.record_service_health(SERVICE, "ok", finished_at=scan_time)
-    else:
-        writer.record_service_health(
-            SERVICE, "error", finished_at=scan_time, error=health_error,
-        )
+    _heartbeat(payload, health_error)
     _write_json_cache(payload)
 
 

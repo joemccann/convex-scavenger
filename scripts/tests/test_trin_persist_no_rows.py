@@ -115,3 +115,29 @@ class TestNoNewRowsIsNotAFreshScan:
 
         assert writer.health[-1][1] == "error"
         assert writer.snapshots == []
+
+    def test_a_turso_heartbeat_timeout_does_not_fail_the_oneshot(self, monkeypatch, tmp_path):
+        """2026-09-08 21:27Z page 02cc9ffb: persist_result on the no-new-rows
+        path called record_service_health, Hrana timed out (4s urllib read),
+        and main() exited 1. Type=oneshot + NRestarts=0 paged P1. IB was
+        authenticated; the Python Turso canary was fine; the next 5-minute
+        fire succeeded. Siblings wrap the heartbeat as best-effort; this
+        writer did not, so a single tail-latency timeout failed the unit.
+        """
+        from db.hrana_http import HranaHttpError
+        import fetch_trin as trin
+
+        class _TimeoutWriter(_Writer):
+            def record_service_health(self, service, state, **kw):
+                raise HranaHttpError("TimeoutError: The read operation timed out")
+
+        writer = _TimeoutWriter()
+        cache = tmp_path / "trin.json"
+        monkeypatch.setattr(trin, "writer", writer, raising=False)
+        monkeypatch.setattr(trin, "TRIN_JSON", cache)
+
+        trin.persist_result(_payload_with_history(), [], [])
+
+        assert writer.snapshots == []
+        assert cache.is_file()
+        assert '"scan_time"' in cache.read_text()

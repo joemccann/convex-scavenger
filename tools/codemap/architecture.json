@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-08T21:22:51Z",
+  "generated_at": "2026-09-08T21:38:25Z",
   "node_count": 3272,
-  "edge_count": 6624,
+  "edge_count": 6625,
   "areas": {
     "web": 1918,
     "site": 152,
@@ -418,6 +418,13 @@
       "test": false
     },
     {
+      "id": "scripts/db/hrana_http.py",
+      "area": "scripts",
+      "in": 35,
+      "out": 2,
+      "test": false
+    },
+    {
       "id": "web/components/PositionTable.tsx",
       "area": "web",
       "in": 22,
@@ -434,13 +441,6 @@
     {
       "id": "web/lib/TickerDetailContext.tsx",
       "area": "web",
-      "in": 34,
-      "out": 2,
-      "test": false
-    },
-    {
-      "id": "scripts/db/hrana_http.py",
-      "area": "scripts",
       "in": 34,
       "out": 2,
       "test": false

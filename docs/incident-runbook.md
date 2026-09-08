@@ -800,6 +800,38 @@ Incident: 2026-08-15 00:24Z, P1 page `34ab3e3c…`.
 
 ---
 
+## trin-heartbeat-turso-timeout
+
+**`radon-trin.service` oneshot pages P1 `Result=exit-code` (`NRestarts=0`)
+when a Turso heartbeat write times out.** Peak: 2026-09-08 21:27Z, page
+`02cc9ffb…`. Next 5-minute fire at 21:32Z succeeded.
+
+- **Mechanism:** 5-minute `Type=oneshot` samples IB during RTH and
+  heartbeats every cycle even with no new rows (R-125).
+  `persist_result` called `record_service_health` on the no-new-rows
+  path with no try/except. Hrana HTTP (`HRANA_TIMEOUT_S=4`) raised
+  `TimeoutError: The read operation timed out`. `main()` exited 1.
+  `Type=oneshot` has no `Restart=`, so `NRestarts=0`. Siblings
+  (ivrank, vol-cone) already treat the heartbeat as best-effort.
+  IB unused on this cycle (post-close, last sample 19:57Z). Edge and
+  `:8321/health/lite` stayed up; Python Turso canary `SELECT 1` ~44 ms.
+- **Detection:** journal traceback `fetch_trin.persist_result` →
+  `writer.record_service_health` → `HranaHttpError: TimeoutError`;
+  `systemctl show radon-trin.service -p Result,NRestarts` →
+  `exit-code` / `0`. Next timer often succeeds.
+- **Discriminating check:** Turso canary `SELECT 1` succeeds from the
+  same host; `/health/lite` `auth_state=authenticated`; traceback is
+  the heartbeat write, not the IB snapshot. Canary fail → Turso
+  platform; stand down. `Result=signal` is deploy stop-clean.
+- **Remediation (code):** wrap the heartbeat in persist_result as
+  best-effort (log `heartbeat non-fatal`, still write the JSON
+  cache). Do not restart-flap; next timer is 5 minutes.
+- **Regression:**
+  `test_trin_persist_no_rows.py::TestNoNewRowsIsNotAFreshScan::test_a_turso_heartbeat_timeout_does_not_fail_the_oneshot`.
+- **Code:** `scripts/fetch_trin.py` (`_heartbeat`).
+
+---
+
 ## stale-market-data-freshness
 
 **Market data stops being fresh while everything looks alive.** Four sub-modes.
