@@ -340,7 +340,7 @@ export default function AskComposer({
             if (files.length) void attach(files);
           }}
         />
-        <button type="button" className="ask-composer__attach" onClick={() => fileInputRef.current?.click()} title="Attach images (up to 4, 5 MB each)">
+        <button type="button" className="ask-composer__attach" aria-label="Attach images" onClick={() => fileInputRef.current?.click()} title="Attach images (up to 4, 5 MB each)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m8 12 6.5-6.5a3.5 3.5 0 0 1 5 5L10 20a5 5 0 0 1-7-7L13 3" /><path d="m6 15 9-9" /></svg>
           <span>Attach images</span>
         </button>
