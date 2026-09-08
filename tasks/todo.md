@@ -5734,3 +5734,24 @@ Keep the AI-cycle price cohort current as frontier models ship while preserving 
 - [x] Live 644-row catalog resolved all eight providers deterministically without exposing credential material.
 
 ---
+# Task: Dropbox research rich text [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Trace research content, shared rendering, and CI coverage.
+- T2 depends_on: [T1] - Render Dropbox Markdown in feed and lightbox, preserving source structure and existing plain-text posts.
+- T3 depends_on: [T1] - Add component and browser regressions for formatting, source links, and safe rendering.
+- T4 depends_on: [T2, T3] - Publish PR; wait for all exact-head CI checks, inspect browser screenshots, and send the required notification.
+
+## Checklist
+
+- [x] T1 Trace source metadata, normalization, feed, lightbox, and existing Markdown renderer.
+- [ ] T2 Implement scoped rich-text rendering.
+- [ ] T3 Add regression coverage. Run suites only on GitHub runners.
+- [ ] T4 Review changes and complete exact-head CI and visual verification.
+
+## Review
+
+- Pending CI and screenshot evidence.
+
+---
