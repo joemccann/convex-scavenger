@@ -141,6 +141,13 @@ service per `VALIDATOR_COOLDOWN_S` (5s). A request inside the window gets
 call; on the PUT path nothing is stored. Constants and the chokepoint
 (`_run_validator`) live in `scripts/api/routes/credentials.py`.
 
+**Values are validated at the persist chokepoint.** `PUT
+/credentials/{service}` rejects values the process environment cannot hold
+(NUL bytes, unencodable text) before anything is written, and both env-export
+sites skip-and-log a bad stored row the same way the undecryptable-row path
+does, so a legacy row can never abort the FastAPI lifespan bootstrap
+(`scripts/api/routes/credentials.py`).
+
 ### First-run setup wizard (`/setup`)
 
 With NO Clerk key configured and no completion latch, the whole app collapses
@@ -235,9 +242,31 @@ Deeper troubleshooting and full Docker setup live in [`docs/ib-gateway-docker.md
 
 Hetzner host systemd is the production surface. Laptop dev uses launchd plists in `config/`. Laptop `com.radon.data-refresh` must stay unloaded. VPS `radon-flow-refresh.timer` owns hourly scanner/discover/flow during ET RTH.
 
-**Nightly loops on the Mac mini** (launchd, staggered 10 minutes apart; each cycle runs three phases in order: audit, remediate, deliver). Each runs in its own clone under `~/radon-weekend/` that hard-resets to `origin/main` every phase, uses a per-loop venv (`~/radon-weekend/venv-<loop>`) plus the shared `~/radon-weekend/.env`, and holds a per-clone `.weekend-runner.lock`. A wrapper refuses the clone unless it carries BOTH `.radon-weekend-runner` and that loop's own `.radon-<loop>-runner` marker, so pointing one loop at another's clone is a `REFUSED`, not a cross-run collision. The shared `.env` is not imported wholesale: each wrapper's `_notify_curl` reads only `PUSHOVER_USER` and `PUSHOVER_TOKEN` from it in bash and pages via `/usr/bin/curl` (never python). Model spend rides the claude.ai subscription only: every wrapper unsets each API-key / auth-token / base-URL / Bedrock / Vertex / Foundry / gateway variable the installed Claude Code honors (the list is re-derived against the installed binary, not trusted from a pin: on 2026-09-07 that added `CLAUDE_CODE_API_BASE_URL` and `CLAUDE_CODE_HFI_BEARER_TOKEN`, which 2.1.263 reads and the 2.1.258-era list did not cover; `CLAUDE_CODE_OAUTH_TOKEN` is deliberately left alone because it is the subscription credential itself) (naming it on stderr and as `ignored=` on the phase-start line, never the value) and runs anyway, scrubs those lines out of a provisioned `web/.env` in place (except the security loop, whose clone is credential-free: any `.env` / `.env.ib-mode` / `web/.env` present there is `REFUSED`, not scrubbed), and `REFUSED`s only what `unset` cannot reach: a `.deepsec/.env*` / `.env.local` key line or a Claude Code settings-level `apiKeyHelper` / `env` reroute. Those file checks (and the security clone's credential-file check) run again at the start of every phase and continuation round, after the reset and before `claude` launches, so a file an in-phase agent plants cannot be inherited by the next phase. The `setup_*` scripts read the clone origin from their own checkout (`git -C "$SRC_REPO"`), never the caller's cwd, and `REFUSE` when that is not a Radon checkout. Never point another job, worktree, or responder at these clones. The `Fires` column is generated from each plist's `StartCalendarInterval`. Loop semantics live in `.claude/skills/<loop>/SKILL.md`; wrapper mechanics in the wrapper script; state on the rolling GitHub issue carrying the label.
+**Nightly loops on the Mac mini** (launchd, staggered 10 minutes apart; each cycle runs three phases in order: audit, remediate, deliver). Each runs in its own clone under `~/radon-weekend/` that hard-resets to `origin/main` every phase, uses a per-loop venv (`~/radon-weekend/venv-<loop>`) plus the shared `~/radon-weekend/.env`, and holds a per-clone `.weekend-runner.lock`. A wrapper refuses the clone unless it carries BOTH `.radon-weekend-runner` and that loop's own `.radon-<loop>-runner` marker, so pointing one loop at another's clone is a `REFUSED`, not a cross-run collision. The shared `.env` is not imported wholesale: each wrapper's `_notify_curl` reads only `PUSHOVER_USER` and `PUSHOVER_TOKEN` from it in bash and pages via `/usr/bin/curl` (never python). Model spend rides the claude.ai subscription only: every wrapper unsets each API-key / auth-token / base-URL / Bedrock / Vertex / Foundry / gateway variable the installed Claude Code honors (the list is re-derived against the installed binary, not trusted from a pin: on 2026-09-07 that added `CLAUDE_CODE_API_BASE_URL` and `CLAUDE_CODE_HFI_BEARER_TOKEN`, which 2.1.263 reads and the 2.1.258-era list did not cover; `CLAUDE_CODE_OAUTH_TOKEN` is deliberately left alone because it is the subscription credential itself) (naming it on stderr and as `ignored=` on the phase-start line, never the value) and runs anyway, scrubs those lines out of a provisioned `web/.env` in place (except the security loop, whose clone is credential-free: any `.env` / `.env.ib-mode` / `web/.env` present there is `REFUSED`, not scrubbed), and `REFUSED`s only what `unset` cannot reach: a `.deepsec/.env*` / `.env.local` key line or a Claude Code settings-level `apiKeyHelper` / `env` reroute. Those file checks (and the security clone's credential-file check) run again at the start of every phase and continuation round, after the reset and before `claude` launches, so a file an in-phase agent plants cannot be inherited by the next phase. The `setup_*` scripts read the clone origin from their own checkout (`git -C "$SRC_REPO"`), never the caller's cwd, and `REFUSE` when that is not a Radon checkout. Never point another job, worktree, or responder at these clones. Per-phase run logs under `$REPO/logs/<loop>` are owner-only (the wrappers create the directory `0700` and the log files `0600`, so agent transcripts are not world-readable), each loop's deliver tooling only resolves and renders PRs whose head lives in this repository, and a ready-to-merge URL is verified against the recorded PR before it is rendered into a notification. The `Fires` column is generated from each plist's `StartCalendarInterval`. Loop semantics live in `.claude/skills/<loop>/SKILL.md`; wrapper mechanics in the wrapper script; state on the rolling GitHub issue carrying the label.
 
 **A phase is OK only on evidence (REL-187 / REL-188).** `ground_truth` resets the clone to the newest `ci.yml` push run that concluded success and that the tip descends from, not the raw tip, so a loop firing minutes after a red push does not spend its cycle on a tree CI already rejected; GitHub unreachable keeps the checked-out tip with a logged warning. And an `audit` or `remediate` phase whose agent exits 0 without committing to the nightly branch reports `INCOMPLETE (agent exited 0 without committing to the nightly branch)` and exits 75 rather than `OK`. Deliver is keyed on its verdict line instead, since a PR green first time needs no new commit.
+
+**A finished no-op is declared, not inferred.** HEAD alone cannot separate the
+stall that check was built for from a phase that ran end to end and honestly
+had nothing to commit, and on 2026-09-08 it scored the second as the first:
+testing's audit found no findings in its delta range and documentation's
+remediate found 0 source-actionable P0/P1 items, both ran to completion on the
+codex rung, and both were posted to their rolling issues as INCOMPLETE with
+exit 75. The four fallback loops therefore accept one declaration line from the
+agent, printed unindented at column 0 as the last thing it emits:
+
+```
+NIGHTLY PHASE NO-OP: loop=<slug> phase=<audit|remediate> <one-line reason>
+```
+
+`phase_declared_noop()` reads it under the same scoping discipline as the
+TRUNCATED (R-426) and cap (R-530, R-667) detectors — this round's log slice
+only, wrapper markers dropped, anchored at column 0 and naming this loop and
+this phase — because these loops audit their own wrappers and quote this
+contract, and a mention inside a fence must not satisfy it. A commit still
+wins on its own, silence is still INCOMPLETE, and the security loop is
+unaffected: it scores on its own completion marker, not on a commit.
+Contract: `scripts/tests/test_phase_noop_declaration.py`.
 
 **Cycle shape (2026-09-02).** `audit` (cap 2h, `RADON_WEEKEND_AUDIT_CAP_SECS`) records verified findings; `remediate` (cap 6h, `RADON_WEEKEND_REMEDIATE_CAP_SECS`) implements EVERY verified source-actionable finding as root-cause commits on one dated branch `<loop>/<YYYY-MM-DD>`; `deliver` (cap 3h, `RADON_WEEKEND_DELIVER_CAP_SECS`) pushes that branch, opens or updates ONE PR via `scripts/github_pr_output.py`, polls CI with `scripts/nightly_deliver.py watch`, fixes red checks on the branch, and ends by printing a verdict line the wrapper turns into the cycle's final notification. Deliver runs even when remediate exited non-zero (committed fixes are durable; CI decides). The loop never merges: the operator merges from the Pushover / issue line. An INCOMPLETE deliver records branch + PR number outside the clone (`~/radon-weekend/.<loop>-deliver/record.json`; the security loop also mirrors it in its private run-record) and the next fire resumes that branch and PR before opening a new one.
 
