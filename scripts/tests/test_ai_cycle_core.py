@@ -81,6 +81,51 @@ def test_batch_validation_before_writes():
     assert store.read_observations() == []
 
 
+def test_cloud_writes_retry_transient_hrana_timeouts(monkeypatch):
+    from scripts.db import hrana_http
+
+    calls = []
+
+    def flaky(sql, args):
+        calls.append((sql, args))
+        if len(calls) < 3:
+            raise hrana_http.HranaHttpError("TimeoutError: read operation timed out")
+
+    monkeypatch.setattr(hrana_http, "hrana_execute", flaky)
+    monkeypatch.setattr("scripts.ai_cycle.store.time.sleep", lambda _delay: None)
+    ObservationStore()._execute("INSERT OR IGNORE INTO test VALUES (?)", (1,))
+    assert len(calls) == 3
+
+
+def test_cloud_writes_fail_fast_on_statement_errors(monkeypatch):
+    from scripts.db import hrana_http
+
+    calls = []
+
+    def broken(sql, args):
+        calls.append((sql, args))
+        raise hrana_http.HranaHttpError("SQLITE_CONSTRAINT: invalid row")
+
+    monkeypatch.setattr(hrana_http, "hrana_execute", broken)
+    with pytest.raises(hrana_http.HranaHttpError):
+        ObservationStore()._execute("INSERT INTO test VALUES (?)", (1,))
+    assert len(calls) == 1
+
+
+def test_source_status_cloud_write_is_retry_idempotent(monkeypatch):
+    from scripts.db import hrana_http
+
+    calls = []
+    monkeypatch.setattr(hrana_http, "hrana_execute", lambda sql, args: calls.append((sql, args)))
+    store = ObservationStore()
+    store._initialized = True
+    store.record_source_status(
+        dict(source_id="openrouter", status="available", reason="fixture", checked_at="2026-09-08T00:00:00Z")
+    )
+    assert "WHERE NOT EXISTS" in calls[0][0]
+    assert calls[0][1][:2] == calls[0][1][2:]
+
+
 @pytest.mark.parametrize(
     "update",
     [
