@@ -1,3 +1,27 @@
+# Task: CI performance audit 2026-09-08 (post-main delta) [IN PROGRESS]
+
+Measure the production critical path after `cc77928d`, verify delivery rails,
+and record every material source-actionable optimization candidate.
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify dedicated runner, stale-lock recovery, branch, auth, and audited range.
+- T2 depends_on: [T1] - Measure 20 successful production runs and inspect workflow, cache, image, and deploy paths.
+- T3 depends_on: [T2] - Validate safety contracts, append the ledger, publish the dated branch, and update the nightly PR/report.
+
+## Checklist
+
+- [x] T1 Dedicated markers, stale-lock preservation, auth, remote branch, and `cc77928d..90071618` delta verified.
+- [x] T2 Actions timing, change-class comparison, and safety-rail inspection.
+- [x] T3 Ledger, focused contract tests, commit, push, PR, and rolling issue report.
+
+## Review
+
+- [x] 20 successful Actions runs measured: mixed/full-stack p50 269s, p95 380s; docs/control-plane p50 166s; first-job queue 2-3s.
+- [x] No candidate clears the 15-second / 10% materiality floor without changing gate closure, test-union risk, or protected deployment behavior.
+
+---
+
 # Task: CI performance remediate 2026-09-08 [COMPLETE]
 
 Apply every verified P0/P1 CI-performance finding from the current audit without changing protected delivery guarantees.
