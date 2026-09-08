@@ -13,6 +13,10 @@ describe("newsfeed voice", () => {
     expect(parseVoiceCopy(JSON.stringify({ title: "Seasonality", content: "104 to 130. Year 3, month +9.\nSource: ZeroHedge" }), source))
       .toEqual({ title: "Seasonality", content: "104 to 130. Year 3, month +9.", caption: "Seasonality\n\n104 to 130. Year 3, month +9." });
   });
+  it.each(["—", "&mdash;", "&#8212;", "&#x2014;"])("normalizes %s in model output while preserving the evidence", dash => {
+    const result = parseVoiceCopy(JSON.stringify({ title: `Seasonality ${dash} the setup`, content: `104 to 130 ${dash} Year 3, month +9.` }), source);
+    expect(result).toEqual({ title: "Seasonality, the setup", content: "104 to 130, Year 3, month +9.", caption: "Seasonality, the setup\n\n104 to 130, Year 3, month +9." });
+  });
   it.each(["oops", "null", '[]', '{"title":"","content":"ok"}', '{"title":"ok","content":1}', '{"title":"ok","content":"The Market Ear"}'])
     ("rejects malformed or empty output %s", raw => expect(() => parseVoiceCopy(raw, source)).toThrow());
   it("rejects numerical claims absent from the input", () => {

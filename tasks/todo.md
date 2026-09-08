@@ -5844,3 +5844,22 @@ Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
 - Regenerate codemap from a clean index export so local generated sources do not enter the committed graph.
 
 ---
+# Task: Research and social copy in Joe's voice [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Inspect authored copy paths and documented @joemccann voice; isolate unrelated work.
+- T2 depends_on: [T1] - Enforce human voice and no em dashes in research generation/publication.
+- T3 depends_on: [T1] - Enforce no em dashes in existing research renderings and every social-share output; strengthen voice instructions.
+- T4 depends_on: [T2, T3] - Add regressions, publish PR, verify exact-head CI and browser artifacts, and notify.
+
+## Checklist
+
+- [x] T1 Read voice profile and source samples; create isolated worktree.
+- [ ] T2 Research generation and publication.
+- [ ] T3 Web rendering and social exports.
+- [ ] T4 GitHub-runner validation, visual verification, and delivery.
+
+## Review
+
+- No local test suites. Original PDF/chart evidence remains intact; changes apply to authored text. Preserve all financial grounding gates.
