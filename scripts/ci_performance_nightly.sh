@@ -660,6 +660,9 @@ trap 'release_runner_lock "$RUNNER_LOCK"' EXIT
 
 LOG_DIR="$REPO/logs/ci-performance"
 mkdir -p "$LOG_DIR"
+# Run logs carry agent transcripts; keep them owner-only regardless of
+# the inherited umask. Dir-level clamp so no per-file mode can regress it.
+chmod 700 "$LOG_DIR"
 # Keep the newest 30 run logs. NEVER the launchd sinks: the plist points
 # StandardOutPath/StandardErrorPath at launchd-cycle.log/.err inside this same
 # directory, and launchd-cycle.err only gets an mtime bump when something
