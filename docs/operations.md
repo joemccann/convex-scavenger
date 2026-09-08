@@ -306,7 +306,31 @@ Each grant is the narrowest that lets a phase meet its own contract;
 bounded grant matching the claude rung's scope rather than exceeding it.
 `scripts/tests/test_provider_invocation_contract.py` asserts all three.
 
-**A non-Claude CLI cannot load a Claude skill.** codex and grok get `.claude/portable-prompts/<skill>.<phase>.md` instead — the SKILL.md body with its frontmatter stripped, wrapped in a preamble, an OVERRIDES section (no subagents, Playwright instead of chrome-cdp, `RADON_WEEKEND_REDUCED=1` narrows remediation to P0/P1) and a CONTRACT section naming the exact strings the wrapper greps for. The files are committed and rendered by `scripts/render_loop_prompt.py --write`; `scripts/tests/test_portable_prompt_sync.py` fails when one drifts from a fresh render, which is what keeps editing a SKILL.md honest. The security loop has no portable prompt, by design. Provider credentials and the grok-hosted endpoint configs live outside every clone in `~/.radon/agent-cli/` (provisioned by `scripts/agent_cli_bootstrap.sh`), because the loops' credential rails refuse a key file inside the clone and `git clean` between phases would delete one anyway. grok's CLI hosts NVIDIA and Cerebras because it is the only agent CLI here that speaks `/chat/completions`; codex speaks only `/responses`, which neither serves. Only NVIDIA's own `nvidia/*` models are usable through that path — third-party NIM models (kimi-k3, deepseek-v4-pro, minimax-m3) answer correctly and then exit 1 on grok's usage deserializer.
+**A non-Claude CLI cannot resolve a Claude slash command.** codex and grok get `.claude/portable-prompts/<skill>.<phase>.md` instead — the SKILL.md body with its frontmatter stripped, wrapped in a preamble, an OVERRIDES section (no subagents, Playwright instead of chrome-cdp, `RADON_WEEKEND_REDUCED=1` narrows remediation to P0/P1) and a CONTRACT section naming the exact strings the wrapper greps for. The files are committed and rendered by `scripts/render_loop_prompt.py --write`; `scripts/tests/test_portable_prompt_sync.py` fails when one drifts from a fresh render, which is what keeps editing a SKILL.md honest. The security loop has no portable prompt, by design. Provider credentials and the grok-hosted endpoint configs live outside every clone in `~/.radon/agent-cli/` (provisioned by `scripts/agent_cli_bootstrap.sh`), because the loops' credential rails refuse a key file inside the clone and `git clean` between phases would delete one anyway. grok's CLI hosts NVIDIA and Cerebras because it is the only agent CLI here that speaks `/chat/completions`; codex speaks only `/responses`, which neither serves. Only NVIDIA's own `nvidia/*` models are usable through that path — third-party NIM models (kimi-k3, deepseek-v4-pro, minimax-m3) answer correctly and then exit 1 on grok's usage deserializer.
+
+**Each CLI also gets the manual in its own skill format (2026-09-08).** The
+portable prompt stays the driver — a phase must run the same way every night
+whether or not a CLI decided a skill looked relevant — but a run that reaches
+for the loop's own manual by name should find it rather than nothing. Probed
+on this runner with codex-cli 0.153.4 and grok 1.0.13:
+
+| CLI | discovers | needs a render |
+|---|---|---|
+| grok | `./.claude/skills/` at repo scope, high priority | no — the Claude skills load under their own names |
+| codex | `./.codex/skills/<name>/SKILL.md`, plus `agents/openai.yaml` for the interface block | yes |
+| nvidia, cerebras | via the grok CLI | no |
+
+So `scripts/render_loop_prompt.py --write` emits both artifacts from the one
+source: the twelve portable prompts, and `.codex/skills/<skill>/` for the four
+fallback loops. The codex skill is one document covering all three phases (the
+phase arrives in the invocation, not the filename), carries the same OVERRIDES
+and a CONTRACT naming every phase's completion string, and keeps the `name` and
+`description` frontmatter codex needs to discover it at all.
+`scripts/tests/test_portable_prompt_sync.py` fails when either artifact drifts.
+grok is deliberately absent from the render: giving it a second copy of a
+manual it already reads would be a second source of truth for no gain. The
+security loop has neither artifact, for the same reason it has no portable
+prompt.
 
 Do not hand-edit a wrapper while a cycle is running: the shell reads the script incrementally and an edit strands the live run at a stale byte offset. The same hazard applies to upgrading a provider CLI mid-run.
 
@@ -388,7 +412,7 @@ Staleness windows live in `web/lib/serviceHealthWindows.ts`. Cycle-driven writer
 
 **A partial cycle is not a healthy cycle (R-294 / R-295).** Both `fetch_equibles_ats_venue_share` and `fetch_equibles_short_crowding` used a write gate that passes on ONE ticker: `payload_has_data` / `is_payload_valid` only test that the row list is non-empty. A run that served 3 of 40 tickers and then hit the daily allowance therefore wrote `ok` AND replaced the complete snapshot underneath it, and looked identical to a full cycle in `service_health` and on the panel. Both now apply a coverage gate — below `MIN_COVERAGE_RATIO` (60%) of the resolved universe the cycle records `error`, keeps the previous snapshot, and persists `requested` / `covered` / `failed` in the health row (including on the abort path, since a failure at ticker 3 and one at ticker 39 are different operational facts). The ratio is scoped to universes of `MIN_UNIVERSE_FOR_RATIO` (5) or more: one failure out of two is 50%, and a two-ticker run is a deliberate `--tickers` override rather than the scheduled sweep.
 
-**A wall-clock budget abort is a third class, and it is not an allowance failure.** `fetch_equibles_ats_venue_share` and `fetch_equibles_filing_forensics` each bound the whole sweep with `SWEEP_BUDGET_S` and each call with `TICKER_FETCH_BUDGET_S`, so a tarpitted Equibles endpoint no longer runs into the unit's `TimeoutStartSec`. A per-ticker timeout replaces the shared Session and continues the walk; only a spent sweep budget records the unreached tickers with `code: "budget"` and stops. An empty-cycle `message` includes those `codes` so a timeout is not read as a missing series. An `error` row whose deferred tickers carry `code: "budget"` means the endpoint was slow, NOT that the key, the allowance, or the watchlist is wrong, and raising `TimeoutStartSec` is explicitly the wrong move ([`incident-runbook.md`](incident-runbook.md) `equibles-ats-sweep-timeout`). The budget values live in the two scripts and are pinned against their units by `test_sweep_budget_fits_inside_unit_start_timeout`.
+**A wall-clock budget abort is a third class, and it is not an allowance failure.** `fetch_equibles_ats_venue_share` and `fetch_equibles_filing_forensics` each bound the whole sweep with `SWEEP_BUDGET_S` and each call with `TICKER_FETCH_BUDGET_S`, so a tarpitted Equibles endpoint no longer runs into the unit's `TimeoutStartSec`. A per-ticker timeout replaces the shared Session and continues the walk; only a spent sweep budget stops. ATS scores coverage against portfolio ∪ watchlist, not the rotating Nasdaq-100 / Russell 2000 / S&P 500 tail, so an unreached index name is not a thin cycle. An empty-cycle `message` includes `codes` so a timeout is not read as a missing series. Raising `TimeoutStartSec` is the wrong move ([`incident-runbook.md`](incident-runbook.md) `equibles-ats-sweep-timeout`). The budget values live in the two scripts and are pinned against their units by `test_sweep_budget_fits_inside_unit_start_timeout`.
 
 **A suppression window needs a cause (R-615 / R-616).** `fetch_equibles_ats_venue_share` stamped `next_attempt_at` with the next weekly fire on EVERY error branch, and the watchdog suppresses re-pages until that deadline — so a revoked key or a wedged client bought one page and then seven days of silence. The embargo is now written only for a cadence-bound failure (`EquiblesRateLimitError`); every other failure keeps paging until an operator acts. The same handler also normalises a naive `now`, so the error path can no longer raise a `TypeError` and exit with no `service_health` row at all.
 
