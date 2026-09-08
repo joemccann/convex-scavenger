@@ -120,7 +120,7 @@ class TestAtsPriorityUniverse:
     The weekly oneshot cannot walk ~2500 names inside TimeoutStartSec, so
     coverage is scored against the core (portfolio ∪ watchlist) and the
     index tail rotates. Duplicates keep the first (highest-priority) seat.
-    """
+    REL-196 still carries a --tickers timeout tail from the prior snapshot.
     """
 
     def test_priority_order_is_unique_and_stable(self):
