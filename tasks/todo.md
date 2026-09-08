@@ -1,3 +1,21 @@
+# Task: ATS priority universe + freshness rail [COMPLETE]
+
+Widen `/regime/ats` beyond the watchlist and add the regime countdown rail.
+
+## Dependency graph
+
+- T1 depends_on: [] - Red tests: priority unique universe, core coverage, weekly rail.
+- T2 depends_on: [T1] - Resolver, scheduled walk, carry-forward, panel rail.
+- T3 depends_on: [T2] - Focused pytest + vitest green.
+
+## Checklist
+
+- [x] T1 Failing tests for universe order, core coverage vs index tail, weekly countdown
+- [x] T2 Portfolio then watchlist then ndx100/r2k/sp500; FreshnessRail on ATS
+- [x] T3 Focused suites green
+
+---
+
 # Task: CI performance remediate 2026-09-08 [COMPLETE]
 
 Apply every verified P0/P1 CI-performance finding from the current audit without changing protected delivery guarantees.
@@ -5592,3 +5610,18 @@ User authorized fixing the live service; preserve source files, cursors, date/no
 - Integrated main 1090a84a (unrelated chart changes); research source unchanged from full verification. Regenerated combined source maps; 294 integrated research/codemap tests passed, 18 skipped, 23 subtests.
 - Integrated main c9305ba8 (independently green loop no-op change); repair implementation remains unchanged. Combined research/codemap/new-loop regressions: 318 passed, 18 skipped, 23 subtests. Merge TypeScript, ESLint and secret scans passed on the prior chart integration.
 - Integrated subsequent security release 1ab63ddf; no research implementation changed. Focused research reverified and combined maps regenerated; latest-head CI is the final integrated release gate.
+
+# Dropbox release deployment unblock (2026-09-08)
+Original repair PR355 is merged as 670dcae2 with 31 green checks. Preceding security release 1ab63ddf failed monitor startup (root-owned app tree lacks writable logs); rollback then failed stopping absent legacy watchdog timer. User-authorized live fix remains incomplete until deployment recovers.
+- [x] U1 depends_on: [] - Restore narrowly writable monitor log directory in Python image, retaining immutable source ownership; red/green image regressions.
+- [x] U2 depends_on: [] - Make deployment stop/recovery tolerate provably absent inactive units, with failure-closed state checks and regressions.
+- [ ] U3 depends_on: [U1,U2] - Run full cloud suite and independent review; release through exact-head green CI and deployment.
+- [ ] U4 depends_on: [U3] - Verify monitor and research runtime, advanced Dropbox cursor and queued work progress.
+Dependency graph: U1 + U2 -> U3 -> U4.
+
+## Review
+- Independent review approved both changes and recovery plan. Use exact merged-main helper, atomically installed canonical root0755 after archiving old helper, run recovery as radon, then immediately sync canonical control-plane manifest. Preserve inventory/journal and gateway state.
+- Docker regression red before log provisioning; 41 image tests passed. Actual non-root image smoke is mandatory in CI build; local Docker daemon unavailable.
+
+- Full cloud run: 1,866 passed, 32 failed, seven skipped. Failed subset rerun on unchanged baseline: 26 passed, six failed; repaired tree: 27 passed, five failed, all requiring unavailable local Caddy. New regressions pass; Linux CI remains the integrated release gate. Logs: /tmp/radon-dropbox-full-cloud.log, /tmp/radon-dropbox-cloud-baseline.log, /tmp/radon-dropbox-cloud-confirm.log.
+- Integrated unrelated ATS main release 37f18a9f; cloud and Docker implementation unchanged.
