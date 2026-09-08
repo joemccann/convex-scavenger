@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-08T23:58:13Z",
+  "generated_at": "2026-09-08T23:58:41Z",
   "node_count": 3286,
-  "edge_count": 6640,
+  "edge_count": 6641,
   "areas": {
     "web": 1929,
     "site": 152,
@@ -320,7 +320,7 @@
     {
       "id": "scripts/db/__init__.py",
       "area": "scripts",
-      "in": 77,
+      "in": 78,
       "out": 1,
       "test": false
     },
