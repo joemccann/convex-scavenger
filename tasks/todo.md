@@ -1,3 +1,49 @@
+# Task: CI performance remediate 2026-09-08 [COMPLETE]
+
+Apply every verified P0/P1 CI-performance finding from the current audit without changing protected delivery guarantees.
+
+## Dependency graph
+
+- T1 depends_on: [] - Resume the dated branch and verify dedicated runner, lock, remote, and reduced-cap scope.
+- T2 depends_on: [T1] - Recheck P0/P1 eligibility against the current audit and protected deployment closure.
+- T3 depends_on: [T2] - Validate workflow safety contracts, record the outcome, commit, and push.
+
+## Checklist
+
+- [x] T1 Resumed `ci-performance/2026-09-08`; runner markers, exclusive lock, GitHub auth, and remote branch verified.
+- [x] T2 No verified P0/P1 source-actionable candidate: the remaining node-image/scripts-rs co-wall and 40-second stability floor are protected or non-material.
+- [x] T3 Workflow integrity, deployment concurrency, and fail-closed path-filter contracts passed.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1` restricted remediation to P0/P1; no lower-priority experiment was made.
+- [x] 88 focused safety-contract tests passed; no test inventory, gate closure, provenance, rollback, recovery, health, cancellation, or stability behavior changed.
+
+---
+
+# Task: CI performance audit 2026-09-08 [COMPLETE]
+
+Record current production critical paths, preserve delivery invariants, and rank every safe source-actionable optimization candidate.
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify dedicated runner, exclusive lock, dated branch, ledger baseline, GitHub access, and protection closure.
+- T2 depends_on: [T1] - Measure recent successful production runs by comparable class and inspect critical paths, cache state, and changed CI surfaces.
+- T3 depends_on: [T2] - Verify safety contracts, rank candidates, append the audit ledger, validate, commit, and push.
+
+## Checklist
+
+- [x] T1 Dedicated-runner rails, stale-lock preservation, branch, auth, and protection baseline.
+- [x] T2 Actions timing and critical-path analysis.
+- [x] T3 Ledger publication and PR update.
+
+## Review
+
+- [x] 20 successful production runs measured: p50 258s, p95 355s; queue 2-4s.
+- [x] No material rail-safe source change; closure, provenance, rollback, and stability contracts retained.
+
+---
+
 # Task: Reliability remediate 2026-09-08 [IN PROGRESS]
 
 Complete the reduced-rung P0/P1 backlog without leaving evidence archives corruptible.
@@ -5488,6 +5534,23 @@ Graph extension: T6 -> T7 -> T8.
 - T7 green evidence: 125 focused tests, nine large-body regressions, three-copy parity and shell syntax all passed. Full cloud rerun and latest-head CI remain T8 gates.
 - T8 local verification: final full cloud suite 1,882 passed, six skipped after the Compose repair; latest-head CI is the remaining release gate.
 - T8 release evidence: repaired head6fa1f028 passed all31 applicable checks, including both cloud shards, coverage and Playwright. All agents completed; worktree code is verified. Latest ledger-head status remains visible on PR346 and is checked before notification.
+
+# Regime chart x-axis formatting (2026-09-08)
+
+- [x] T1 depends_on: [] - Inventory every `/regime/*` chart and reproduce the overlapping x-axis labels at representative desktop and mobile widths.
+- [x] T2 depends_on: [T1] - Add red regression coverage for shared tick density, label format, and available axis space.
+- [x] T3 depends_on: [T2] - Fix the narrowest shared chart primitives and any independent regime chart implementations that reproduce the defect.
+- [x] T4 depends_on: [T3] - Run focused Vitest, relevant Playwright coverage, and one batched visual inspection across all regime chart routes.
+- [x] T5 depends_on: [T4] - Run the full project suite, review the final diff, and document verification evidence.
+
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+## Review
+
+- Inventory: 19 shared history routes plus eight independent regime chart implementations reviewed; all affected time and index axes use responsive tick spacing and inward endpoint anchors.
+- Regression evidence: pre-fix irregular-session minimum gap was 19.8px; focused Vitest is 194/194 and TRIN Playwright is 4/4 at 1,440px and 390px.
+- Full verification: 8,634/8,634 web tests, TypeScript, scoped ESLint, codemap freshness, diff check, Impeccable detection, and the held-out E2E evidence contract pass.
+
 # Task: Reliability audit 2026-09-08 [IN PROGRESS]
 
 Perform the delta audit from `0b77a6af` through the dedicated runner head.
