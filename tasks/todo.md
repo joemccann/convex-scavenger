@@ -5421,4 +5421,13 @@ Enabled observations must be reproducible; unentitled/experimental sources stay 
 - Full cloud rerun: 1,873 passed, six skipped; deployment inventory/bootstrap and optional-env contracts repaired. Final focused AI/code-map/watchdog/order-worker contracts: 140 passed.
 - Full root Vitest: 9,103 passed across 924 files; final TypeScript check passed. Exact-head PR checks remain pending before final handoff.
 - PR346 integration: merged main00b6aa22, regenerated maps; updated application partition 11,759 passed plus one owner-doc failure, repaired with146/146 ownership/code-map/Equibles regressions. Combined application coverage now12,394 tests including the unchanged634-test partition.
-- Release verification: PR346 head5fa75a9b has all applicable CI checks green, including coverage and Playwright; 15-image show-me artifact verified with seven selectors and desktop/mobile checks. Final documentation-head status is tracked on PR346 before notification.
+- Release verification: PR346 head5fa75a9b has all applicable CI checks green, including coverage and Playwright; 15-image show-me artifact verified with seven selectors and desktop/mobile checks. Final release-head status is tracked on PR346 before notification.
+
+### Final-head CI repair
+- [x] T7 Fix the existing compose-validation producer/grep pipeline race with deterministic regression coverage. depends_on: [T6]
+- [ ] T8 Verify the repair, publish and supervise all latest-head checks before final notification. depends_on: [T7]
+Graph extension: T6 -> T7 -> T8.
+- Evidence: run34172973979 cloud al rejected the poisoned body with a spurious no-services diagnostic after printf received SIGPIPE. Preserve every compose safety gate and its three-copy parity.
+- T7 red evidence: six deterministic large-body/small-pipe failures across all three Compose validators; trusted-body rejection and privileged-body acceptance both reproduced.
+- T7 green evidence: 125 focused tests, nine large-body regressions, three-copy parity and shell syntax all passed. Full cloud rerun and latest-head CI remain T8 gates.
+- T8 local verification: final full cloud suite 1,882 passed, six skipped after the Compose repair; latest-head CI is the remaining release gate.

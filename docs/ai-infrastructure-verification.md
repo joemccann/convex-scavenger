@@ -46,4 +46,8 @@ Main advanced to `00b6aa22` during review. The merge affected only generated cod
 
 ## Pull request release gate
 
-[PR #346](https://github.com/joemccann/radon/pull/346) passed every applicable check on `5fa75a9b910ff9cd31a4ea5c90f49a08e135db1e`, including both coverage gates, image builds, the production perimeter and Playwright. The completion ledger is documentation-only; the final documentation head is checked again before notification. The standalone visual handoff contains 15 embedded actual-source captures; seven selectors and desktop/mobile report layouts passed with zero errors or overflow. Source eligibility and predictive limitations remain unchanged.
+[PR #346](https://github.com/joemccann/radon/pull/346) passed every applicable check on `5fa75a9b910ff9cd31a4ea5c90f49a08e135db1e`, including both coverage gates, image builds, the production perimeter and Playwright. Every subsequent release head is checked again before notification. The standalone visual handoff contains 15 embedded actual-source captures; seven selectors and desktop/mobile report layouts passed with zero errors or overflow. Source eligibility and predictive limitations remain unchanged.
+
+## CI-discovered Compose validator repair
+
+The final-head cloud suite exposed a pre-existing `printf | grep -q` race under `pipefail`. Early grep exit can signal the producer and invert a matching validation result. Deterministic two-megabyte/small-pipe regressions reproduced six failures across all three validator copies, including rejected valid bodies and accepted privileged bodies. The repair feeds validators directly while preserving every rule and the three-copy parity contract. Focused verification passed 125 tests, including nine large-body regressions and the originally failing refresh scenario. All three shell files pass syntax checks and validator parity. The final full cloud rerun passed **1,882 tests, six skipped**. The latest-head CI remains the final release gate.
