@@ -5464,3 +5464,24 @@ Graph extension: T6 -> T7 -> T8.
 - T7 green evidence: 125 focused tests, nine large-body regressions, three-copy parity and shell syntax all passed. Full cloud rerun and latest-head CI remain T8 gates.
 - T8 local verification: final full cloud suite 1,882 passed, six skipped after the Compose repair; latest-head CI is the remaining release gate.
 - T8 release evidence: repaired head6fa1f028 passed all31 applicable checks, including both cloud shards, coverage and Playwright. All agents completed; worktree code is verified. Latest ledger-head status remains visible on PR346 and is checked before notification.
+# Task: Reliability audit 2026-09-08 [IN PROGRESS]
+
+Perform the delta audit from `0b77a6af` through the dedicated runner head.
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify runner markers, audit anchor, dated branch, and changed surface.
+- T2 depends_on: [T1] - Inspect changed money, state, connectivity, resource, error, safety, and observability surfaces plus standing sweeps.
+- T3 depends_on: [T2] - Dedupe findings, append immutable ledgers, verify, commit, and push the audit branch.
+
+## Checklist
+
+- [x] T1 Runner, anchor, branch, and diff verified.
+- [x] T2 Changed-surface and standing-sweep audit.
+- [x] T3 Ledger publication.
+
+## Review
+
+- [x] Audit evidence: one P1 persistence finding, all required standing sweeps HOLD.
+
+---
