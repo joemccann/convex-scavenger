@@ -1,3 +1,27 @@
+# Task: Reliability remediate 2026-09-08 [IN PROGRESS]
+
+Complete the reduced-rung P0/P1 backlog without leaving evidence archives corruptible.
+
+## Dependency graph
+
+- T1 depends_on: [] - Reproduce REL-253 torn-evidence archive behavior.
+- T2 depends_on: [T1] - Add crash-safe digest-verified archival at both write paths.
+- T3 depends_on: [T2] - Run focused tests, record the result, commit, and push.
+
+## Checklist
+
+- [x] T1 Identify REL-253 as the sole reduced-rung un-DONE P0/P1 task.
+- [x] T2 Add red/green fault-injection coverage and atomic archival.
+- [x] T3 Record focused and permanent-drill verification, commit, and push.
+
+## Review
+
+- [x] RED: focused suite could not import missing `archive_raw`; GREEN: 84 passed in the runner venv.
+- [x] Permanent drills: Python 94 passed; Vitest 12 passed.
+- [ ] Detached full-gate stage has no `DONE` sentinel; continuation must re-run all three gates.
+
+---
+
 # Task: CI performance audit 2026-09-07 [IN PROGRESS]
 
 Record the current production critical path and every safe, source-actionable optimization candidate.
