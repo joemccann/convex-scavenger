@@ -20,6 +20,22 @@ and record every material source-actionable optimization candidate.
 - [x] 20 successful Actions runs measured: mixed/full-stack p50 269s, p95 380s; docs/control-plane p50 166s; first-job queue 2-3s.
 - [x] No candidate clears the 15-second / 10% materiality floor without changing gate closure, test-union risk, or protected deployment behavior.
 
+# Task: ATS priority universe + freshness rail [COMPLETE]
+
+Widen `/regime/ats` beyond the watchlist and add the regime countdown rail.
+
+## Dependency graph
+
+- T1 depends_on: [] - Red tests: priority unique universe, core coverage, weekly rail.
+- T2 depends_on: [T1] - Resolver, scheduled walk, carry-forward, panel rail.
+- T3 depends_on: [T2] - Focused pytest + vitest green.
+
+## Checklist
+
+- [x] T1 Failing tests for universe order, core coverage vs index tail, weekly countdown
+- [x] T2 Portfolio then watchlist then ndx100/r2k/sp500; FreshnessRail on ATS
+- [x] T3 Focused suites green
+
 ---
 
 # Task: CI performance remediate 2026-09-08 [COMPLETE]
@@ -5558,6 +5574,23 @@ Graph extension: T6 -> T7 -> T8.
 - T7 green evidence: 125 focused tests, nine large-body regressions, three-copy parity and shell syntax all passed. Full cloud rerun and latest-head CI remain T8 gates.
 - T8 local verification: final full cloud suite 1,882 passed, six skipped after the Compose repair; latest-head CI is the remaining release gate.
 - T8 release evidence: repaired head6fa1f028 passed all31 applicable checks, including both cloud shards, coverage and Playwright. All agents completed; worktree code is verified. Latest ledger-head status remains visible on PR346 and is checked before notification.
+
+# Regime chart x-axis formatting (2026-09-08)
+
+- [x] T1 depends_on: [] - Inventory every `/regime/*` chart and reproduce the overlapping x-axis labels at representative desktop and mobile widths.
+- [x] T2 depends_on: [T1] - Add red regression coverage for shared tick density, label format, and available axis space.
+- [x] T3 depends_on: [T2] - Fix the narrowest shared chart primitives and any independent regime chart implementations that reproduce the defect.
+- [x] T4 depends_on: [T3] - Run focused Vitest, relevant Playwright coverage, and one batched visual inspection across all regime chart routes.
+- [x] T5 depends_on: [T4] - Run the full project suite, review the final diff, and document verification evidence.
+
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+## Review
+
+- Inventory: 19 shared history routes plus eight independent regime chart implementations reviewed; all affected time and index axes use responsive tick spacing and inward endpoint anchors.
+- Regression evidence: pre-fix irregular-session minimum gap was 19.8px; focused Vitest is 194/194 and TRIN Playwright is 4/4 at 1,440px and 390px.
+- Full verification: 8,634/8,634 web tests, TypeScript, scoped ESLint, codemap freshness, diff check, Impeccable detection, and the held-out E2E evidence contract pass.
+
 # Task: Reliability audit 2026-09-08 [IN PROGRESS]
 
 Perform the delta audit from `0b77a6af` through the dedicated runner head.
@@ -5577,5 +5610,149 @@ Perform the delta audit from `0b77a6af` through the dedicated runner head.
 ## Review
 
 - [x] Audit evidence: one P1 persistence finding, all required standing sweeps HOLD.
+
+---
+
+# Dropbox filename resilience repair (2026-09-08)
+- [x] T1 depends_on: [] - Add red regressions and repair remote filename acceptance while preserving security boundaries.
+- [x] T2 depends_on: [] - Add red regressions and isolate discovery failures from other scopes and validated queued work; retain actionable error health.
+- [x] T3 depends_on: [T1,T2] - Independent review, focused/full Python verification and generated code map checks.
+- [ ] T4 depends_on: [T3] - Commit, PR exact-head CI, merge and verify deployed queue recovery and canonical accepted output.
+Dependency graph: T1 + T2 -> T3 -> T4.
+User authorized fixing the live service; preserve source files, cursors, date/novelty/attribution/media gates and existing posts. No trading actions.
+
+## Verification in progress
+- Reader red/green: colon listing/download failed before repair; 38 reader/state tests passed afterward. Exact live blocked cursor validated all 69 entries with patched code in a transient read-only interpreter.
+- Worker red/green: three isolation regressions and one CLI exit-code regression failed before repair; 75 runtime/pipeline tests pass. Independent review found no remaining blockers.
+- Full Python suite running; no production changes before reviewed release.
+
+## Local verification complete
+- Full Python coverage: 12,406 unique tests passed, 19 skipped, 90 integration deselected, 23 subtests passed. Full loadfile run completed every other file (11,990 passed/19 skipped before interruption); remaining serial wrapper file was rerun in full using load scheduling: 634/634 passed. No failures in either batch. Logs: /tmp/radon-dropbox-full-pytest.log and /tmp/radon-dropbox-final-shard.log; collection: /tmp/radon-dropbox-all-collected.txt.
+- Focused research: 263 passed, 18 skipped, 23 subtests. Touched coverage: Dropbox reader 100%, worker 97%. Independent review approved; whitespace and generated map checks pass.
+- Integrated main 1090a84a (unrelated chart changes); research source unchanged from full verification. Regenerated combined source maps; 294 integrated research/codemap tests passed, 18 skipped, 23 subtests.
+- Integrated main c9305ba8 (independently green loop no-op change); repair implementation remains unchanged. Combined research/codemap/new-loop regressions: 318 passed, 18 skipped, 23 subtests. Merge TypeScript, ESLint and secret scans passed on the prior chart integration.
+- Integrated subsequent security release 1ab63ddf; no research implementation changed. Focused research reverified and combined maps regenerated; latest-head CI is the final integrated release gate.
+
+# Dropbox release deployment unblock (2026-09-08)
+Original repair PR355 is merged as 670dcae2 with 31 green checks. Preceding security release 1ab63ddf failed monitor startup (root-owned app tree lacks writable logs); rollback then failed stopping absent legacy watchdog timer. User-authorized live fix remains incomplete until deployment recovers.
+- [x] U1 depends_on: [] - Restore narrowly writable monitor log directory in Python image, retaining immutable source ownership; red/green image regressions.
+- [x] U2 depends_on: [] - Make deployment stop/recovery tolerate provably absent inactive units, with failure-closed state checks and regressions.
+- [ ] U3 depends_on: [U1,U2] - Run full cloud suite and independent review; release through exact-head green CI and deployment.
+- [ ] U4 depends_on: [U3] - Verify monitor and research runtime, advanced Dropbox cursor and queued work progress.
+Dependency graph: U1 + U2 -> U3 -> U4.
+
+## Review
+- Independent review approved both changes and recovery plan. Use exact merged-main helper, atomically installed canonical root0755 after archiving old helper, run recovery as radon, then immediately sync canonical control-plane manifest. Preserve inventory/journal and gateway state.
+- Docker regression red before log provisioning; 41 image tests passed. Actual non-root image smoke is mandatory in CI build; local Docker daemon unavailable.
+
+- Full cloud run: 1,866 passed, 32 failed, seven skipped. Failed subset rerun on unchanged baseline: 26 passed, six failed; repaired tree: 27 passed, five failed, all requiring unavailable local Caddy. New regressions pass; Linux CI remains the integrated release gate. Logs: /tmp/radon-dropbox-full-cloud.log, /tmp/radon-dropbox-cloud-baseline.log, /tmp/radon-dropbox-cloud-confirm.log.
+- Integrated unrelated ATS main release 37f18a9f; cloud and Docker implementation unchanged.
+
+# LLM source credentials in Profile (2026-09-08)
+
+- [x] T1 depends_on: [] - Inventory the Profile credentials contract and all LLM pipeline environment fields.
+- [x] T2 depends_on: [T1] - Add red regression coverage for every missing credential and configuration field.
+- [x] T3 depends_on: [T2] - Register fields across backend storage, validation, and Profile UI metadata.
+- [x] T4 depends_on: [T3] - Run focused API/UI tests and desktop/mobile browser verification.
+- [x] T5 depends_on: [T4] - Run full suites, commit, open a PR, and monitor exact-head CI until green.
+
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+## Verification replan
+- [x] T5a depends_on: [T4] - Run Python and cloud suites sequentially after concurrent-run resource contention.
+- [x] T5b depends_on: [T5a] - Stop expensive local full-suite reruns per operator direction; retain focused UI/browser evidence and delegate the full matrix to GitHub CI.
+- [x] T5c depends_on: [T5b] - Commit, open the PR, and monitor exact-head CI until green.
+Dependency graph: T4 -> T5a -> T5b -> T5c -> T5.
+
+## Review
+- Focused credentials/API coverage: 125 passed; Profile Vitest: 8 passed; Profile Playwright: 2 passed with desktop/mobile visual inspection.
+- Full Python: 12,400 passed, 19 skipped, 90 deselected, 16 subtests; full cloud: 1,877 passed, 12 documented local Caddy skips.
+- GitHub CI is the authoritative full web and release gate per operator direction.
+- PR #361 repair head `5d5a6d0e` passed every applicable GitHub check, including all Vitest/Python shards, both coverage ratchets, Playwright, images, security, perimeter smoke, and previews.
+
+# AI-cycle production import repair (2026-09-08)
+
+- [x] T1 depends_on: [] - Reproduce the deployed one-shot failure and confirm the encrypted Artificial Analysis key exists without reading its value.
+- [x] T2 depends_on: [T1] - Add a subprocess regression for the real package invocation and correct secret-store import resolution.
+- [ ] T3 depends_on: [T2] - Run focused checks, open the repair PR, and monitor exact-head GitHub CI until green.
+- [ ] T4 depends_on: [T3] - Verify successful deployment, trigger the production one-shot, and confirm the Artificial Analysis result and timer health.
+
+Dependency graph: T1 -> T2 -> T3 -> T4.
+
+## Review
+- Red: package invocation failed with `ModuleNotFoundError: secret_store`; green: 52 collector tests and the deployed-unit credential contract pass.
+
+# Dropbox minute ingestion and publication repair (2026-09-08)
+- [x] P1 depends_on: [] - Verify deployment host and current scheduling; design independent current-day discovery and prompt parsing.
+- [x] P2 depends_on: [P1] - Implement 60-second current-day polling independent of review, durable parse staging and prompt review wake-up; regressions for slow review, retries and midnight rollover.
+- [x] P3 depends_on: [] - Repair demonstrated numerical/source-format validation false negatives without weakening provenance, signs, units or date gates; regression tests.
+- [ ] P4 depends_on: [P2,P3] - Independent review, full relevant suites, exact-head PR CI, deployment and live cadence/publication verification.
+Dependency graph: P1 -> P2; P2 + P3 -> P4.
+Scope: preserve private source/queue state and novelty gates. Use bounded ingestion resources; a slow model review must not block discovery or text parsing. Host migration, if needed, must preserve single-writer ownership.
+
+## Minute-ingestion review
+- Live host5.78.148.38 reports RADON_HOST_ROLE=app and IB_GATEWAY_HOST=10.0.0.4; Linux/Hetzner hostname remainsib-gateway. No host migration required.
+- P3 red/green:97 numeric/date/pipeline tests pass, including25 new format/range/context cases. No newdependencies; preservegenuine unsupportedclaims/date/cropfailures.
+
+- P2 frozen after87 ingestion/runtime tests passed; ingestion branch-aware coverage96%. Actualspawn integration demonstrates newarrivals parsed atvirtual0/60seconds while modelreviewremainsblocked. Independentreview resolvedcacheintegrity, processgroup cleanup, cancelledoutbox andaggregatehealth concerns.
+
+- User changed verification policy: no test suites on this machine; use PR CI. Stopped local full suite at11,838 passed/19skipped withKeyboardInterrupt after906seconds; not a completed full-suite result. Integrated current maince4a9a56; preserved both task/lesson updates and regenerated maps. Final validation delegated to exact-head GitHub CI.
+
+## 2026-09-08 — Vast.ai credential verification
+
+### Dependency graph
+- T1 depends_on: [] — Trace Profile credential save/verify path and reproduce Vast response safely.
+- T2 depends_on: [T1] — Add a failing validator regression covering current Vast API behavior.
+- T3 depends_on: [T2] — Implement the minimal robust Vast verification fix.
+- T4 depends_on: [T3] — Run focused tests, regenerate codemap, and review the diff.
+- T5 depends_on: [T4] — Commit, push, open PR, watch exact-head CI green, and send Pushover.
+
+### Checklist
+- [x] T1 Trace and reproduce without exposing secrets.
+- [x] T2 Add red regression.
+- [x] T3 Fix validator.
+- [x] T4 Verify and document review.
+- [ ] T5 PR and green CI.
+
+### Review
+- Production-safe probe confirmed Vast is reachable and returns HTTP 404 with `error=auth_error` for the stored key; no credential material was emitted.
+- Validator now classifies only Vast's explicit `auth_error` payload as invalid; unrelated 404s and transport failures remain non-blocking errors.
+- Focused verification: 56 pytest passed; Ruff check/format, codemap pre-commit, and diff check passed.
+# Regime freshness rails everywhere (2026-09-08)
+
+Audit: 30 regime tabs. FreshnessRail: ivrank, iv-spread, ma-ratio. Text "Next refresh": cot, ats, short. Lacking with a systemd writer (20): cri, vcg, gex, breadth, bpi, margin, straddle, cor, vixcor, vixts, dispersion, skew, skew2d, curve, credit, iei-hyg, trin, divyield, hyad, hhlev. Lacking with no scheduled writer (4, not applicable — nothing to derive from): grg (panel-triggered POST scan), streaks (computed per request), backtest, llm (AiInfrastructurePanel since #346, on-demand "Refresh snapshot"; LlmTokenIndexCard is no longer mounted).
+
+- [x] T1 depends_on: [] - Generalise `web/lib/refreshSchedule.ts` to rule-based schedules (weekday sets, multi-slot, intraday windows, America/New_York timers); add one constant per lacking writer; `freshnessRail.ts` derives the interval from previous/next slot. Pin every constant to its OnCalendar lines by parsing the unit file in `tests/refresh-schedule.test.ts`.
+- [x] T2 depends_on: [T1] - Workflow fan-out: wire `<FreshnessRail>` into each of the 20 panels with a render test asserting the rail and its countdown.
+- [x] T3 depends_on: [T2] - Full vitest suite green; tsc + eslint clean. (9220 passed from web/; the 10 cwd-dependent lib/tools + scanner-scrub failures pass from repo root, 23/23.)
+- [x] T4 depends_on: [T3] - Browser verification of every wired tab (chrome-cdp on local Next), screenshots. 19/20 rails rendered live with correct next-fire instants; TRIN shows its empty state locally (no samples in this environment), rail covered by its unit test.
+- [ ] T5 depends_on: [T4] - PR, mergeable, CI green, Pushover `radon PR green`.
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+# Task: Refresh the Artificial Analysis frontier basket daily [IN PROGRESS]
+
+Keep the AI-cycle price cohort current as frontier models ship while preserving a last-known-good basket when the upstream catalog or selection contract is invalid.
+
+## Dependency graph
+
+- T1 depends_on: [] - Define deterministic frontier-provider selection and red regression tests from the current Artificial Analysis schema.
+- T2 depends_on: [T1] - Implement catalog refresh, validation, atomic secret-store update, audit output, and idempotence.
+- T3 depends_on: [T2] - Add a bounded daily systemd oneshot/timer ordered before AI-cycle collection and wire deployment inventory.
+- T4 depends_on: [T2, T3] - Run focused tests, codemap generation, durability checks, and review the final diff.
+- T5 depends_on: [T4] - Commit, open the PR, follow exact-head GitHub CI through green, and verify production deployment.
+
+## Checklist
+
+- [x] T1 Selection contract and failing regressions
+- [x] T2 Refresh implementation and safe persistence
+- [x] T3 Daily service/timer and deployment wiring
+- [x] T4 Focused verification and review
+- [ ] T5 PR, green CI, and production verification
+
+## Review
+
+- [x] Red import regression preceded implementation; 24 worker durability tests cover frontier selection, stable IDs, anti-churn, catalog truncation, state corruption, write failures, idempotence, and encrypted-store persistence.
+- [x] Focused validation: 278 affected Python tests, 546 cloud/service topology tests, 133 service-health Vitest tests, and 31 codemap tests passed.
+- [x] Live 644-row catalog resolved all eight providers deterministically without exposing credential material.
 
 ---

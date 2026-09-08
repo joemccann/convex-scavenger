@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-08T07:13:24Z",
-  "node_count": 3257,
-  "edge_count": 6542,
+  "generated_at": "2026-09-08T21:46:56Z",
+  "node_count": 3275,
+  "edge_count": 6629,
   "areas": {
-    "web": 1912,
+    "web": 1918,
     "site": 152,
-    "scripts": 1079,
+    "scripts": 1091,
     "cloud": 66,
     "lib": 28,
     "tests": 17,
@@ -35,7 +35,7 @@
     {
       "id": "web/lib",
       "area": "web",
-      "count": 377
+      "count": 378
     },
     {
       "id": "web/public",
@@ -50,7 +50,7 @@
     {
       "id": "web/tests",
       "area": "web",
-      "count": 883
+      "count": 888
     },
     {
       "id": "site/app",
@@ -83,6 +83,11 @@
       "count": 2
     },
     {
+      "id": "scripts",
+      "area": "scripts",
+      "count": 151
+    },
+    {
       "id": "scripts/ai_cycle",
       "area": "scripts",
       "count": 10
@@ -95,12 +100,7 @@
     {
       "id": "scripts/api",
       "area": "scripts",
-      "count": 113
-    },
-    {
-      "id": "scripts",
-      "area": "scripts",
-      "count": 150
+      "count": 115
     },
     {
       "id": "scripts/backtest",
@@ -185,7 +185,7 @@
     {
       "id": "scripts/research",
       "area": "scripts",
-      "count": 10
+      "count": 11
     },
     {
       "id": "scripts/security",
@@ -195,7 +195,7 @@
     {
       "id": "scripts/tests",
       "area": "scripts",
-      "count": 531
+      "count": 539
     },
     {
       "id": "scripts/trade_blotter",
@@ -266,7 +266,7 @@
     {
       "id": "web/lib/apiContracts.ts",
       "area": "web",
-      "in": 112,
+      "in": 113,
       "out": 0,
       "test": false
     },
@@ -292,6 +292,13 @@
       "test": false
     },
     {
+      "id": "web/lib/radonApi.ts",
+      "area": "web",
+      "in": 91,
+      "out": 0,
+      "test": false
+    },
+    {
       "id": "web/lib/routeAccess.ts",
       "area": "web",
       "in": 87,
@@ -299,9 +306,9 @@
       "test": false
     },
     {
-      "id": "web/lib/radonApi.ts",
-      "area": "web",
-      "in": 89,
+      "id": "scripts/api/__init__.py",
+      "area": "scripts",
+      "in": 79,
       "out": 0,
       "test": false
     },
@@ -310,13 +317,6 @@
       "area": "scripts",
       "in": 77,
       "out": 1,
-      "test": false
-    },
-    {
-      "id": "scripts/api/__init__.py",
-      "area": "scripts",
-      "in": 77,
-      "out": 0,
       "test": false
     },
     {
@@ -336,7 +336,7 @@
     {
       "id": "scripts/api/server.py",
       "area": "scripts",
-      "in": 44,
+      "in": 45,
       "out": 17,
       "test": false
     },
@@ -348,17 +348,17 @@
       "test": false
     },
     {
+      "id": "web/components/RegimePanel.tsx",
+      "area": "web",
+      "in": 3,
+      "out": 52,
+      "test": false
+    },
+    {
       "id": "web/lib/db.ts",
       "area": "web",
       "in": 52,
       "out": 1,
-      "test": false
-    },
-    {
-      "id": "web/components/RegimePanel.tsx",
-      "area": "web",
-      "in": 3,
-      "out": 50,
       "test": false
     },
     {
@@ -418,6 +418,13 @@
       "test": false
     },
     {
+      "id": "scripts/db/hrana_http.py",
+      "area": "scripts",
+      "in": 35,
+      "out": 2,
+      "test": false
+    },
+    {
       "id": "web/components/PositionTable.tsx",
       "area": "web",
       "in": 22,
@@ -439,17 +446,17 @@
       "test": false
     },
     {
-      "id": "scripts/db/hrana_http.py",
-      "area": "scripts",
-      "in": 34,
-      "out": 2,
-      "test": false
-    },
-    {
       "id": "web/components/ticker-detail/OrderTab.tsx",
       "area": "web",
       "in": 12,
       "out": 23,
+      "test": false
+    },
+    {
+      "id": "scripts/api/auth.py",
+      "area": "scripts",
+      "in": 33,
+      "out": 0,
       "test": false
     },
     {
@@ -460,15 +467,15 @@
       "test": false
     },
     {
-      "id": "web/lib/chartSystem.ts",
+      "id": "web/lib/refreshSchedule.ts",
       "area": "web",
       "in": 32,
       "out": 0,
       "test": false
     },
     {
-      "id": "scripts/api/auth.py",
-      "area": "scripts",
+      "id": "web/lib/chartSystem.ts",
+      "area": "web",
       "in": 32,
       "out": 0,
       "test": false
@@ -518,13 +525,6 @@
     {
       "id": "web/components/RegimeStrip.tsx",
       "area": "web",
-      "in": 29,
-      "out": 0,
-      "test": false
-    },
-    {
-      "id": "scripts/utils/market_calendar.py",
-      "area": "scripts",
       "in": 29,
       "out": 0,
       "test": false

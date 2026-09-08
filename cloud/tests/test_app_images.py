@@ -106,6 +106,18 @@ class TestPythonImage:
         assert "--uid 1000" in text
         assert "chmod 755 /home/radon" in text
 
+    def test_application_code_is_not_writable_by_the_runtime_user(self) -> None:
+        """Code COPYs must stay root-owned; only genuinely writable paths
+        (the radon home itself, created by useradd) belong to the runtime
+        user. A `--chown` on the code COPY or a recursive chown over the
+        home tree hands the import tree to the uid the service runs as."""
+        text = PYTHON_DF.read_text(encoding="utf-8")
+        copy_lines = [line for line in text.splitlines() if line.startswith("COPY ")]
+        assert copy_lines, "expected COPY lines in Dockerfile.python"
+        for line in copy_lines:
+            assert "--chown" not in line, line
+        assert "chown -R radon:radon /home/radon" not in text
+
     def test_pinned_python_playwright_installs_and_launches_headless_chromium(self) -> None:
         text = PYTHON_DF.read_text(encoding="utf-8")
         install = "python -m playwright install --with-deps --only-shell chromium"
@@ -116,10 +128,31 @@ class TestPythonImage:
         assert "npx playwright" not in text
         assert "bun x playwright" not in text
         assert text.index("RUN python -m pip install") < text.index(install)
-        assert text.index(install) < text.index("COPY --chown=radon:radon scripts")
+        assert text.index(install) < text.index("COPY scripts ./scripts")
         assert "sync_playwright" in text
         assert launch in text
         assert text.index("USER radon") < text.index(launch)
+
+    def test_monitor_logs_are_writable_without_owning_application_code(self) -> None:
+        text = PYTHON_DF.read_text(encoding="utf-8")
+        provision = "install -d -o radon -g radon -m 0755 /home/radon/radon/logs"
+        assert provision in text
+        assert text.index(provision) < text.index("USER radon")
+        # Require a real build-time filesystem check under the final runtime uid,
+        # including rotation (which also needs directory write permission).
+        smoke = text.split("# Monitor log permissions smoke", 1)[1]
+        assert text.index("USER radon") < text.index("# Monitor log permissions smoke")
+        for check in (
+            "assert os.geteuid() == 1000",
+            'assert not os.access(".", os.W_OK)',
+            'assert not os.access("scripts", os.W_OK)',
+            'assert not os.access("scripts/monitor_daemon/run.py", os.W_OK)',
+            "log_dir.mkdir(exist_ok=True)",
+            "RotatingFileHandler(",
+            "handler.emit(",
+            "handler.doRollover()",
+        ):
+            assert check in smoke
 
 
 class TestNodeImage:

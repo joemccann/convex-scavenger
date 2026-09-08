@@ -3,6 +3,9 @@
 import hashlib
 import json
 import os
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -129,12 +132,46 @@ def test_gpu_missing_bundle_is_ineligible_not_assumed_single_gpu():
 
 
 def test_aa_missing_expensive_member_suppresses_entire_basket():
-    payload = {"data": [{"slug": "cheap", "pricing": {"price_1m_input_tokens": 1, "price_1m_output_tokens": 2}}]}
+    payload = {
+        "data": [
+            {
+                "id": "stable-cheap-id",
+                "slug": "cheap",
+                "name": "Cheap frontier",
+                "model_creator": {"id": "creator-id"},
+                "pricing": {"price_1m_input_tokens": 1, "price_1m_output_tokens": 2},
+            }
+        ]
+    }
     with pytest.raises(SourceError):
         parse_aa(payload, HASH, FETCHED, ["cheap", "expensive"])
     row = parse_aa(payload, HASH, FETCHED, ["cheap"])[0]
     assert row["value"] == 3
-    assert row["metadata"]["required_members"] == ["cheap"]
+    assert row["series_id"] == "stable-cheap-id"
+    assert row["metadata"]["required_members"] == ["stable-cheap-id"]
+    assert row["metadata"]["model_slug"] == "cheap"
+    assert row["methodology_version"] == "aa-frontier-id-v1"
+
+
+def test_aa_slug_rename_preserves_series_and_cohort_identity():
+    def payload(slug):
+        return {
+            "data": [
+                {
+                    "id": "stable-model-id",
+                    "slug": slug,
+                    "name": "Frontier model",
+                    "model_creator": {"id": "creator-id"},
+                    "pricing": {"price_1m_input_tokens": 2, "price_1m_output_tokens": 8},
+                }
+            ]
+        }
+
+    before = parse_aa(payload("old-slug"), HASH, FETCHED, ["old-slug"])[0]
+    after = parse_aa(payload("new-slug"), HASH, FETCHED, ["new-slug"])[0]
+
+    assert before["series_id"] == after["series_id"] == "stable-model-id"
+    assert before["cohort_version"] == after["cohort_version"]
 
 
 def test_sec_keeps_ytd_period_and_reviewed_tag_mapping():
@@ -215,6 +252,48 @@ def test_environment_loads_only_provider_credentials(tmp_path, monkeypatch):
     env = environment(path)
     assert env["EIA_API_KEY"] == "selected"
     assert "PUSHOVER_TOKEN" not in env
+
+
+def test_environment_prefers_profile_credential_store(tmp_path, monkeypatch):
+    from scripts.secret_store import SecretStore
+
+    monkeypatch.setenv("RADON_SECRET_STORE_PATH", str(tmp_path / "secrets.db"))
+    monkeypatch.setenv("RADON_SECRET_STORE_KEY_FILE", str(tmp_path / "secret.key"))
+    monkeypatch.setenv("OPENROUTER_API_KEY", "stale-env-key")
+    store = SecretStore()
+    store.set_secrets(
+        {
+            "OPENROUTER_API_KEY": "profile-key",
+            "RADON_AI_CYCLE_AA_BASKET": "openai/gpt-a,anthropic/model-b",
+        },
+        actor="test",
+    )
+
+    env = environment()
+
+    assert env["OPENROUTER_API_KEY"] == "profile-key"
+    assert env["RADON_AI_CYCLE_AA_BASKET"] == "openai/gpt-a,anthropic/model-b"
+
+
+def test_environment_resolves_secret_store_from_package_invocation(tmp_path):
+    repo = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from scripts.ai_cycle.collect import environment; environment()",
+        ],
+        cwd=repo,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(repo),
+            "RADON_SECRET_STORE_PATH": str(tmp_path / "secrets.db"),
+            "RADON_SECRET_STORE_KEY_FILE": str(tmp_path / "secret.key"),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_transport_hashes_raw_and_sanitizes_errors(tmp_path):

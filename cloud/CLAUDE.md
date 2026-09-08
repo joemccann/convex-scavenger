@@ -208,6 +208,14 @@ supervisor still caps the complete action at 180 seconds and fails closed into
 recovery if shutdown does not complete. `cloud/tests/test_research_deploy.py`
 pins these nested budgets and exercises delayed shutdown with a simulated clock.
 
+A failed batched stop retries loaded units, tolerating a retired inventory entry
+only when successful probes report `LoadState=not-found`, `ActiveState=inactive`
+and an empty `FragmentPath`. Unknown states, probe errors and loaded-unit stop
+failures remain fatal. Recovery preserves the inventory and active snapshot.
+The Python image keeps application source root-owned and provisions only
+`/home/radon/radon/logs` for the runtime user; its non-root build smoke verifies
+log creation, writing and rotation while source directories remain unwritable.
+
 ## Privileged Bootstrap
 
 `scripts/bootstrap-control-plane.sh` is the only live-host upgrade path for the
@@ -349,10 +357,11 @@ Immutable runners under `~/.radon-deploy-runners/` are extracted `a-w`.
 
 ## Systemd And Drift
 
-`setup-vps.sh` includes `radon-ai-cycle.service` and its timer in the full-host
-installation inventory. Setup installs both units and enables only the timer;
-existing hosts receive the same pair through the hash-pinned `install-units`
-path. The timer collects AI infrastructure observations daily at 07:15 UTC
+`setup-vps.sh` includes the `radon-aa-frontier-refresh` and `radon-ai-cycle`
+service/timer pairs in the full-host installation inventory. Setup installs
+both pairs and enables only their timers; existing hosts receive them through
+the hash-pinned `install-units` path. The frontier timer updates the fixed
+Artificial Analysis cohort at 07:00 UTC before collection at 07:15 UTC, each
 with up to five minutes of jitter. Provider credentials are optional source
 entitlements; missing keys leave those measurements unavailable. Collection,
 reviewed disclosures and source limits are documented in

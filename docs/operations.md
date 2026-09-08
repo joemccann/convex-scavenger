@@ -70,6 +70,12 @@ restarting, not from the tab. Deleting a stored secret does not unset the
 already-exported value in the running process — it takes effect at the next
 FastAPI restart.
 
+The LLM regime collector runs as a separate systemd process, so
+`radon-ai-cycle.service` loads the same encrypted store and master key directly.
+Its Profile group exposes OpenRouter, Artificial Analysis (including the fixed
+model basket), Vast.ai, EIA and the SEC contact user agent. Stored values win
+over `/etc/radon/env` on the collector's next run.
+
 **An unopenable store is reported, never silently skipped.** A store that fails to open after the preflight used to fall back to the deployed `.env` values without a word, so a rotated credential kept serving the stale one. `bootstrap_exported_names()` now surfaces the failure instead of degrading quietly. The setup flow's two env files (`web/lib/setup/envFiles.ts`) are written as a pair that rolls back, so an interrupted save can no longer leave one file updated and the other stale, and the setup token now expires after `SETUP_TOKEN_TTL_MS` (1h from first use, `web/lib/setup/setupToken.ts`), so an abandoned wizard cannot leave a credential-writing token alive for the process lifetime.
 
 The first container cutover is a one-time migration: before any restart, copy
@@ -139,7 +145,17 @@ the browser-login services). The route bounds it: at most
 service per `VALIDATOR_COOLDOWN_S` (5s). A request inside the window gets
 `429` with `Retry-After` and code `VALIDATION_COOLDOWN`, and makes no vendor
 call; on the PUT path nothing is stored. Constants and the chokepoint
-(`_run_validator`) live in `scripts/api/routes/credentials.py`.
+(`_run_validator`) live in `scripts/api/routes/credentials.py`. Vast.ai returns
+HTTP 404 with `error=auth_error` for a rejected bearer key; its validator
+classifies that explicit provider response as invalid so Profile blocks the
+save, while unrelated 404 and transport failures remain retryable errors.
+
+**Values are validated at the persist chokepoint.** `PUT
+/credentials/{service}` rejects values the process environment cannot hold
+(NUL bytes, unencodable text) before anything is written, and both env-export
+sites skip-and-log a bad stored row the same way the undecryptable-row path
+does, so a legacy row can never abort the FastAPI lifespan bootstrap
+(`scripts/api/routes/credentials.py`).
 
 ### First-run setup wizard (`/setup`)
 
@@ -235,9 +251,31 @@ Deeper troubleshooting and full Docker setup live in [`docs/ib-gateway-docker.md
 
 Hetzner host systemd is the production surface. Laptop dev uses launchd plists in `config/`. Laptop `com.radon.data-refresh` must stay unloaded. VPS `radon-flow-refresh.timer` owns hourly scanner/discover/flow during ET RTH.
 
-**Nightly loops on the Mac mini** (launchd, staggered 10 minutes apart; each cycle runs three phases in order: audit, remediate, deliver). Each runs in its own clone under `~/radon-weekend/` that hard-resets to `origin/main` every phase, uses a per-loop venv (`~/radon-weekend/venv-<loop>`) plus the shared `~/radon-weekend/.env`, and holds a per-clone `.weekend-runner.lock`. A wrapper refuses the clone unless it carries BOTH `.radon-weekend-runner` and that loop's own `.radon-<loop>-runner` marker, so pointing one loop at another's clone is a `REFUSED`, not a cross-run collision. The shared `.env` is not imported wholesale: each wrapper's `_notify_curl` reads only `PUSHOVER_USER` and `PUSHOVER_TOKEN` from it in bash and pages via `/usr/bin/curl` (never python). Model spend rides the claude.ai subscription only: every wrapper unsets each API-key / auth-token / base-URL / Bedrock / Vertex / Foundry / gateway variable the installed Claude Code honors (the list is re-derived against the installed binary, not trusted from a pin: on 2026-09-07 that added `CLAUDE_CODE_API_BASE_URL` and `CLAUDE_CODE_HFI_BEARER_TOKEN`, which 2.1.263 reads and the 2.1.258-era list did not cover; `CLAUDE_CODE_OAUTH_TOKEN` is deliberately left alone because it is the subscription credential itself) (naming it on stderr and as `ignored=` on the phase-start line, never the value) and runs anyway, scrubs those lines out of a provisioned `web/.env` in place (except the security loop, whose clone is credential-free: any `.env` / `.env.ib-mode` / `web/.env` present there is `REFUSED`, not scrubbed), and `REFUSED`s only what `unset` cannot reach: a `.deepsec/.env*` / `.env.local` key line or a Claude Code settings-level `apiKeyHelper` / `env` reroute. Those file checks (and the security clone's credential-file check) run again at the start of every phase and continuation round, after the reset and before `claude` launches, so a file an in-phase agent plants cannot be inherited by the next phase. The `setup_*` scripts read the clone origin from their own checkout (`git -C "$SRC_REPO"`), never the caller's cwd, and `REFUSE` when that is not a Radon checkout. Never point another job, worktree, or responder at these clones. The `Fires` column is generated from each plist's `StartCalendarInterval`. Loop semantics live in `.claude/skills/<loop>/SKILL.md`; wrapper mechanics in the wrapper script; state on the rolling GitHub issue carrying the label.
+**Nightly loops on the Mac mini** (launchd, staggered 10 minutes apart; each cycle runs three phases in order: audit, remediate, deliver). Each runs in its own clone under `~/radon-weekend/` that hard-resets to `origin/main` every phase, uses a per-loop venv (`~/radon-weekend/venv-<loop>`) plus the shared `~/radon-weekend/.env`, and holds a per-clone `.weekend-runner.lock`. A wrapper refuses the clone unless it carries BOTH `.radon-weekend-runner` and that loop's own `.radon-<loop>-runner` marker, so pointing one loop at another's clone is a `REFUSED`, not a cross-run collision. The shared `.env` is not imported wholesale: each wrapper's `_notify_curl` reads only `PUSHOVER_USER` and `PUSHOVER_TOKEN` from it in bash and pages via `/usr/bin/curl` (never python). Model spend rides the claude.ai subscription only: every wrapper unsets each API-key / auth-token / base-URL / Bedrock / Vertex / Foundry / gateway variable the installed Claude Code honors (the list is re-derived against the installed binary, not trusted from a pin: on 2026-09-07 that added `CLAUDE_CODE_API_BASE_URL` and `CLAUDE_CODE_HFI_BEARER_TOKEN`, which 2.1.263 reads and the 2.1.258-era list did not cover; `CLAUDE_CODE_OAUTH_TOKEN` is deliberately left alone because it is the subscription credential itself) (naming it on stderr and as `ignored=` on the phase-start line, never the value) and runs anyway, scrubs those lines out of a provisioned `web/.env` in place (except the security loop, whose clone is credential-free: any `.env` / `.env.ib-mode` / `web/.env` present there is `REFUSED`, not scrubbed), and `REFUSED`s only what `unset` cannot reach: a `.deepsec/.env*` / `.env.local` key line or a Claude Code settings-level `apiKeyHelper` / `env` reroute. Those file checks (and the security clone's credential-file check) run again at the start of every phase and continuation round, after the reset and before `claude` launches, so a file an in-phase agent plants cannot be inherited by the next phase. The `setup_*` scripts read the clone origin from their own checkout (`git -C "$SRC_REPO"`), never the caller's cwd, and `REFUSE` when that is not a Radon checkout. Never point another job, worktree, or responder at these clones. Per-phase run logs under `$REPO/logs/<loop>` are owner-only (the wrappers create the directory `0700` and the log files `0600`, so agent transcripts are not world-readable), each loop's deliver tooling only resolves and renders PRs whose head lives in this repository, and a ready-to-merge URL is verified against the recorded PR before it is rendered into a notification. The `Fires` column is generated from each plist's `StartCalendarInterval`. Loop semantics live in `.claude/skills/<loop>/SKILL.md`; wrapper mechanics in the wrapper script; state on the rolling GitHub issue carrying the label.
 
 **A phase is OK only on evidence (REL-187 / REL-188).** `ground_truth` resets the clone to the newest `ci.yml` push run that concluded success and that the tip descends from, not the raw tip, so a loop firing minutes after a red push does not spend its cycle on a tree CI already rejected; GitHub unreachable keeps the checked-out tip with a logged warning. And an `audit` or `remediate` phase whose agent exits 0 without committing to the nightly branch reports `INCOMPLETE (agent exited 0 without committing to the nightly branch)` and exits 75 rather than `OK`. Deliver is keyed on its verdict line instead, since a PR green first time needs no new commit.
+
+**A finished no-op is declared, not inferred.** HEAD alone cannot separate the
+stall that check was built for from a phase that ran end to end and honestly
+had nothing to commit, and on 2026-09-08 it scored the second as the first:
+testing's audit found no findings in its delta range and documentation's
+remediate found 0 source-actionable P0/P1 items, both ran to completion on the
+codex rung, and both were posted to their rolling issues as INCOMPLETE with
+exit 75. The four fallback loops therefore accept one declaration line from the
+agent, printed unindented at column 0 as the last thing it emits:
+
+```
+NIGHTLY PHASE NO-OP: loop=<slug> phase=<audit|remediate> <one-line reason>
+```
+
+`phase_declared_noop()` reads it under the same scoping discipline as the
+TRUNCATED (R-426) and cap (R-530, R-667) detectors — this round's log slice
+only, wrapper markers dropped, anchored at column 0 and naming this loop and
+this phase — because these loops audit their own wrappers and quote this
+contract, and a mention inside a fence must not satisfy it. A commit still
+wins on its own, silence is still INCOMPLETE, and the security loop is
+unaffected: it scores on its own completion marker, not on a commit.
+Contract: `scripts/tests/test_phase_noop_declaration.py`.
 
 **Cycle shape (2026-09-02).** `audit` (cap 2h, `RADON_WEEKEND_AUDIT_CAP_SECS`) records verified findings; `remediate` (cap 6h, `RADON_WEEKEND_REMEDIATE_CAP_SECS`) implements EVERY verified source-actionable finding as root-cause commits on one dated branch `<loop>/<YYYY-MM-DD>`; `deliver` (cap 3h, `RADON_WEEKEND_DELIVER_CAP_SECS`) pushes that branch, opens or updates ONE PR via `scripts/github_pr_output.py`, polls CI with `scripts/nightly_deliver.py watch`, fixes red checks on the branch, and ends by printing a verdict line the wrapper turns into the cycle's final notification. Deliver runs even when remediate exited non-zero (committed fixes are durable; CI decides). The loop never merges: the operator merges from the Pushover / issue line. An INCOMPLETE deliver records branch + PR number outside the clone (`~/radon-weekend/.<loop>-deliver/record.json`; the security loop also mirrors it in its private run-record) and the next fire resumes that branch and PR before opening a new one.
 
@@ -277,7 +315,31 @@ Each grant is the narrowest that lets a phase meet its own contract;
 bounded grant matching the claude rung's scope rather than exceeding it.
 `scripts/tests/test_provider_invocation_contract.py` asserts all three.
 
-**A non-Claude CLI cannot load a Claude skill.** codex and grok get `.claude/portable-prompts/<skill>.<phase>.md` instead — the SKILL.md body with its frontmatter stripped, wrapped in a preamble, an OVERRIDES section (no subagents, Playwright instead of chrome-cdp, `RADON_WEEKEND_REDUCED=1` narrows remediation to P0/P1) and a CONTRACT section naming the exact strings the wrapper greps for. The files are committed and rendered by `scripts/render_loop_prompt.py --write`; `scripts/tests/test_portable_prompt_sync.py` fails when one drifts from a fresh render, which is what keeps editing a SKILL.md honest. The security loop has no portable prompt, by design. Provider credentials and the grok-hosted endpoint configs live outside every clone in `~/.radon/agent-cli/` (provisioned by `scripts/agent_cli_bootstrap.sh`), because the loops' credential rails refuse a key file inside the clone and `git clean` between phases would delete one anyway. grok's CLI hosts NVIDIA and Cerebras because it is the only agent CLI here that speaks `/chat/completions`; codex speaks only `/responses`, which neither serves. Only NVIDIA's own `nvidia/*` models are usable through that path — third-party NIM models (kimi-k3, deepseek-v4-pro, minimax-m3) answer correctly and then exit 1 on grok's usage deserializer.
+**A non-Claude CLI cannot resolve a Claude slash command.** codex and grok get `.claude/portable-prompts/<skill>.<phase>.md` instead — the SKILL.md body with its frontmatter stripped, wrapped in a preamble, an OVERRIDES section (no subagents, Playwright instead of chrome-cdp, `RADON_WEEKEND_REDUCED=1` narrows remediation to P0/P1) and a CONTRACT section naming the exact strings the wrapper greps for. The files are committed and rendered by `scripts/render_loop_prompt.py --write`; `scripts/tests/test_portable_prompt_sync.py` fails when one drifts from a fresh render, which is what keeps editing a SKILL.md honest. The security loop has no portable prompt, by design. Provider credentials and the grok-hosted endpoint configs live outside every clone in `~/.radon/agent-cli/` (provisioned by `scripts/agent_cli_bootstrap.sh`), because the loops' credential rails refuse a key file inside the clone and `git clean` between phases would delete one anyway. grok's CLI hosts NVIDIA and Cerebras because it is the only agent CLI here that speaks `/chat/completions`; codex speaks only `/responses`, which neither serves. Only NVIDIA's own `nvidia/*` models are usable through that path — third-party NIM models (kimi-k3, deepseek-v4-pro, minimax-m3) answer correctly and then exit 1 on grok's usage deserializer.
+
+**Each CLI also gets the manual in its own skill format (2026-09-08).** The
+portable prompt stays the driver — a phase must run the same way every night
+whether or not a CLI decided a skill looked relevant — but a run that reaches
+for the loop's own manual by name should find it rather than nothing. Probed
+on this runner with codex-cli 0.153.4 and grok 1.0.13:
+
+| CLI | discovers | needs a render |
+|---|---|---|
+| grok | `./.claude/skills/` at repo scope, high priority | no — the Claude skills load under their own names |
+| codex | `./.codex/skills/<name>/SKILL.md`, plus `agents/openai.yaml` for the interface block | yes |
+| nvidia, cerebras | via the grok CLI | no |
+
+So `scripts/render_loop_prompt.py --write` emits both artifacts from the one
+source: the twelve portable prompts, and `.codex/skills/<skill>/` for the four
+fallback loops. The codex skill is one document covering all three phases (the
+phase arrives in the invocation, not the filename), carries the same OVERRIDES
+and a CONTRACT naming every phase's completion string, and keeps the `name` and
+`description` frontmatter codex needs to discover it at all.
+`scripts/tests/test_portable_prompt_sync.py` fails when either artifact drifts.
+grok is deliberately absent from the render: giving it a second copy of a
+manual it already reads would be a second source of truth for no gain. The
+security loop has neither artifact, for the same reason it has no portable
+prompt.
 
 Do not hand-edit a wrapper while a cycle is running: the shell reads the script incrementally and an edit strands the live run at a stale byte offset. The same hazard applies to upgrading a provider CLI mid-run.
 
@@ -296,6 +358,7 @@ Do not hand-edit a wrapper while a cycle is running: the shell reads the script 
 | `radon-newsfeed` | 120s loop | Headless Playwright scraper for The Market Ear |
 | `radon-monitor` | 30s loop | Fills, exit orders, journal sync, cash flow handler |
 | `radon-health` | always-on | **Isolated** stdlib health daemon on `:8330` (see Health monitoring below). NO dependency on `radon-ib-gateway`; a Gateway stop never touches it. |
+| `radon-aa-frontier-refresh.timer` | Daily 07:00 UTC, up to 5 min jitter | Refreshes the Artificial Analysis frontier basket atomically; failures retain the last-known-good cohort. |
 | `radon-ai-cycle.timer` | Daily 07:15 UTC, up to 5 min jitter | Versioned AI infrastructure observations. Partial provider access is explicit; `ai-cycle` heartbeat has a 26h freshness budget. [Collection and source configuration](ai-infrastructure-operations.md). |
 | `radon-refresh.timer` | 60s | Schedules data-refresh sweeps |
 | `radon-vcg-refresh.timer` | Mon-Fri 13-21 UTC every 5 min | Autonomous VCG scan |
@@ -359,7 +422,7 @@ Staleness windows live in `web/lib/serviceHealthWindows.ts`. Cycle-driven writer
 
 **A partial cycle is not a healthy cycle (R-294 / R-295).** Both `fetch_equibles_ats_venue_share` and `fetch_equibles_short_crowding` used a write gate that passes on ONE ticker: `payload_has_data` / `is_payload_valid` only test that the row list is non-empty. A run that served 3 of 40 tickers and then hit the daily allowance therefore wrote `ok` AND replaced the complete snapshot underneath it, and looked identical to a full cycle in `service_health` and on the panel. Both now apply a coverage gate — below `MIN_COVERAGE_RATIO` (60%) of the resolved universe the cycle records `error`, keeps the previous snapshot, and persists `requested` / `covered` / `failed` in the health row (including on the abort path, since a failure at ticker 3 and one at ticker 39 are different operational facts). The ratio is scoped to universes of `MIN_UNIVERSE_FOR_RATIO` (5) or more: one failure out of two is 50%, and a two-ticker run is a deliberate `--tickers` override rather than the scheduled sweep.
 
-**A wall-clock budget abort is a third class, and it is not an allowance failure.** `fetch_equibles_ats_venue_share` and `fetch_equibles_filing_forensics` each bound the whole sweep with `SWEEP_BUDGET_S` and each call with `TICKER_FETCH_BUDGET_S`, so a tarpitted Equibles endpoint no longer runs into the unit's `TimeoutStartSec`. A per-ticker timeout replaces the shared Session and continues the walk; only a spent sweep budget records the unreached tickers with `code: "budget"` and stops. An empty-cycle `message` includes those `codes` so a timeout is not read as a missing series. An `error` row whose deferred tickers carry `code: "budget"` means the endpoint was slow, NOT that the key, the allowance, or the watchlist is wrong, and raising `TimeoutStartSec` is explicitly the wrong move ([`incident-runbook.md`](incident-runbook.md) `equibles-ats-sweep-timeout`). The budget values live in the two scripts and are pinned against their units by `test_sweep_budget_fits_inside_unit_start_timeout`.
+**A wall-clock budget abort is a third class, and it is not an allowance failure.** `fetch_equibles_ats_venue_share` and `fetch_equibles_filing_forensics` each bound the whole sweep with `SWEEP_BUDGET_S` and each call with `TICKER_FETCH_BUDGET_S`, so a tarpitted Equibles endpoint no longer runs into the unit's `TimeoutStartSec`. A per-ticker timeout replaces the shared Session and continues the walk; only a spent sweep budget stops. ATS scores coverage against portfolio ∪ watchlist, not the rotating Nasdaq-100 / Russell 2000 / S&P 500 tail, so an unreached index name is not a thin cycle. An empty-cycle `message` includes `codes` so a timeout is not read as a missing series. Raising `TimeoutStartSec` is the wrong move ([`incident-runbook.md`](incident-runbook.md) `equibles-ats-sweep-timeout`). The budget values live in the two scripts and are pinned against their units by `test_sweep_budget_fits_inside_unit_start_timeout`.
 
 **A suppression window needs a cause (R-615 / R-616).** `fetch_equibles_ats_venue_share` stamped `next_attempt_at` with the next weekly fire on EVERY error branch, and the watchdog suppresses re-pages until that deadline — so a revoked key or a wedged client bought one page and then seven days of silence. The embargo is now written only for a cadence-bound failure (`EquiblesRateLimitError`); every other failure keeps paging until an operator acts. The same handler also normalises a naive `now`, so the error path can no longer raise a `TypeError` and exit with no `service_health` row at all.
 
