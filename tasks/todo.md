@@ -5753,7 +5753,8 @@ Keep the AI-cycle price cohort current as frontier models ship while preserving 
 ## Review
 
 - Static review found no blocking issues; research typography uses Clear tokens and the existing safe Markdown renderer.
-- PR: https://github.com/joemccann/radon/pull/367. RED: 4 expected Markdown regressions failed on 0c7491ab2b1baf97dc21f7d4547dcbb3579bf287 (CI run 34282990355). Fixed-head CI and screenshot review pending.
+- PR: https://github.com/joemccann/radon/pull/367. RED: 4 expected Markdown regressions failed on 0c7491ab2b1baf97dc21f7d4547dcbb3579bf287 (CI run 34282990355).
+- GREEN: a6035206 passed 31 applicable checks, including all 6 component regressions, 67 browser checks, and the demo transport check (CI run 34283301911). Reviewed 4 desktop/mobile screenshots; added scoped italic synthesis after visual review. Final-head verification pending.
 - Regenerate codemap from a clean index export so local generated sources do not enter the committed graph.
 
 ---

@@ -20,6 +20,11 @@
   text-transform: none;
 }
 
+.research :global(.chat-markdown-emphasis) {
+  font-style: italic;
+  font-synthesis: style;
+}
+
 .research :global(.chat-markdown-list-unordered) {
   list-style-type: disc;
 }

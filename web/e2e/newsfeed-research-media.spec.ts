@@ -23,6 +23,8 @@ for (const width of [1440,393]) {
    await expect(body.getByRole("heading",{name:"Investor flows",level:2})).toBeVisible();
    await expect(body.locator("strong").first()).toHaveText("Trust accounts");
    await expect(body.locator("em")).toHaveText("Retail investors");
+   await expect(body.locator("em")).toHaveCSS("font-style","italic");
+   await expect(body.locator("em")).toHaveCSS("font-synthesis","style");
    await expect(body.locator("ul > li > ul > li")).toHaveText("Retail investors added $7.8bn.");
    await expect(body.locator("br")).toHaveCount(1);
    await expect(body).not.toContainText("**");
@@ -40,6 +42,8 @@ for (const width of [1440,393]) {
    await expect(lightboxBody.getByRole("heading",{name:"Investor flows",level:2})).toBeVisible();
    await expect(lightboxBody.locator("strong").first()).toHaveText("Trust accounts");
    await expect(lightboxBody.locator("em")).toHaveText("Retail investors");
+   await expect(lightboxBody.locator("em")).toHaveCSS("font-style","italic");
+   await expect(lightboxBody.locator("em")).toHaveCSS("font-synthesis","style");
    await expect(lightboxBody.locator("ul > li > ul > li")).toHaveText("Retail investors added $7.8bn.");
    await expect(lightboxBody.locator("br")).toHaveCount(1);
    await expect(lightboxBody).not.toContainText("**");
