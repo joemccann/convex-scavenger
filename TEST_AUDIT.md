@@ -10089,3 +10089,7 @@ fixture attempts: the macOS GNU-timeout process tree outlives the fixed
 five-second harness bound after inventory modelling reaches the kill path.
 The exact operator action is to reproduce and repair this on Linux CI without
 widening the contract timeout. Closing gate evidence is recorded in `TEST_LOG.md`.
+
+Closing gates are incomplete on this runner: both detached stages died before
+their first pytest output and without a `DONE` sentinel. No full-gate result is
+claimed; the next run must resume the three serial rounds.

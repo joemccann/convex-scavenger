@@ -775,3 +775,5 @@ morning pass's promised counts never landed; superseded by these).
 | T-487 | DONE | Ambient `UW_TOKEN=ambient-poison` red 2/16; fixture now asserts `@next/env` `parsedEnv`, green 16/16. |
 | T-488 | BLOCKED | Three inventory-fake attempts reached the timeout path, then macOS GNU timeout left its process tree beyond the fixed 5-second harness bound. Operator: reproduce and repair the process-tree behavior on Linux CI without widening this test. |
 | T-489 | DONE | Ambient xAI selection made the Anthropic-shaped mock parse empty; pinning `LLM_PROVIDER=anthropic` makes the streamed done payload contain the mocked text, green 1/1. |
+
+Closing gates: INCOMPLETE. Detached stages `/tmp/tw-2026-09-08/closing-gates.rc` and `closing-gates-2.rc` prewrote all nine steps but both exited with zero-byte pytest logs and no `DONE` sentinel. No gate count is claimed; resume with a runner that preserves detached children.

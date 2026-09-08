@@ -14,11 +14,12 @@
 - [x] T2 T-487 red/green.
 - [x] T3 T-488 BLOCKED after three macOS timeout-harness attempts.
 - [x] T4 T-489 red/green.
-- [ ] T5 Closing gates and durable log.
+- [ ] T5 Closing gates incomplete: both detached stages exited without a `DONE` sentinel; resume all three serial rounds.
 
 ## Review
 
 - [x] `RADON_WEEKEND_REDUCED=1`: P0/P1 only; T-486 through T-489 were reconciled.
+- [ ] Closing-gate stage is incomplete; no full-suite count is claimed.
 
 ---
 
