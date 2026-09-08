@@ -388,6 +388,25 @@ arm_deliver_record() {
   return 0
 }
 
+# An agent-asserted URL is not a merge cue. Before any "ready to merge"
+# render, every URL must be independently confirmed as a same-repo open PR
+# on this loop's branch prefix, via the pre-snapshotted gh binary; anything
+# unconfirmed makes the phase INCOMPLETE instead of a render.
+_deliver_urls_verified() {
+  local tok verified
+  for tok in $1; do
+    case "$tok" in
+      http://*|https://*)
+        verified="$(net_bounded "$GH_BIN" pr view "$tok" \
+          --json state,headRefName,isCrossRepository \
+          -q "select(.state == \"OPEN\" and .isCrossRepository == false and (.headRefName | startswith(\"$PR_BRANCH_PREFIX\"))) | \"ok\"" \
+          2>/dev/null || true)"
+        [[ "$verified" == "ok" ]] || return 1 ;;
+    esac
+  done
+  return 0
+}
+
 deliver_status() {
   # R-613: the verdict is read from the DURABLE record the phase writes, not
   # by grepping the agent's own transcript — a marker line recited inside
@@ -400,6 +419,13 @@ deliver_status() {
   fi
   case "$from_record" in
     ""|*"no deliver record"*) ;;
+    *"ready to merge:"*)
+      if _deliver_urls_verified "${from_record#*ready to merge:}"; then
+        printf '%s' "$from_record"
+      else
+        printf 'INCOMPLETE: unverified-pr-url'
+      fi
+      return 0 ;;
     *) printf '%s' "$from_record"; return 0 ;;
   esac
   # Last verdict line of THIS round's slice of the log (R-426 scoping).
@@ -417,8 +443,10 @@ deliver_status() {
       done
       if [[ "${n:-0}" == "0" ]]; then
         printf '0 PR(s), nothing to merge'
-      else
+      elif _deliver_urls_verified "$urls"; then
         printf '%s PR(s) green, ready to merge: %s' "$n" "$urls"
+      else
+        printf 'INCOMPLETE: unverified-pr-url'
       fi ;;
     "$DELIVER_INCOMPLETE_MARKER"*)
       rest="${line#"$DELIVER_INCOMPLETE_MARKER"}"
