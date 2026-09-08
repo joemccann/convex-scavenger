@@ -238,6 +238,39 @@ def test_environment_prefers_profile_credential_store(tmp_path, monkeypatch):
     assert env["RADON_AI_CYCLE_AA_BASKET"] == "openai/gpt-a,anthropic/model-b"
 
 
+def test_environment_imports_secret_store_when_scripts_is_not_on_sys_path(tmp_path):
+    """systemd runs `python -m scripts.ai_cycle.collect` with repo root on path.
+
+    pytest pythonpath includes scripts/, which hid
+    ModuleNotFoundError: No module named 'secret_store' (page 07517172).
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[2]
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from scripts.ai_cycle.collect import environment; environment()",
+        ],
+        cwd=repo,
+        env={
+            "PATH": os.environ.get("PATH", ""),
+            "HOME": str(tmp_path),
+            "RADON_SECRET_STORE_PATH": str(tmp_path / "secrets.db"),
+            "RADON_SECRET_STORE_KEY_FILE": str(tmp_path / "secret.key"),
+            "PYTHONPATH": str(repo),
+        },
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "No module named 'secret_store'" not in proc.stderr
+
+
 def test_transport_hashes_raw_and_sanitizes_errors(tmp_path):
     class Response:
         status_code = 200

@@ -800,6 +800,39 @@ Incident: 2026-08-15 00:24Z, P1 page `34ab3e3c…`.
 
 ---
 
+## ai-cycle-secret-store-import
+
+**`radon-ai-cycle.service` oneshot pages P1 `Result=exit-code` (`NRestarts=0`)
+on `ModuleNotFoundError: No module named 'secret_store'`.** Peak: 2026-09-08
+20:54Z, page `07517172…`. First fire after deploy `a5bc25cf` (#361).
+
+- **Mechanism:** #361 made the daily collector read the Profile credential
+  store when `RADON_SECRET_STORE_PATH` is set (`from secret_store import
+  SecretStore`). pytest `pythonpath` includes `scripts/`, so
+  `test_environment_prefers_profile_credential_store` stayed green. systemd
+  runs `python -m scripts.ai_cycle.collect --record` from the repo root, so
+  `secret_store` is not a top-level module. `ExecStartPre` of
+  `scripts/secret_store.py` as a script still exits 0. Crash is at
+  `environment()` before any source fetch. `Type=oneshot` has no `Restart=`,
+  so `NRestarts=0`. Next timer ~07:15 UTC. 07:17Z the same day completed
+  (pre-#361 code). Edge and `:8321/health/lite` stayed up.
+- **Detection:** journal `from secret_store import SecretStore` then
+  `ModuleNotFoundError: No module named 'secret_store'`; `systemctl show
+  radon-ai-cycle.service -p Result,NRestarts` → `exit-code` / `0`;
+  ExecMainStart to InactiveEnter is ~1s.
+- **Discriminating check:** traceback names `collect.py` `environment` and
+  `secret_store`. A source HTTP error after a successful import is a
+  different class. `Result=signal` is deploy stop-clean. If `/health/lite`
+  is down too → API, stand down. Missing Profile keys are `unavailable`,
+  not this crash.
+- **Remediation (code):** import `scripts.secret_store` when the top-level
+  name is missing (same dual-import as `scripts/api/routes/credentials.py`).
+  Do not restart-flap; next timer after the fix deploys. Unit is not on
+  `RERUNNABLE_ONESHOT_UNITS`.
+- **Regression:**
+  `test_ai_cycle_collectors.py::test_environment_imports_secret_store_when_scripts_is_not_on_sys_path`.
+- **Code:** `scripts/ai_cycle/collect.py` (`environment`).
+
 ## stale-market-data-freshness
 
 **Market data stops being fresh while everything looks alive.** Four sub-modes.
