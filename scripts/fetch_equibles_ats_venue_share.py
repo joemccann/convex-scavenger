@@ -725,8 +725,7 @@ def scheduled_ats_universe(prior: Optional[dict[str, Any]] = None) -> dict[str, 
 
     The weekly oneshot cannot finish Nasdaq-100 + Russell 2000 + S&P 500
     inside TimeoutStartSec. Core names always lead the walk; the rest of
-    the unique union rotates so the indexes still fill over subsequent
-    Tuesdays.
+    the unique union rotates so the indexes still fill over later Tuesdays.
     """
     merged = merge_ats_universe(
         portfolio=_portfolio_tickers(),
