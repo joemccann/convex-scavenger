@@ -205,7 +205,8 @@ class Transport:
             handle.truncate()
 
     def fetch(self, url, *, params=None, headers=None, body=None):
-        if time.monotonic() >= self.deadline:
+        remaining = self.deadline - time.monotonic()
+        if remaining < self.timeout:
             raise SourceError("Per-run time budget exhausted")
         if self.requests >= self.max_requests:
             raise SourceError("Per-run request budget exhausted")
@@ -219,7 +220,7 @@ class Transport:
                 params=params,
                 headers=headers,
                 json=body,
-                timeout=min(self.timeout, max(1, self.deadline - time.monotonic())),
+                timeout=self.timeout,
                 stream=True,
             )
             if response.status_code != 200:
@@ -235,6 +236,8 @@ class Transport:
             raw = b"".join(chunks)
             payload = json.loads(raw)
         except requests.RequestException:
+            if time.monotonic() >= self.deadline:
+                raise SourceError("Per-run time budget exhausted") from None
             raise SourceError("Publisher transport failed") from None
         except (json.JSONDecodeError, UnicodeDecodeError):
             raise SourceError("Publisher response is not JSON") from None

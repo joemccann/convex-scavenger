@@ -635,6 +635,47 @@ on the weekday 21:30 UTC fire.** Peak: 2026-08-24 23:30Z, page `bbaa065b…`.
 
 ---
 
+## ai-cycle-backfill-budget-pages-p1
+
+**`radon-ai-cycle-backfill.service` oneshot pages P1 `Result=exit-code`
+(`NRestarts=0`) after a successful checkpointed history run.** Peak:
+2026-09-08 22:50Z, page `9db1f3cd…`. First fire after `#369`.
+
+- **Mechanism:** `Transport` budgets 500s (`TimeoutStartSec=600`). When
+  leftover time fell below the 25s request timeout, `fetch` squeezed
+  `timeout=max(1, remaining)` and issued the call. EIA then timed out as
+  `requests.Timeout` → `Publisher transport failed` (`status=error`).
+  `_main()` returns 1 on any error even after 25 committed windows
+  (48371 observations). Remaining EIA/NOAA/OpenRouter windows correctly
+  recorded `Per-run time budget exhausted` as `unavailable`. `Type=oneshot`
+  has no `Restart=`, so `NRestarts=0`. Next timer is the following 05:30 UTC.
+- **Detection:** journal JSON with `observations` >> 0, one `error` whose
+  reason is `Publisher transport failed` near `InactiveEnter`, then many
+  `unavailable` / `Per-run time budget exhausted`; `systemctl show
+  radon-ai-cycle-backfill.service -p Result,NRestarts` → `exit-code` / `0`.
+  Edge and `:8321/health/lite` stay up. IB unused.
+- **Discriminating check:** ExecMainStart→Inactive under 600s (not
+  `Result=timeout`), checkpoint
+  `/home/radon/.radon/ai-cycle/backfill-checkpoint.json` grew this run, and
+  the error window is not checkpointed. `Result=signal` is deploy
+  stop-clean. Zero observations plus only `error` rows is a real publisher
+  failure, still P1. If `/health/lite` is down too → API, stand down.
+- **Remediation (code):** do not start a request that cannot use its
+  configured timeout; a `RequestException` after the deadline is budget
+  exhaustion (`unavailable`), not transport error. Backfill exits 0 when at
+  least one window was `available`; uncommitted windows resume from the
+  checkpoint. Daily non-backfill collection still fails on any `error`.
+  Do not restart-flap; next 05:30 UTC timer.
+- **Regression:**
+  `test_ai_cycle_collectors.py::test_squeezed_deadline_fetch_is_budget_exhausted_not_transport_failed`,
+  `test_request_timeout_after_deadline_is_budget_exhausted`,
+  `test_backfill_progress_then_later_window_error_exits_zero`,
+  `test_backfill_with_no_committed_windows_still_fails`.
+- **Code:** `scripts/ai_cycle/collectors.py` (`Transport.fetch`),
+  `scripts/ai_cycle/collect.py` (`_main` exit).
+
+---
+
 ## leap-partial-ticker-exit-pages-p1
 
 **`radon-leap.service` oneshot pages P1 `Result=exit-code` after a successful

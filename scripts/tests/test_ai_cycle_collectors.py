@@ -5,7 +5,10 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
+
+import requests
 
 import pytest
 
@@ -653,6 +656,87 @@ def test_cli_transport_error_sanitized_and_failure_exit(tmp_path, monkeypatch, c
     assert result["sources"][0]["status"] == "error"
 
 
+def test_backfill_progress_then_later_window_error_exits_zero(tmp_path, monkeypatch, capsys):
+    """Production 2026-09-08 page 9db1f3cd: radon-ai-cycle-backfill wrote 48371
+    observations across vercel/gpu/sec/eia, then a near-deadline EIA request
+    became status=error. _main() exited 1 and the oneshot paged P1. The
+    checkpoint already held the committed windows; remaining resume tomorrow.
+    """
+    from scripts.ai_cycle import collect
+    from scripts.ai_cycle.store import ObservationStore
+
+    calls = []
+
+    def collector(source, transport, start, end, **kwargs):
+        calls.append((source, start, end))
+        if len(calls) == 1:
+            return parse_openrouter(
+                {"data": [{"date": end, "model_permaslug": "other", "total_tokens": "42"}]},
+                HASH,
+                FETCHED,
+                start,
+                end,
+            )
+        raise SourceError("Publisher transport failed")
+
+    monkeypatch.setattr(collect, "collect_source", collector)
+    db = tmp_path / "local.db"
+    checkpoint = tmp_path / "checkpoint.json"
+    args = [
+        "--record",
+        "--database",
+        str(db),
+        "--sources",
+        "openrouter",
+        "--backfill",
+        "--start",
+        "2025-01-01",
+        "--end",
+        "2025-01-20",
+        "--checkpoint",
+        str(checkpoint),
+        "--archive",
+        str(tmp_path / "raw"),
+    ]
+    assert collect.main(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["observations"] == 1
+    assert "openrouter:2025-01-01:2025-01-07" in json.loads(checkpoint.read_text())
+    assert ObservationStore(db).read_observations()
+    assert any(item["status"] == "available" for item in payload["sources"])
+    assert any(item["status"] == "error" for item in payload["sources"])
+    assert len(calls) == 3
+
+
+def test_backfill_with_no_committed_windows_still_fails(tmp_path, monkeypatch, capsys):
+    from scripts.ai_cycle import collect
+
+    def fail(*args, **kwargs):
+        raise SourceError("Publisher transport failed")
+
+    monkeypatch.setattr(collect, "collect_source", fail)
+    assert (
+        collect.main(
+            [
+                "--record",
+                "--database",
+                str(tmp_path / "local.db"),
+                "--sources",
+                "openrouter",
+                "--backfill",
+                "--start",
+                "2025-01-01",
+                "--end",
+                "2025-01-06",
+                "--archive",
+                str(tmp_path / "raw"),
+            ]
+        )
+        == 1
+    )
+    assert json.loads(capsys.readouterr().out)["observations"] == 0
+
+
 def test_cli_schema_exception_hides_provider_detail(tmp_path, monkeypatch, capsys):
     from scripts.ai_cycle import collect
 
@@ -679,6 +763,48 @@ def test_cli_rejects_unbounded_or_invalid_windows(extra):
 
     with pytest.raises(SystemExit):
         main(["--verify", "--end", "2026-09-06", *extra])
+
+
+def test_squeezed_deadline_fetch_is_budget_exhausted_not_transport_failed(tmp_path):
+    """Production 2026-09-08: leftover ~1s of the 500s Transport deadline
+    squeezed request timeout to 1s. EIA timed out as RequestException, then
+    'Publisher transport failed' (status=error) failed the oneshot.
+    """
+
+    class Session:
+        def request(self, *a, **kw):
+            raise AssertionError(f"must not start a squeezed request: timeout={kw.get('timeout')}")
+
+    transport = Transport(tmp_path, session=Session(), timeout=25)
+    transport.deadline = time.monotonic() + 1
+    with pytest.raises(SourceError, match="Per-run time budget exhausted"):
+        transport.fetch("https://api.eia.gov/v2/electricity/rto/region-sub-ba-data/data/")
+    assert transport.requests == 0
+
+
+def test_request_timeout_after_deadline_is_budget_exhausted(tmp_path):
+    class Session:
+        def request(self, *a, **kw):
+            self.transport.deadline = time.monotonic() - 0.01
+            raise requests.Timeout("read timed out")
+
+    session = Session()
+    transport = Transport(tmp_path, session=session, timeout=25)
+    session.transport = transport
+    transport.deadline = time.monotonic() + 30
+    with pytest.raises(SourceError, match="Per-run time budget exhausted"):
+        transport.fetch("https://api.eia.gov/v2/electricity/rto/region-sub-ba-data/data/")
+
+
+def test_request_timeout_with_budget_remaining_is_transport_failed(tmp_path):
+    class Session:
+        def request(self, *a, **kw):
+            raise requests.Timeout("read timed out")
+
+    transport = Transport(tmp_path, session=Session(), timeout=25)
+    transport.deadline = time.monotonic() + 30
+    with pytest.raises(SourceError, match="Publisher transport failed"):
+        transport.fetch("https://example.com")
 
 
 def test_transport_http_rejection_never_archives_body(tmp_path):

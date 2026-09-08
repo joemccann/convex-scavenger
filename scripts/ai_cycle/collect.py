@@ -221,7 +221,11 @@ def _main(argv=None):
             indent=2,
         )
     )
-    return int(any(item["status"] == "error" for item in report))
+    progressed = any(item["status"] == "available" for item in report)
+    hard_error = any(item["status"] == "error" for item in report)
+    if args.backfill and progressed:
+        return 0
+    return int(hard_error)
 
 
 def main(argv=None):
