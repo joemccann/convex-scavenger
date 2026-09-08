@@ -275,7 +275,7 @@ this phase — because these loops audit their own wrappers and quote this
 contract, and a mention inside a fence must not satisfy it. A commit still
 wins on its own, silence is still INCOMPLETE, and the security loop is
 unaffected: it scores on its own completion marker, not on a commit.
-Contract: `scripts/tests/test_phase_noop_declaration.py`.
+Two hazards found on the first live run (2026-09-08 15:06) and pinned by the same test file: the detector must read its slice to EOF rather than `grep -q`, because under `set -o pipefail` an early exit hands `tail` a SIGPIPE and the pipeline fails on the line it just matched; and the manual's own worked examples are indented inside their fence, because the agent `cat`s SKILL.md into the transcript and a column-0 example there would let an agent that only READ the manual score as having declared. Contract: `scripts/tests/test_phase_noop_declaration.py`.
 
 **A deliver with nothing to ship is finished, not launched.** `deliver_status()`
 reads the durable record before the transcript (R-613), and
