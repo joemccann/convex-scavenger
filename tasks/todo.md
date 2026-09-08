@@ -5875,8 +5875,18 @@ Replace the anonymous composer-only overlay with a readable Clear conversation w
 - [x] T1 Source and design audit; isolated worktree preserves existing staged changes.
 - [x] T2 Composer implementation.
 - [x] T3 Conversation implementation.
-- [x] T4 Regression coverage and independent lifecycle review; execution pending CI.
+- [x] T4 Regression coverage and independent lifecycle review; all 8 Vitest shards and 10 browser scenarios pass on 0b54eecc.
 - [ ] T5 Exact-head CI and visual evidence, PR delivery.
 
 ## Review
 PR #379: first GitHub run completed all 10 new browser scenarios; eight desktop/mobile light/dark screenshots inspected. Three unit assertions exposed missing whitespace across a heading line break; fixed the accessible text in the component. Remaining exact-head verification tracked in https://github.com/joemccann/radon/pull/379. No local suites executed. Sources: https://developer.apple.com/design/human-interface-guidelines/generative-ai and https://pair.withgoogle.com/guidebook-v2/chapter/explainability-trust/ . No system prompt or model-policy changes planned.
+
+---
+
+# NOAA signed-temperature repair (2026-09-08)
+
+- [x] T1 depends_on: [] - Reproduce winter-window rejection against the authoritative NOAA daily-summary response.
+- [x] T2 depends_on: [T1] - Add a negative-temperature regression and parse signed finite weather measurements.
+- [ ] T3 depends_on: [T2] - Run focused checks, ship through exact-head CI/deployment, resume, and audit NOAA coverage.
+
+Dependency graph: T1 -> T2 -> T3.
