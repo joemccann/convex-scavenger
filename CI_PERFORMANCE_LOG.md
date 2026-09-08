@@ -1193,3 +1193,28 @@ python/web gate co-wall then the deploy floor (CIP-004).
   CIP-005, CIP-007, and CIP-009 remain `VALIDATING`; CIP-004/006/008 remain
   `DEFERRED`. Residual bottleneck is the required `scripts-rs`/node-image
   co-wall followed by the protected deployment floor.
+
+### 2026-09-08 - remediate - branch `ci-performance/2026-09-08`
+
+- Runner state: dedicated markers, GitHub auth, remote dated branch, and an
+  exclusive `.weekend-runner.lock` were verified. `RADON_WEEKEND_REDUCED=1`
+  restricts this phase to P0/P1 findings.
+- Remediation eligibility: the current audit supplied no P0/P1
+  source-actionable finding. The measured `scripts-rs`/node-image co-wall
+  cannot yield the required material critical-path reduction without a risky
+  shard experiment, and the 40-second stability window, exact-SHA image pair,
+  and complete deploy-gate closure are protected rails. No `CIP-010` was
+  allocated and no lower-priority change was made.
+- Verification: `../venv-ci-performance/bin/python -m pytest
+  scripts/tests/test_ci_gate_integrity.py
+  scripts/tests/test_ci_deploy_concurrency.py scripts/tests/test_path_filter.py
+  -q` — **88 passed in 9.56s**; `git diff --check origin/main...HEAD` is
+  clean. This is a safety baseline, not a production timing claim.
+- Safety: no test inventory, coverage, path classification, gate dependency,
+  immutable action pin, artifact provenance, exact-SHA verification, health,
+  rollback, recovery, cancellation, or stability-window behavior changed.
+- Outcome: `NO_SAFE_CHANGE` / `INSUFFICIENT_SAMPLE` under reduced-cap scope.
+  CIP-005, CIP-007, and CIP-009 remain `VALIDATING`; CIP-004/006/008 remain
+  `DEFERRED`. No operator action is required; residual bottleneck remains the
+  required `scripts-rs`/node-image co-wall followed by the protected deployment
+  floor.

@@ -1,4 +1,27 @@
-# Task: CI performance audit 2026-09-08 [IN PROGRESS]
+# Task: CI performance remediate 2026-09-08 [COMPLETE]
+
+Apply every verified P0/P1 CI-performance finding from the current audit without changing protected delivery guarantees.
+
+## Dependency graph
+
+- T1 depends_on: [] - Resume the dated branch and verify dedicated runner, lock, remote, and reduced-cap scope.
+- T2 depends_on: [T1] - Recheck P0/P1 eligibility against the current audit and protected deployment closure.
+- T3 depends_on: [T2] - Validate workflow safety contracts, record the outcome, commit, and push.
+
+## Checklist
+
+- [x] T1 Resumed `ci-performance/2026-09-08`; runner markers, exclusive lock, GitHub auth, and remote branch verified.
+- [x] T2 No verified P0/P1 source-actionable candidate: the remaining node-image/scripts-rs co-wall and 40-second stability floor are protected or non-material.
+- [x] T3 Workflow integrity, deployment concurrency, and fail-closed path-filter contracts passed.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1` restricted remediation to P0/P1; no lower-priority experiment was made.
+- [x] 88 focused safety-contract tests passed; no test inventory, gate closure, provenance, rollback, recovery, health, cancellation, or stability behavior changed.
+
+---
+
+# Task: CI performance audit 2026-09-08 [COMPLETE]
 
 Record current production critical paths, preserve delivery invariants, and rank every safe source-actionable optimization candidate.
 
