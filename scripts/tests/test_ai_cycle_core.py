@@ -1,5 +1,6 @@
 """Numerical and point-in-time contracts for AI infrastructure evidence."""
 
+import json
 import math
 from datetime import date, timedelta
 
@@ -79,6 +80,68 @@ def test_batch_validation_before_writes():
     with pytest.raises(ValueError):
         store.append_observations([observation(), {**observation(), "value": None}])
     assert store.read_observations() == []
+
+
+def test_cloud_writes_retry_transient_hrana_timeouts(monkeypatch):
+    from scripts.db import hrana_http
+
+    calls = []
+
+    def flaky(sql, args):
+        calls.append((sql, args))
+        if len(calls) < 3:
+            raise hrana_http.HranaHttpError("TimeoutError: read operation timed out")
+
+    monkeypatch.setattr(hrana_http, "hrana_execute", flaky)
+    monkeypatch.setattr("scripts.ai_cycle.store.time.sleep", lambda _delay: None)
+    ObservationStore()._execute("INSERT OR IGNORE INTO test VALUES (?)", (1,))
+    assert len(calls) == 3
+
+
+def test_cloud_writes_fail_fast_on_statement_errors(monkeypatch):
+    from scripts.db import hrana_http
+
+    calls = []
+
+    def broken(sql, args):
+        calls.append((sql, args))
+        raise hrana_http.HranaHttpError("SQLITE_CONSTRAINT: invalid row")
+
+    monkeypatch.setattr(hrana_http, "hrana_execute", broken)
+    with pytest.raises(hrana_http.HranaHttpError):
+        ObservationStore()._execute("INSERT INTO test VALUES (?)", (1,))
+    assert len(calls) == 1
+
+
+def test_source_status_cloud_write_is_retry_idempotent(monkeypatch):
+    from scripts.db import hrana_http
+
+    calls = []
+    monkeypatch.setattr(hrana_http, "hrana_execute", lambda sql, args: calls.append((sql, args)))
+    store = ObservationStore()
+    store._initialized = True
+    store.record_source_status(
+        dict(source_id="openrouter", status="available", reason="fixture", checked_at="2026-09-08T00:00:00Z")
+    )
+    assert "WHERE NOT EXISTS" in calls[0][0]
+    assert calls[0][1][:2] == calls[0][1][2:]
+
+
+def test_snapshot_reads_cloud_history_in_safe_large_pages(monkeypatch):
+    store = ObservationStore()
+    payload = json.dumps(observation())
+    calls = []
+
+    def query(sql, args):
+        calls.append((sql, args))
+        if len(calls) == 1:
+            return [(row_id, payload) for row_id in range(1, 501)]
+        return [(501, payload)]
+
+    monkeypatch.setattr(store, "_query", query)
+    assert len(store.read_snapshot_observations("2026-09-08T00:00:00Z")) == 501
+    assert all("LIMIT 500" in sql for sql, _args in calls)
+    assert calls[1][1][0] == 500
 
 
 @pytest.mark.parametrize(
@@ -218,6 +281,33 @@ def test_fractional_vintage_order_is_chronological():
     store.append_observations([{**observation(), "fetched_at": "2026-08-03T00:00:00.123Z"}])
     assert store.read_observations("2026-08-03T00:00:00Z") == []
     assert len(store.read_observations("2026-08-03T00:00:00.124Z")) == 1
+
+
+def test_snapshot_keeps_fixed_historical_floor_and_reports_source_coverage():
+    store = ObservationStore(":memory:")
+    rows = [
+        {
+            **observation(),
+            "indicator_id": "H2",
+            "source_id": "sec",
+            "lineage_group": "sec",
+            "series_id": "NVDA.InventoryNet",
+            "period_start": "2010-01-01",
+            "period_end": "2010-01-01",
+            "published_at": "2010-02-01T00:00:00Z",
+            "fetched_at": "2026-08-03T00:00:00Z",
+        },
+        {**observation(), "period_start": "2025-01-01", "period_end": "2025-01-01"},
+    ]
+    store.append_observations(rows)
+    snapshot = build_snapshot(store, "2026-08-04T00:00:00Z")
+    sources = {source["id"]: source for source in snapshot["sources"]}
+    assert sources["sec"]["observed_from"] == "2010-01-01T00:00:00.000000Z"
+    assert sources["sec"]["observed_through"] == "2010-01-01T00:00:00.000000Z"
+    assert sources["sec"]["observation_count"] == 1
+    assert sources["openrouter"]["observed_from"] == "2025-01-01T00:00:00.000000Z"
+    hardware = next(item for item in snapshot["indicators"] if item["id"] == "H2")
+    assert hardware["history"][0]["date"] == "2010-01-01T00:00:00.000000Z"
 
 
 def test_snapshot_derives_complete_demand_and_fixed_basket():
@@ -377,6 +467,35 @@ def test_latest_gateway_cohort_does_not_mark_retired_models_stale():
     assert panel["status"] == "available"
     assert [row["id"] for row in panel["metrics"]] == ["current"]
     assert len(panel["history"]) == 2
+
+
+def test_compact_application_metrics_lead_legacy_per_app_rows():
+    store = ObservationStore(":memory:")
+    rows = []
+    for series, method in [
+        ("app.legacy.total_tokens", "1"),
+        ("returned_requests", "openrouter-app-aggregate-v2"),
+        ("tokens_per_request", "openrouter-app-aggregate-v2"),
+        ("top10_token_concentration", "openrouter-app-aggregate-v2"),
+    ]:
+        rows.append(
+            {
+                **observation(),
+                "indicator_id": "D2",
+                "series_id": series,
+                "methodology_version": method,
+                "period_start": "2026-08-31",
+                "period_end": "2026-08-31",
+                "fetched_at": "2026-09-01T00:00:00Z",
+            }
+        )
+    store.append_observations(rows)
+    panel = next(row for row in build_snapshot(store, "2026-09-01T01:00:00Z")["indicators"] if row["id"] == "D2")
+    assert [metric["id"] for metric in panel["metrics"][:3]] == [
+        "returned_requests",
+        "tokens_per_request",
+        "top10_token_concentration",
+    ]
 
 
 def test_same_fetch_sec_revisions_choose_latest_publication_not_insert_order():

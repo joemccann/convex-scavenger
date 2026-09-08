@@ -242,7 +242,8 @@ def test_discovery_non409_and_pagination_limit_fail(queue,monkeypatch):
     def throttle(*a,**k):raise worker.DropboxError("throttle",status=429)
     with pytest.raises(worker.DropboxError):worker.discover(SimpleNamespace(list_page=throttle),state)
     client=SimpleNamespace(list_page=lambda *a,**k:{"cursor":"again","entries":[],"has_more":True})
-    with pytest.raises(RuntimeError,match="pagination"):worker.discover(client,state)
+    with pytest.raises(worker.DiscoveryError) as caught:worker.discover(client,state)
+    assert caught.value.failures == [{"stage":"discovery","type":"RuntimeError", "scope_id": hashlib.sha256(b"2026/september/sep 07").hexdigest()[:16]}]
 
 
 @pytest.fixture
@@ -330,18 +331,23 @@ def test_cli_once_error_is_nonzero_and_redacted(cli,monkeypatch,capsys):
 
 
 @pytest.mark.parametrize("failure",[False,True])
-def test_cli_daemon_honors_stop_signal_after_cycle(cli,monkeypatch,failure):
+def test_cli_daemon_honors_stop_signal_and_closes_state(cli,monkeypatch,failure):
     import sys
+    from research import ingestion
     root,_,events,handlers=cli
     monkeypatch.setattr(sys,"argv",["research-worker","--root",str(root),"--daemon","--interval","30"])
+    def daemon(root, state, interval, publish, stopping):
+        assert interval == 30 and not stopping()
+        handlers[worker.signal.SIGTERM](None,None)
+        assert stopping()
+        if failure:
+            raise RuntimeError('consumer failed')
+    monkeypatch.setattr(ingestion, 'run_daemon', daemon)
     if failure:
-        def fail(*a,**kw):raise worker.DropboxError("throttle",status=429,retry_after=120)
-        monkeypatch.setattr(worker,"cycle",fail)
+        with pytest.raises(RuntimeError): worker.main()
     else:
-        monkeypatch.setattr(worker,"cycle",lambda *a,**k:{"processed":0,"errors":["EvidenceError"]})
-    monkeypatch.setattr(worker.time,"sleep",lambda _:handlers[worker.signal.SIGTERM](None,None))
-    worker.main()
-    assert events[-2:]==["error","close"]
+        worker.main()
+    assert events == ['recover','close']
 
 
 def test_cli_seed_only_never_connects_dropbox_or_model(cli,monkeypatch,capsys):
@@ -404,3 +410,114 @@ def test_intermediary_candidate_is_held_without_blocking_valid_sibling(tmp_path)
     assert len(posts)==1 and posts[0]['source']['publisher']==item()['publisher']
     audit=json.loads((tmp_path/'evidence/one/review.json').read_text())['audit']
     assert any(a.get('held')=='invalid candidate' and 'original provider' in a['validation_error'] for a in audit)
+
+
+def test_discovery_bad_scope_retains_cursor_and_continues(queue, monkeypatch):
+    _, state = queue
+    bad = '2026/september/sep 07'
+    good = '2026/september/sep 08'
+    monkeypatch.setattr(worker, 'date_scopes', lambda now: [(bad, '2026-09-07'), (good, '2026-09-08')])
+    calls = []
+    def listing(scope, cursor=None):
+        calls.append((scope, cursor))
+        if scope == bad:
+            raise ValueError('private filename and token')
+        return {'cursor': 'next', 'entries': [entry() | {'id': 'id:two', 'path_lower': '/joe mccann/current/' + good + '/new.pdf'}]}
+    with pytest.raises(worker.DiscoveryError) as caught:
+        worker.discover(SimpleNamespace(list_page=listing), state)
+    assert calls == [(bad, 'cursor'), (good, None)]
+    assert state.cursor(bad) == 'cursor' and state.cursor(good) == 'next'
+    assert caught.value.discovered == 1
+    assert caught.value.failures == [{'stage': 'discovery', 'type': 'ValueError', 'scope_id': hashlib.sha256(bad.encode()).hexdigest()[:16]}]
+    assert 'private' not in str(caught.value)
+    assert len(state.pending()) == 2
+
+
+def test_cycle_discovery_failure_drains_validated_queue_and_outbox(queue, monkeypatch):
+    root, state = queue
+    monkeypatch.setattr(worker, 'date_scopes', lambda now: [])
+    def listing(*a, **kw):
+        raise ValueError('private filename')
+    published = []
+    publisher = SimpleNamespace(recent_posts=lambda **kw: [], publish=lambda post: published.append(post['id']))
+    pipe = SimpleNamespace(process=lambda *a, **kw: [{'id': 'research-new'}])
+    result = worker.cycle(root, SimpleNamespace(list_page=listing, download=lambda *a: root/'source.pdf'), state, pipe, publisher, publish=True)
+    assert result['processed'] == 1 and result['published'] == 1
+    assert result['errors'] == ['ValueError']
+    assert result['discovery_errors'] == [{'stage': 'discovery', 'type': 'ValueError', 'scope_id': hashlib.sha256(b'2026/september/sep 07').hexdigest()[:16]}]
+    assert published == ['research-new'] and state.outbox() == []
+    assert state.cursor('2026/september/sep 07') == 'cursor'
+    assert 'private' not in json.dumps(result)
+
+
+def test_discovery_rate_limit_stops_remote_calls_and_preserves_queue(queue, monkeypatch):
+    root, state = queue
+    monkeypatch.setattr(worker, 'date_scopes', lambda now: [('2026/september/sep 07', '2026-09-07'), ('2026/september/sep 08', '2026-09-08')])
+    calls = []
+    def listing(*a, **kw):
+        calls.append(True)
+        raise worker.DropboxError('private token', status=429, retry_after=500)
+    publisher = SimpleNamespace(recent_posts=lambda **kw: [])
+    client = SimpleNamespace(list_page=listing, download=lambda *a: pytest.fail('download during backoff'))
+    result = worker.cycle(root, client, state, None, publisher)
+    assert calls == [True] and result['retry_after'] == 500
+    assert result['processed'] == 0 and len(state.pending()) == 1
+    assert result['discovery_errors'] == [{'stage': 'discovery', 'type': 'DropboxError', 'status': 429, 'scope_id': hashlib.sha256(b'2026/september/sep 07').hexdigest()[:16]}]
+
+
+def test_discovery_invalid_page_rolls_back_then_retries_every_revision(queue, monkeypatch):
+    _, state = queue
+    scope = '2026/september/sep 07'
+    monkeypatch.setattr(worker, 'date_scopes', lambda now: [])
+    second = entry() | {'id': 'id:two', 'path_lower': '/joe mccann/current/' + scope + '/two.pdf'}
+    third = entry() | {'id': 'id:three', 'path_lower': '/joe mccann/current/' + scope + '/three.pdf'}
+    invalid = third | {'path_lower': '/outside/three.pdf'}
+    cursors = []
+    def listing(_scope, cursor=None):
+        cursors.append(cursor)
+        return {'cursor': 'new', 'entries': [second, invalid]}
+    client = SimpleNamespace(list_page=listing)
+    with pytest.raises(worker.DiscoveryError):
+        worker.discover(client, state)
+    assert state.cursor(scope) == 'cursor' and len(state.pending()) == 1
+    invalid.update(third)
+    assert worker.discover(client, state) == 2
+    assert cursors == ['cursor', 'cursor']
+    assert state.cursor(scope) == 'new' and len(state.pending()) == 3
+    assert worker.discover(client, state) == 0
+
+
+def test_discovery_heartbeat_retains_safe_diagnostics_locally_and_remotely(tmp_path, monkeypatch):
+    from api import db_http
+    saved = []
+    monkeypatch.setattr(db_http, 'hrana_execute', lambda sql, params: saved.append(params))
+    failures = [{'stage': 'discovery', 'type': 'DropboxError', 'status': 403}]
+    error = worker.DiscoveryError(0, failures)
+    assert worker.heartbeat(tmp_path, 'error', error)
+    local = json.loads((tmp_path/'health.json').read_text())
+    assert local['state'] == 'error'
+    assert local['last_error']['discovery_errors'] == failures
+    assert json.loads(saved[0][3]) == local['last_error']
+
+
+def test_cli_daemon_interval_is_capped_at_one_minute(cli, monkeypatch):
+    import sys
+    from research import ingestion
+    root, _, events, _ = cli
+    monkeypatch.setattr(sys, 'argv', ['worker', '--root', str(root), '--daemon', '--interval', '120'])
+    intervals = []
+    monkeypatch.setattr(ingestion, 'run_daemon', lambda root, state, interval, *args: intervals.append(interval))
+    worker.main()
+    assert intervals == [60] and events == ['recover', 'close']
+
+
+def test_cli_once_partial_discovery_failure_closes_and_exits_nonzero(cli, monkeypatch, capsys):
+    _, _, events, _ = cli
+    result = {'discovered': 0, 'processed': 1, 'published': 1, 'errors': ['ValueError'],
+              'discovery_errors': [{'stage': 'discovery', 'type': 'ValueError', 'scope_id': 'safe-scope'}]}
+    monkeypatch.setattr(worker, 'cycle', lambda *a, **kw: result)
+    with pytest.raises(SystemExit) as caught:
+        worker.main()
+    assert caught.value.code == 1
+    assert events[-2:] == ['error', 'close']
+    assert json.loads(capsys.readouterr().out) == result

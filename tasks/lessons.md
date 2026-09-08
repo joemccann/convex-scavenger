@@ -943,3 +943,24 @@ malformed pathspec — merge conflicts in files I never touched. Rules:
 ## 2026-09-07 - Social share publisher exclusions
 - Never include The Market Ear or ZeroHedge names, attribution, or links in generated social-share captions, posts, Story cards, or Reels/TikTok text. Apply the same exclusion to embedded text and edited outbound captions, not only the source footer.
 - Social exports should rewrite the supplied facts in Joe's documented voice, not simply reproduce the feed's narrator. Keep the evidence-backed persona provisional until a representative recent authored-tweet sample is available; exclude quoted/reposted text from calibration.
+
+## 2026-09-08 - One research filename cannot stop ingestion
+- Treat Dropbox metadata paths as remote identifiers, not local paths or URI selectors; retain absolute-root confinement while accepting valid filename punctuation.
+- Isolate discovery failures by scope and continue already validated queue work. Preserve failed cursors for replay and report the actual failing stage with credential-safe diagnostics.
+
+## 2026-09-08 - New data sources require Profile credential coverage
+- When a pipeline introduces a credential or operator-supplied configuration value, add it to the canonical credential registry and Profile credentials UI in the same change. Verify every collector-loaded field is represented; do not leave production-only environment setup as an undocumented side channel.
+
+## 2026-09-08 - Prefer CI for expensive full-suite verification
+- When the operator says local full suites consume too much workstation time, stop rerunning them. Run focused local checks, publish the PR promptly, and use the faster GitHub runners as the authoritative full-suite loop until the exact head is green.
+
+## 2026-09-08 - Dropbox arrival latency
+- A sleep after a batch of long model reviews is not a polling SLA. Keep current-day discovery and document parsing independent from slow review; explicitly report actual host identity and deployment placement.
+- Replay rejection examples against source evidence before describing zero publication as legitimate filtering. Preserve range context and account for extraction markup without relaxing value/sign/unit provenance.
+
+## 2026-09-08 - Run test suites in GitHub CI
+- User instruction: do not run test suites on this machine going forward. Create the PR, resolve conflicts, and ensure CI is green; GitHub runners own suite execution. This supersedes earlier local-full-suite requirements. Local code edits, static inspection and generated-map maintenance remain appropriate.
+
+## 2026-09-08 — Credential verification must use provider-compatible transport
+
+- Verify new credentials against the provider from the server runtime, and classify only provider auth responses as invalid; TLS, proxy, DNS, and request-library behavior need a regression before claiming a key cannot be checked.
