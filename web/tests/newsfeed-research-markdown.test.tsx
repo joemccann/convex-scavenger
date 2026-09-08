@@ -96,7 +96,10 @@ function expectFormattedResearch(body: HTMLElement) {
 }
 
 describe("Dropbox research rich text", () => {
-  it.each([source, JSON.stringify(source)])("preserves Markdown line boundaries, nested indentation, and hard breaks at the shared hook for source %j", async (storedSource) => {
+  it.each([
+    { format: "object", storedSource: source },
+    { format: "serialized JSON", storedSource: JSON.stringify(source) },
+  ])("preserves Markdown line boundaries, nested indentation, and hard breaks with $format source", async ({ storedSource }) => {
     fetchMock.mockResolvedValue({ ok: true, headers: new Headers(), json: async () => [{ ...post, source: storedSource }] });
     render(<HookProbe />);
     expect((await screen.findByTestId("raw-content")).textContent).toBe(markdown);

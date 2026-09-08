@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-08T21:52:43Z",
-  "node_count": 3284,
-  "edge_count": 6631,
+  "generated_at": "2026-09-08T21:53:29Z",
+  "node_count": 3285,
+  "edge_count": 6635,
   "areas": {
-    "web": 1927,
+    "web": 1928,
     "site": 152,
     "scripts": 1091,
     "cloud": 66,
@@ -25,7 +25,7 @@
     {
       "id": "web/components",
       "area": "web",
-      "count": 242
+      "count": 243
     },
     {
       "id": "web/e2e",
