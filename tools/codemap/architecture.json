@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-08T21:04:28Z",
-  "node_count": 3270,
-  "edge_count": 6574,
+  "generated_at": "2026-09-08T21:35:23Z",
+  "node_count": 3273,
+  "edge_count": 6626,
   "areas": {
     "web": 1918,
     "site": 152,
-    "scripts": 1086,
+    "scripts": 1089,
     "cloud": 66,
     "lib": 28,
     "tests": 17,
@@ -185,7 +185,7 @@
     {
       "id": "scripts/research",
       "area": "scripts",
-      "count": 10
+      "count": 11
     },
     {
       "id": "scripts/security",
@@ -195,7 +195,7 @@
     {
       "id": "scripts/tests",
       "area": "scripts",
-      "count": 536
+      "count": 538
     },
     {
       "id": "scripts/trade_blotter",
@@ -348,17 +348,17 @@
       "test": false
     },
     {
+      "id": "web/components/RegimePanel.tsx",
+      "area": "web",
+      "in": 3,
+      "out": 52,
+      "test": false
+    },
+    {
       "id": "web/lib/db.ts",
       "area": "web",
       "in": 52,
       "out": 1,
-      "test": false
-    },
-    {
-      "id": "web/components/RegimePanel.tsx",
-      "area": "web",
-      "in": 3,
-      "out": 50,
       "test": false
     },
     {
@@ -467,6 +467,13 @@
       "test": false
     },
     {
+      "id": "web/lib/refreshSchedule.ts",
+      "area": "web",
+      "in": 32,
+      "out": 0,
+      "test": false
+    },
+    {
       "id": "web/lib/chartSystem.ts",
       "area": "web",
       "in": 32,
@@ -518,13 +525,6 @@
     {
       "id": "web/components/RegimeStrip.tsx",
       "area": "web",
-      "in": 29,
-      "out": 0,
-      "test": false
-    },
-    {
-      "id": "scripts/utils/market_calendar.py",
-      "area": "scripts",
       "in": 29,
       "out": 0,
       "test": false

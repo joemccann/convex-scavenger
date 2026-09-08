@@ -5659,3 +5659,50 @@ Dependency graph: T1 -> T2 -> T3 -> T4.
 
 ## Review
 - Red: package invocation failed with `ModuleNotFoundError: secret_store`; green: 52 collector tests and the deployed-unit credential contract pass.
+
+# Dropbox minute ingestion and publication repair (2026-09-08)
+- [x] P1 depends_on: [] - Verify deployment host and current scheduling; design independent current-day discovery and prompt parsing.
+- [x] P2 depends_on: [P1] - Implement 60-second current-day polling independent of review, durable parse staging and prompt review wake-up; regressions for slow review, retries and midnight rollover.
+- [x] P3 depends_on: [] - Repair demonstrated numerical/source-format validation false negatives without weakening provenance, signs, units or date gates; regression tests.
+- [ ] P4 depends_on: [P2,P3] - Independent review, full relevant suites, exact-head PR CI, deployment and live cadence/publication verification.
+Dependency graph: P1 -> P2; P2 + P3 -> P4.
+Scope: preserve private source/queue state and novelty gates. Use bounded ingestion resources; a slow model review must not block discovery or text parsing. Host migration, if needed, must preserve single-writer ownership.
+
+## Minute-ingestion review
+- Live host5.78.148.38 reports RADON_HOST_ROLE=app and IB_GATEWAY_HOST=10.0.0.4; Linux/Hetzner hostname remainsib-gateway. No host migration required.
+- P3 red/green:97 numeric/date/pipeline tests pass, including25 new format/range/context cases. No newdependencies; preservegenuine unsupportedclaims/date/cropfailures.
+
+- P2 frozen after87 ingestion/runtime tests passed; ingestion branch-aware coverage96%. Actualspawn integration demonstrates newarrivals parsed atvirtual0/60seconds while modelreviewremainsblocked. Independentreview resolvedcacheintegrity, processgroup cleanup, cancelledoutbox andaggregatehealth concerns.
+
+- User changed verification policy: no test suites on this machine; use PR CI. Stopped local full suite at11,838 passed/19skipped withKeyboardInterrupt after906seconds; not a completed full-suite result. Integrated current maince4a9a56; preserved both task/lesson updates and regenerated maps. Final validation delegated to exact-head GitHub CI.
+
+## 2026-09-08 — Vast.ai credential verification
+
+### Dependency graph
+- T1 depends_on: [] — Trace Profile credential save/verify path and reproduce Vast response safely.
+- T2 depends_on: [T1] — Add a failing validator regression covering current Vast API behavior.
+- T3 depends_on: [T2] — Implement the minimal robust Vast verification fix.
+- T4 depends_on: [T3] — Run focused tests, regenerate codemap, and review the diff.
+- T5 depends_on: [T4] — Commit, push, open PR, watch exact-head CI green, and send Pushover.
+
+### Checklist
+- [x] T1 Trace and reproduce without exposing secrets.
+- [x] T2 Add red regression.
+- [x] T3 Fix validator.
+- [x] T4 Verify and document review.
+- [ ] T5 PR and green CI.
+
+### Review
+- Production-safe probe confirmed Vast is reachable and returns HTTP 404 with `error=auth_error` for the stored key; no credential material was emitted.
+- Validator now classifies only Vast's explicit `auth_error` payload as invalid; unrelated 404s and transport failures remain non-blocking errors.
+- Focused verification: 56 pytest passed; Ruff check/format, codemap pre-commit, and diff check passed.
+# Regime freshness rails everywhere (2026-09-08)
+
+Audit: 30 regime tabs. FreshnessRail: ivrank, iv-spread, ma-ratio. Text "Next refresh": cot, ats, short. Lacking with a systemd writer (20): cri, vcg, gex, breadth, bpi, margin, straddle, cor, vixcor, vixts, dispersion, skew, skew2d, curve, credit, iei-hyg, trin, divyield, hyad, hhlev. Lacking with no scheduled writer (4, not applicable — nothing to derive from): grg (panel-triggered POST scan), streaks (computed per request), backtest, llm (AiInfrastructurePanel since #346, on-demand "Refresh snapshot"; LlmTokenIndexCard is no longer mounted).
+
+- [x] T1 depends_on: [] - Generalise `web/lib/refreshSchedule.ts` to rule-based schedules (weekday sets, multi-slot, intraday windows, America/New_York timers); add one constant per lacking writer; `freshnessRail.ts` derives the interval from previous/next slot. Pin every constant to its OnCalendar lines by parsing the unit file in `tests/refresh-schedule.test.ts`.
+- [x] T2 depends_on: [T1] - Workflow fan-out: wire `<FreshnessRail>` into each of the 20 panels with a render test asserting the rail and its countdown.
+- [x] T3 depends_on: [T2] - Full vitest suite green; tsc + eslint clean. (9220 passed from web/; the 10 cwd-dependent lib/tools + scanner-scrub failures pass from repo root, 23/23.)
+- [x] T4 depends_on: [T3] - Browser verification of every wired tab (chrome-cdp on local Next), screenshots. 19/20 rails rendered live with correct next-fire instants; TRIN shows its empty state locally (no samples in this environment), rail covered by its unit test.
+- [ ] T5 depends_on: [T4] - PR, mergeable, CI green, Pushover `radon PR green`.
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
