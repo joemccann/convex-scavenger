@@ -5758,4 +5758,38 @@ Keep the AI-cycle price cohort current as frontier models ship while preserving 
 - [x] Focused validation: 278 affected Python tests, 546 cloud/service topology tests, 133 service-health Vitest tests, and 31 codemap tests passed.
 - [x] Live 644-row catalog resolved all eight providers deterministically without exposing credential material.
 
+# AI-cycle Turso write retry (2026-09-08)
+
+- [x] T1 depends_on: [] - Reproduce the production backfill crash and identify the timed-out Turso status write.
+- [x] T2 depends_on: [T1] - Add red regressions for bounded transient retries, non-transient fail-fast behavior, and idempotent status writes.
+- [x] T3 depends_on: [T2] - Implement bounded retries, idempotent status writes, and production-measured snapshot paging that remains below Hrana's response cap.
+- [ ] T4 depends_on: [T3] - Run focused verification, open the repair PR, and monitor exact-head GitHub CI.
+- [ ] T5 depends_on: [T4] - Verify deployment, resume the production backfill, and audit provider counts/ranges and the live payload.
+
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+---
+# Task: Dropbox research rich text [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Trace research content, shared rendering, and CI coverage.
+- T2 depends_on: [T1] - Render Dropbox Markdown in feed and lightbox, preserving source structure and existing plain-text posts.
+- T3 depends_on: [T1] - Add component and browser regressions for formatting, source links, and safe rendering.
+- T4 depends_on: [T2, T3] - Publish PR; wait for all exact-head CI checks, inspect browser screenshots, and send the required notification.
+
+## Checklist
+
+- [x] T1 Trace source metadata, normalization, feed, lightbox, and existing Markdown renderer.
+- [x] T2 Implement scoped rich-text rendering with preserved Markdown whitespace in feed and lightbox.
+- [x] T3 Add 6 component regressions and desktop/mobile Playwright assertions. Run suites only on GitHub runners.
+- [ ] T4 Review changes and complete exact-head CI and visual verification.
+
+## Review
+
+- Static review found no blocking issues; research typography uses Clear tokens and the existing safe Markdown renderer.
+- PR: https://github.com/joemccann/radon/pull/367. RED: 4 expected Markdown regressions failed on 0c7491ab2b1baf97dc21f7d4547dcbb3579bf287 (CI run 34282990355).
+- GREEN: a6035206 passed 31 applicable checks, including all 6 component regressions, 67 browser checks, and the demo transport check (CI run 34283301911). Reviewed 4 desktop/mobile screenshots; added scoped italic synthesis after visual review. Final-head verification pending.
+- Regenerate codemap from a clean index export so local generated sources do not enter the committed graph.
+
 ---
