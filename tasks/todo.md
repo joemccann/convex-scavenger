@@ -5762,7 +5762,7 @@ Keep the AI-cycle price cohort current as frontier models ship while preserving 
 
 - [x] T1 depends_on: [] - Reproduce the production backfill crash and identify the timed-out Turso status write.
 - [x] T2 depends_on: [T1] - Add red regressions for bounded transient retries, non-transient fail-fast behavior, and idempotent status writes.
-- [x] T3 depends_on: [T2] - Implement the minimal retry and idempotency repair.
+- [x] T3 depends_on: [T2] - Implement bounded retries, idempotent status writes, and production-measured snapshot paging that remains below Hrana's response cap.
 - [ ] T4 depends_on: [T3] - Run focused verification, open the repair PR, and monitor exact-head GitHub CI.
 - [ ] T5 depends_on: [T4] - Verify deployment, resume the production backfill, and audit provider counts/ranges and the live payload.
 

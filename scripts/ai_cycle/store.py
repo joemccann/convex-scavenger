@@ -27,6 +27,8 @@ _TRANSIENT_HRANA_MARKERS = (
     "HTTP Error 5",
 )
 _CLOUD_WRITE_RETRY_DELAYS = (0.25, 1.0)
+_SNAPSHOT_PAGE_SIZE = 500
+_SNAPSHOT_READ_DEADLINE_SECONDS = 18
 
 
 class ObservationStore:
@@ -171,13 +173,14 @@ class ObservationStore:
         # Keep these stable instead of silently moving the chart window forward.
         cutoff = utc("2009-01-01T00:00:00Z")
         daily_cutoff = utc("2018-07-01T00:00:00Z")
-        rows, cursor, deadline = [], 0, time.monotonic() + 12
+        rows, cursor = [], 0
+        deadline = time.monotonic() + _SNAPSHOT_READ_DEADLINE_SECONDS
         while True:
             if time.monotonic() > deadline or len(rows) >= 100000:
                 raise RuntimeError("AI snapshot history exceeds bounded read budget")
             try:
                 page = self._query(
-                    "SELECT id,payload FROM ai_cycle_observations AS o WHERE id > ? AND available_at <= ? AND period_end >= ? AND (period_end >= ? OR json_extract(payload,'$.indicator_id') IN ('F1','F2','H1','H2','P2')) AND NOT EXISTS (SELECT 1 FROM ai_cycle_observations AS newer WHERE newer.identity=o.identity AND newer.available_at <= ? AND (newer.available_at>o.available_at OR (newer.available_at=o.available_at AND (COALESCE(json_extract(newer.payload,'$.published_at'),'') || COALESCE(json_extract(newer.payload,'$.metadata.accession'),'') || printf('%020d',newer.id)) > (COALESCE(json_extract(o.payload,'$.published_at'),'') || COALESCE(json_extract(o.payload,'$.metadata.accession'),'') || printf('%020d',o.id))))) ORDER BY id LIMIT 200",
+                    f"SELECT id,payload FROM ai_cycle_observations AS o WHERE id > ? AND available_at <= ? AND period_end >= ? AND (period_end >= ? OR json_extract(payload,'$.indicator_id') IN ('F1','F2','H1','H2','P2')) AND NOT EXISTS (SELECT 1 FROM ai_cycle_observations AS newer WHERE newer.identity=o.identity AND newer.available_at <= ? AND (newer.available_at>o.available_at OR (newer.available_at=o.available_at AND (COALESCE(json_extract(newer.payload,'$.published_at'),'') || COALESCE(json_extract(newer.payload,'$.metadata.accession'),'') || printf('%020d',newer.id)) > (COALESCE(json_extract(o.payload,'$.published_at'),'') || COALESCE(json_extract(o.payload,'$.metadata.accession'),'') || printf('%020d',o.id))))) ORDER BY id LIMIT {_SNAPSHOT_PAGE_SIZE}",
                     (cursor, at, cutoff, daily_cutoff, at),
                 )
             except Exception as exc:
@@ -185,7 +188,7 @@ class ObservationStore:
                     return []
                 raise
             rows.extend(json.loads(row[1]) for row in page)
-            if len(page) < 200:
+            if len(page) < _SNAPSHOT_PAGE_SIZE:
                 return rows
             cursor = int(page[-1][0])
 

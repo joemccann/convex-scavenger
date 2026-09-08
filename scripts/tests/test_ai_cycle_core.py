@@ -1,5 +1,6 @@
 """Numerical and point-in-time contracts for AI infrastructure evidence."""
 
+import json
 import math
 from datetime import date, timedelta
 
@@ -124,6 +125,23 @@ def test_source_status_cloud_write_is_retry_idempotent(monkeypatch):
     )
     assert "WHERE NOT EXISTS" in calls[0][0]
     assert calls[0][1][:2] == calls[0][1][2:]
+
+
+def test_snapshot_reads_cloud_history_in_safe_large_pages(monkeypatch):
+    store = ObservationStore()
+    payload = json.dumps(observation())
+    calls = []
+
+    def query(sql, args):
+        calls.append((sql, args))
+        if len(calls) == 1:
+            return [(row_id, payload) for row_id in range(1, 501)]
+        return [(501, payload)]
+
+    monkeypatch.setattr(store, "_query", query)
+    assert len(store.read_snapshot_observations("2026-09-08T00:00:00Z")) == 501
+    assert all("LIMIT 500" in sql for sql, _args in calls)
+    assert calls[1][1][0] == 500
 
 
 @pytest.mark.parametrize(
