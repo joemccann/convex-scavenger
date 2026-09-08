@@ -5425,9 +5425,10 @@ Enabled observations must be reproducible; unentitled/experimental sources stay 
 
 ### Final-head CI repair
 - [x] T7 Fix the existing compose-validation producer/grep pipeline race with deterministic regression coverage. depends_on: [T6]
-- [ ] T8 Verify the repair, publish and supervise all latest-head checks before final notification. depends_on: [T7]
+- [x] T8 Verify the repair, publish and supervise all latest-head checks before final notification. depends_on: [T7]
 Graph extension: T6 -> T7 -> T8.
 - Evidence: run34172973979 cloud al rejected the poisoned body with a spurious no-services diagnostic after printf received SIGPIPE. Preserve every compose safety gate and its three-copy parity.
 - T7 red evidence: six deterministic large-body/small-pipe failures across all three Compose validators; trusted-body rejection and privileged-body acceptance both reproduced.
 - T7 green evidence: 125 focused tests, nine large-body regressions, three-copy parity and shell syntax all passed. Full cloud rerun and latest-head CI remain T8 gates.
 - T8 local verification: final full cloud suite 1,882 passed, six skipped after the Compose repair; latest-head CI is the remaining release gate.
+- T8 release evidence: repaired head6fa1f028 passed all31 applicable checks, including both cloud shards, coverage and Playwright. All agents completed; worktree code is verified. Latest ledger-head status remains visible on PR346 and is checked before notification.
