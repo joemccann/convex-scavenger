@@ -18,7 +18,7 @@ Complete the reduced-rung P0/P1 backlog without leaving evidence archives corrup
 
 - [x] RED: focused suite could not import missing `archive_raw`; GREEN: 84 passed in the runner venv.
 - [x] Permanent drills: Python 94 passed; Vitest 12 passed.
-- [ ] Detached full-gate stage has no `DONE` sentinel; continuation must re-run all three gates.
+- [ ] Detached full-gate stage has no `DONE` sentinel; 2026-09-08 retry also exited before `pytest_rc`; continuation must re-run all three gates.
 
 ---
 
