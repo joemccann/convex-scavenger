@@ -554,10 +554,10 @@ export default function ChatPanel({
             </div>
           ) : <div className="chat-welcome">
             <span className="chat-welcome-eyebrow">Your research workspace</span>
-            <h3>What do you want<br />to understand?</h3>
-            <p>Connect your portfolio, market flow and trade ideas.<br className="chat-desktop-break" /> Start with a question, or shape one below.</p>
+            <h3>What do you want{" "}<br />to understand?</h3>
+            <p>Connect your portfolio, market flow and trade ideas.{" "}<br className="chat-desktop-break" /> Start with a question, or shape one below.</p>
             <div className="chat-starters">{starters.map((starter) => <button type="button" key={starter.title} onClick={() => setComposerDraft(starter.prompt)}>
-              <span><strong>{starter.title}</strong><span>{starter.detail}</span></span><ArrowUpRight size={18} aria-hidden="true" />
+              <span><strong>{starter.title}</strong>{" "}<span>{starter.detail}</span></span><ArrowUpRight size={18} aria-hidden="true" />
             </button>)}</div>
           </div>}
           {messages.length ? <button type="button" className="chat-jump-btn" data-hidden={!showJump} onClick={jumpToBottom} aria-label="Scroll to latest" tabIndex={showJump ? 0 : -1}><ArrowDown size={14} />Latest</button> : null}
