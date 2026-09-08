@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-08T22:00:15Z",
-  "node_count": 3277,
-  "edge_count": 6635,
+  "generated_at": "2026-09-08T22:52:45Z",
+  "node_count": 3286,
+  "edge_count": 6640,
   "areas": {
-    "web": 1920,
+    "web": 1929,
     "site": 152,
     "scripts": 1091,
     "cloud": 66,
@@ -12,6 +12,11 @@
     "tools": 3
   },
   "groups": [
+    {
+      "id": "web/.claude-design",
+      "area": "web",
+      "count": 8
+    },
     {
       "id": "web/app",
       "area": "web",
@@ -35,7 +40,7 @@
     {
       "id": "web/lib",
       "area": "web",
-      "count": 378
+      "count": 379
     },
     {
       "id": "web/public",
