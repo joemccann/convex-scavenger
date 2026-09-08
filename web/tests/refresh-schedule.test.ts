@@ -27,7 +27,6 @@ import {
   IEI_HYG_REFRESH,
   IV_RANK_REFRESH,
   IV_SPREAD_REFRESH,
-  LLM_INDEX_REFRESH,
   MARGIN_DEBT_REFRESH,
   MA_RATIO_REFRESH,
   SHORT_CROWDING_REFRESH,
@@ -130,7 +129,6 @@ const PINNED: Array<[string, RefreshSchedule, string[]]> = [
   ["dividend yield", DIV_YIELD_REFRESH, ["radon-divyield.timer"]],
   ["HY A/D", HY_AD_REFRESH, ["radon-hyad.timer"]],
   ["HH leverage", HH_LEV_REFRESH, ["radon-hhlev.timer"]],
-  ["LLM index", LLM_INDEX_REFRESH, ["radon-llm-index.timer"]],
 ];
 
 describe("schedule constants are pinned to the systemd timers", () => {

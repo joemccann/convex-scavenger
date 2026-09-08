@@ -152,9 +152,6 @@ export const HY_AD_REFRESH: RefreshSchedule = [{ weekdays: TUE_SAT, hours: [11],
 /** cloud/services/radon-hhlev.timer */
 export const HH_LEV_REFRESH: RefreshSchedule = [daily(13, 20)];
 
-/** cloud/services/radon-llm-index.timer */
-export const LLM_INDEX_REFRESH: RefreshSchedule = [daily(6, 30)];
-
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** A weekly rule needs up to seven days to come round; one more is slack. */
