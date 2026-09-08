@@ -41,7 +41,9 @@ export async function POST(request: Request): Promise<Response> {
   if (ticker) {
     params.set("ticker", ticker);
   } else if (typeof body.preset === "string") {
-    params.set("preset", body.preset);
+    // RC-B10: forward the SANITIZED preset — the FastAPI cooldown cache keys
+    // on it, so forwarding the raw body value defeats the cache match.
+    params.set("preset", preset);
   }
   const limit = !ticker && typeof body.limit === "number" && Number.isFinite(body.limit) && body.limit > 0
     ? Math.trunc(body.limit)
