@@ -5878,4 +5878,5 @@ Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
 
 - No local test suites. Original PDF/chart evidence remains intact; changes apply to authored text. Preserve all financial grounding gates.
 - PR: https://github.com/joemccann/radon/pull/378. RED: GitHub run 34291166890, head 3a07ebdb, reproduced four voice-output failures and additional research/share regressions before production changes.
-- Added 62 unit regressions and browser assertions. Static review added nested URL-parentheses coverage; promoted social browser tests to CI and removed their held-out ledger entry.
+- Added 63 unit regressions and browser assertions. Static review added nested URL-parentheses coverage; promoted social browser tests to CI and removed their held-out ledger entry.
+- GitHub run 34291510793 exposed sentence commas being captured as part of numeric claims after punctuation normalization. Restrict grouping commas to those followed by a digit; retain changed-value/sign rejection.

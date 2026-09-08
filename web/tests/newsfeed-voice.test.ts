@@ -25,4 +25,11 @@ describe("newsfeed voice", () => {
   it("rejects changed numeric units", () => {
     expect(() => parseVoiceCopy('{"title":"Seasonality","content":"130% in Year 3."}', source)).toThrow();
   });
+  it("treats sentence commas as punctuation while preserving grouped values and signs", () => {
+    const evidence = { title: "Flows", content: "Volume: 1,300. Returns: -2.5%." };
+    const copy = { title: "Flows", content: "Volume: 1,300, returns: -2.5%." };
+    expect(parseVoiceCopy(JSON.stringify(copy), evidence).content).toBe(copy.content);
+    expect(() => parseVoiceCopy(JSON.stringify({ ...copy, content: "Volume: 1,300, returns: +2.5%." }), evidence)).toThrow("Unsupported numerical claim");
+    expect(() => parseVoiceCopy(JSON.stringify({ ...copy, content: "Volume: 1,301, returns: -2.5%." }), evidence)).toThrow("Unsupported numerical claim");
+  });
 });

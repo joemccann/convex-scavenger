@@ -24,7 +24,7 @@ export function voiceInput(value: unknown): NewsfeedVoiceInput | null {
 function numericClaims(text: string): string[] {
   // Preserve signs and common financial units. This is a conservative guard,
   // not semantic fact verification; the prompt still owns factual fidelity.
-  return text.match(/[$€£]?[+-]?\d[\d,]*(?:\.\d+)?(?:\s?(?:%|bps\b|basis points\b|million\b|billion\b|trillion\b|[kmbt]\b))?/gi)
+  return text.match(/[$€£]?[+-]?\d(?:\d|,(?=\d))*(?:\.\d+)?(?:\s?(?:%|bps\b|basis points\b|million\b|billion\b|trillion\b|[kmbt]\b))?/gi)
     ?.map(value => value.toLowerCase().replace(/\s/g, "")) ?? [];
 }
 
