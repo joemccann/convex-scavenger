@@ -1,4 +1,4 @@
-# Task: CI performance audit 2026-09-08 (post-main delta) [IN PROGRESS]
+# Task: CI performance audit 2026-09-08 (post-main delta) [COMPLETE]
 
 Measure the production critical path after `cc77928d`, verify delivery rails,
 and record every material source-actionable optimization candidate.
@@ -19,6 +19,32 @@ and record every material source-actionable optimization candidate.
 
 - [x] 20 successful Actions runs measured: mixed/full-stack p50 269s, p95 380s; docs/control-plane p50 166s; first-job queue 2-3s.
 - [x] No candidate clears the 15-second / 10% materiality floor without changing gate closure, test-union risk, or protected deployment behavior.
+
+---
+
+# Task: CI performance remediate 2026-09-08 (post-main delta) [COMPLETE]
+
+Record the reduced-rung remediation decision after synchronizing the dated
+branch with `origin/main`, without changing any production safety contract.
+
+## Dependency graph
+
+- T1 depends_on: [] - Synchronize the dated branch and preserve both append-only records.
+- T2 depends_on: [T1] - Revalidate the current audit's P0/P1 eligibility and protected closure.
+- T3 depends_on: [T2] - Run workflow safety contracts, append the remediation result, commit, and push.
+
+## Checklist
+
+- [x] T1 Dated branch synchronized with `origin/main`; CI ledger and task records preserved.
+- [x] T2 `RADON_WEEKEND_REDUCED=1` admits no P0/P1 source-actionable optimization from the post-main audit.
+- [x] T3 Focused safety contracts, YAML/shell parsing, and diff checks passed; ledger publication pending this commit.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1` restricted remediation to P0/P1; no lower-priority experiment was made.
+- [x] 94 focused contract tests passed; no test inventory, gate closure, provenance, rollback, recovery, health, cancellation, or stability behavior changed.
+
+---
 
 # Task: ATS priority universe + freshness rail [COMPLETE]
 

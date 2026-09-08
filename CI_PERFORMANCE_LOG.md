@@ -1278,3 +1278,27 @@ python/web gate co-wall then the deploy floor (CIP-004).
   Residual bottleneck is the required `scripts-rs`/coverage/image fan-in then
   the protected deployment floor. Revert trigger: any future optimization that
   shrinks a protected closure, test inventory, provenance, or stability rail.
+
+### 2026-09-08 - remediate (post-main delta) - branch `ci-performance/2026-09-08`
+
+- Runner state: dedicated markers and GitHub auth remain valid; the dated
+  branch was synchronized with `origin/main` while preserving both append-only
+  ledger/task records. `RADON_WEEKEND_REDUCED=1` confines this phase to P0/P1.
+- Remediation eligibility: the post-main audit has no P0/P1 source-actionable
+  candidate. The `scripts-rs`/coverage/image co-wall has no demonstrated
+  >=15-second critical-path reduction before the required node-image and
+  protected deployment floors; a repartition would risk shard-union coverage
+  and runner minutes. The exact-SHA image pair, complete gate closure, and
+  40-second stability window remain non-negotiable rails. No CIP-010 allocated.
+- Verification: `test_ci_gate_integrity.py` + `test_ci_deploy_concurrency.py`
+  (**45 passed**), `test_path_filter.py` (**43 passed**), and the
+  ci-performance subset of `test_phase_noop_declaration.py` (**6 passed**);
+  `.github/workflows/ci.yml` YAML parsing, `bash -n
+  scripts/ci_performance_nightly.sh`, and both diff checks passed.
+- Safety/impact: no source workflow behavior changed; test inventory, coverage,
+  path classification, required-gate closure, immutable pins, provenance,
+  exact-SHA verification, health, rollback, recovery, cancellation, and the
+  stability window are unchanged. Runner-minute impact is zero. Outcome:
+  `NO_SAFE_CHANGE` / `INSUFFICIENT_SAMPLE`; CIP-005/CIP-007/CIP-009 remain
+  `VALIDATING`, CIP-004/CIP-006/CIP-008 remain `DEFERRED`. Residual bottleneck
+  remains the required gate/image co-wall followed by the protected deploy floor.
