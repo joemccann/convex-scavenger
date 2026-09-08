@@ -1,3 +1,27 @@
+# Task: Testing-weekend remediate 2026-09-08 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Integrate `origin/main` and verify the dated-ledger gate (T-486).
+- T2 depends_on: [T1] - Make env-file durability tests hermetic (T-487).
+- T3 depends_on: [T1] - Extend release-supervision fakes to the inventory path (T-488).
+- T4 depends_on: [T1] - Exercise the Anthropic streamed completion payload (T-489).
+- T5 depends_on: [T2,T3,T4] - Run three serial full gates and publish the remediation record.
+
+## Checklist
+
+- [ ] T1 Integrate and verify ledger gate.
+- [ ] T2 T-487 red/green.
+- [ ] T3 T-488 red/green.
+- [ ] T4 T-489 red/green.
+- [ ] T5 Closing gates and durable log.
+
+## Review
+
+- [ ] `RADON_WEEKEND_REDUCED=1`: P0/P1 only; T-486 through T-489 are in scope.
+
+---
+
 # Task: CI performance audit 2026-09-07 [IN PROGRESS]
 
 Record the current production critical path and every safe, source-actionable optimization candidate.
