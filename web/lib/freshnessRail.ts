@@ -21,6 +21,17 @@ import {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * How "behind" is judged.
+ *  - `session`: an EOD or intraday market series; the panel owes the last
+ *    session the exchange printed.
+ *  - `release`: a publisher's own calendar (FINRA monthly margin statistics,
+ *    the Fed's quarterly Z.1). The timer only CHECKS for a new release, and
+ *    that calendar is not in this repo, so the rail counts down to the next
+ *    check and passes no judgment on the held date.
+ */
+export type FreshnessModel = "session" | "release";
+
 export type FreshnessRail = {
   /** When the next scheduled run fires. */
   nextSampleAt: Date;
@@ -105,6 +116,7 @@ export function computeFreshnessRail(
   schedule: RefreshSchedule,
   asOf: string | null | undefined,
   now: Date = new Date(),
+  model: FreshnessModel = "session",
 ): FreshnessRail {
   const nextSampleAt = nextRefreshUtc(schedule, now);
   const lastSampleAt = previousRefreshUtc(schedule, now);
@@ -114,6 +126,23 @@ export function computeFreshnessRail(
   // calm state with a ticking countdown over a panel holding no date at all.
   // R-306.
   const unknown = !asOf;
+  const msRemaining = Math.max(0, nextSampleAt.getTime() - now.getTime());
+  const elapsed = now.getTime() - lastSampleAt.getTime();
+
+  if (model === "release") {
+    return {
+      nextSampleAt,
+      lastSampleAt,
+      msRemaining,
+      elapsedFraction: Math.min(1, Math.max(0, elapsed / intervalMs)),
+      behind: false,
+      awaitingSession: null,
+      overdue: false,
+      unknown,
+      msOverdue: 0,
+    };
+  }
+
   const pastGrace = now.getTime() - lastSampleAt.getTime() > WRITER_GRACE_MS;
   const lastSampleDate = lastSampleAt.toISOString().slice(0, 10);
 
@@ -123,8 +152,6 @@ export function computeFreshnessRail(
   if (firesWeekly(schedule)) {
     const behind = !unknown && asOf!.slice(0, 10) < lastSampleDate;
     const overdue = behind && pastGrace;
-    const msRemaining = Math.max(0, nextSampleAt.getTime() - now.getTime());
-    const elapsed = now.getTime() - lastSampleAt.getTime();
     return {
       nextSampleAt,
       lastSampleAt,
@@ -147,9 +174,6 @@ export function computeFreshnessRail(
   const ranAfterSessionClosed =
     behind && lastPrintedSessionDate(lastSampleAt) >= latestSession;
   const overdue = ranAfterSessionClosed && pastGrace;
-
-  const msRemaining = Math.max(0, nextSampleAt.getTime() - now.getTime());
-  const elapsed = now.getTime() - lastSampleAt.getTime();
 
   return {
     nextSampleAt,
