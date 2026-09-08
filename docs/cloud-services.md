@@ -394,7 +394,9 @@ JSON-RPC), documented for consumers at radon.run `/developers/mcp`.
   retryable `503 authentication temporarily unavailable` and leaves the kid
   re-probeable, with refetches rate-limited per kid by
   `JWKS_REFRESH_COOLDOWN_SECONDS` (`scripts/mcp_hosted/auth.py`, R-606,
-  398c8636).
+  398c8636). A kid already present in the cached key set is served without
+  taking the refresh gate, so a slow or contended JWKS refresh cannot stall
+  verification of tokens signed by an already-known key.
 - **Env**: `CLERK_JWKS_URL` / `CLERK_ISSUER` / `ALLOWED_USER_IDS` from
   `/etc/radon/mcp.env`, a stripped file `deploy.sh:write_mcp_env` (and
   `setup-vps.sh`) derives from `/etc/radon/env` on every deploy; the unit
@@ -775,7 +777,11 @@ Install dependency: IBKR-hosted sFTP, not Flex Web Service. Full recipe:
 [`flex-sftp-setup.md`](flex-sftp-setup.md).
 
 `Tue..Sat 07:30 ET` plus `08:30 ET` empty-dir retry. Oneshot
-`scripts/flex_sftp_pull.py`. Heartbeats `flex-pull` (the delivery signal)
+`scripts/flex_sftp_pull.py`. The effective `ssh_config` is validated before
+connecting: global directives above the first `Host` block count toward the
+alias (first-match-wins), and `Include` / `Match` — which pull in
+configuration the validator cannot see — fail closed
+(`validate_ssh_config`). Heartbeats `flex-pull` (the delivery signal)
 and, from the Activity branch of `flex_delivery_ingest`, `cash-flow-sync`
 (`ok` when `cash_flow_sync --from-file` succeeds or an already-applied
 statement is re-pulled, `error` with the exit code when it fails; a
@@ -955,7 +961,7 @@ Windows are registered in `scripts/watchdog/services.py` and
 | Allowance | Pro plan 100,000 requests/day, shared REST + MCP, resets 00:00 UTC. Every paginated page bills separately, so `max_pages` is bounded in the client. |
 | Env contract | root `.env.example`, `cloud/.env.example`, `cloud/config/required-env.txt` |
 | VPS secrets | `/etc/radon/env` (`EnvironmentFile=` on every unit) |
-| Ticker scope | `fetch_equibles_smart_money_13f.py` and `fetch_equibles_filing_forensics.py` read the Turso `watchlist` table. A ticker off the watchlist has no row, and both API routes serve `missing: true` for it. |
+| Ticker scope | `fetch_equibles_smart_money_13f.py` and `fetch_equibles_filing_forensics.py` read the Turso `watchlist` table. A ticker off the watchlist has no row, and both API routes serve `missing: true` for it. `fetch_equibles_ats_venue_share.py` walks portfolio, then watchlist, then Nasdaq-100, Russell 2000, S&P 500. |
 | Tables | `equibles_13f_snapshots` (the route's only read), `equibles_13f_holders` (write-only depth), `equibles_filing_forensics`, `equibles_short_interest` + `equibles_squeeze_scores`, `equibles_ats_venue_share`, `cot_positioning` |
 | Demo mirror | `equibles_13f_snapshots` + `equibles_filing_forensics` are mirrored per ticker by `scripts/db/mirror_market_snapshots_to_demo.js`. `equibles_13f_holders` is not — nothing reads it. |
 
