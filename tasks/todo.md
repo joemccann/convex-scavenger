@@ -1,3 +1,51 @@
+# Task: CI performance audit 2026-09-08 (post-main delta) [COMPLETE]
+
+Measure the production critical path after `cc77928d`, verify delivery rails,
+and record every material source-actionable optimization candidate.
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify dedicated runner, stale-lock recovery, branch, auth, and audited range.
+- T2 depends_on: [T1] - Measure 20 successful production runs and inspect workflow, cache, image, and deploy paths.
+- T3 depends_on: [T2] - Validate safety contracts, append the ledger, publish the dated branch, and update the nightly PR/report.
+
+## Checklist
+
+- [x] T1 Dedicated markers, stale-lock preservation, auth, remote branch, and `cc77928d..90071618` delta verified.
+- [x] T2 Actions timing, change-class comparison, and safety-rail inspection.
+- [x] T3 Ledger, focused contract tests, commit, push, PR, and rolling issue report.
+
+## Review
+
+- [x] 20 successful Actions runs measured: mixed/full-stack p50 269s, p95 380s; docs/control-plane p50 166s; first-job queue 2-3s.
+- [x] No candidate clears the 15-second / 10% materiality floor without changing gate closure, test-union risk, or protected deployment behavior.
+
+---
+
+# Task: CI performance remediate 2026-09-08 (post-main delta) [COMPLETE]
+
+Record the reduced-rung remediation decision after synchronizing the dated
+branch with `origin/main`, without changing any production safety contract.
+
+## Dependency graph
+
+- T1 depends_on: [] - Synchronize the dated branch and preserve both append-only records.
+- T2 depends_on: [T1] - Revalidate the current audit's P0/P1 eligibility and protected closure.
+- T3 depends_on: [T2] - Run workflow safety contracts, append the remediation result, commit, and push.
+
+## Checklist
+
+- [x] T1 Dated branch synchronized with `origin/main`; CI ledger and task records preserved.
+- [x] T2 `RADON_WEEKEND_REDUCED=1` admits no P0/P1 source-actionable optimization from the post-main audit.
+- [x] T3 Focused safety contracts, YAML/shell parsing, and diff checks passed; ledger publication pending this commit.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1` restricted remediation to P0/P1; no lower-priority experiment was made.
+- [x] 94 focused contract tests passed; no test inventory, gate closure, provenance, rollback, recovery, health, cancellation, or stability behavior changed.
+
+---
+
 # Task: ATS priority universe + freshness rail [COMPLETE]
 
 Widen `/regime/ats` beyond the watchlist and add the regime countdown rail.
@@ -107,6 +155,7 @@ Complete the reduced-rung P0/P1 backlog without leaving evidence archives corrup
 
 - [x] RED: focused suite could not import missing `archive_raw`; GREEN: 84 passed in the runner venv.
 - [x] Permanent drills: Python 94 passed; Vitest 12 passed.
+- [ ] Detached full-gate stage has no `DONE` sentinel; 2026-09-08 retry also exited before `pytest_rc`; continuation must re-run all three gates.
 - [ ] Detached full-gate stage has no `DONE` sentinel; continuation must re-run all three gates.
 
 ---
@@ -5577,6 +5626,7 @@ Graph extension: T6 -> T7 -> T8.
 - T7 green evidence: 125 focused tests, nine large-body regressions, three-copy parity and shell syntax all passed. Full cloud rerun and latest-head CI remain T8 gates.
 - T8 local verification: final full cloud suite 1,882 passed, six skipped after the Compose repair; latest-head CI is the remaining release gate.
 - T8 release evidence: repaired head6fa1f028 passed all31 applicable checks, including both cloud shards, coverage and Playwright. All agents completed; worktree code is verified. Latest ledger-head status remains visible on PR346 and is checked before notification.
+# Task: Reliability audit 2026-09-08 [COMPLETE]
 
 # Regime chart x-axis formatting (2026-09-08)
 
@@ -5587,6 +5637,20 @@ Graph extension: T6 -> T7 -> T8.
 - [x] T5 depends_on: [T4] - Run the full project suite, review the final diff, and document verification evidence.
 
 Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+# AI-cycle bounded-resume completion (2026-09-08)
+
+- [x] T1 depends_on: [] - Reproduce the production SIGTERM and identify exhausted-budget status churn plus repeated successful empty windows.
+- [x] T2 depends_on: [T1] - Add red regressions for checkpointing successful empty windows and stopping cleanly at the first exhausted budget.
+- [x] T3 depends_on: [T2] - Implement clean bounded completion without changing provider/schema failure semantics.
+- [ ] T4 depends_on: [T3] - Run focused checks, open the repair PR, and monitor exact-head CI.
+- [ ] T5 depends_on: [T4] - Deploy, resume to terminal success, and verify final API/source coverage.
+
+Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
+
+## Review
+
+- Red/green: two regressions failed before the repair and pass after it; 101 AI-cycle core/collector tests and Ruff checks pass.
 
 ## Review
 
@@ -5612,6 +5676,7 @@ Perform the delta audit from `0b77a6af` through the dedicated runner head.
 
 ## Review
 
+- [x] Audit evidence: R-674 P1 persistence finding; second pass through `90071618` found no additional defect; all required standing sweeps HOLD.
 - [x] Audit evidence: one P1 persistence finding, all required standing sweeps HOLD.
 
 ---
