@@ -1,7 +1,7 @@
 [Unit]
-Description=Radon AI infrastructure observations (daily source collection)
-Wants=radon-aa-frontier-refresh.service
-After=network.target radon-aa-frontier-refresh.service
+Description=Radon Artificial Analysis frontier basket refresh
+After=network.target
+
 StartLimitIntervalSec=300
 StartLimitBurst=3
 
@@ -14,10 +14,10 @@ Environment=RADON_DB_NO_REPLICA=1
 Environment=RADON_SECRET_STORE_PATH=/home/radon/radon/data/secret_store/secrets.db
 LoadCredentialEncrypted=radon-secret-store-key:/etc/credstore.encrypted/radon-secret-store-key
 ExecStartPre=/home/radon/radon/.venv/bin/python3.13 /home/radon/radon/scripts/secret_store.py
-ExecStart=/home/radon/radon/.venv/bin/python -m scripts.ai_cycle.collect --record
+ExecStart=/home/radon/radon/.venv/bin/python -m scripts.aa_frontier_refresh
 StandardOutput=journal
 StandardError=journal
-TimeoutStartSec=600
+TimeoutStartSec=120
 
 [Install]
 WantedBy=multi-user.target
