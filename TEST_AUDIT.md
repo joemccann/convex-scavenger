@@ -10083,9 +10083,9 @@ source-fix rule: the compose-body gate accepted quoted `privileged: "true"`
 
 ## Remediation 2026-09-08
 
-`RADON_WEEKEND_REDUCED=1`: reconciled every verified un-DONE P0/P1 finding
-across the audit ledger before source work. None remain: T-462/T-463 and
-T-464…T-473 are recorded DONE in the 2026-09-06 remediation table; the only
-newer verified finding, T-485, is P2 and is outside this reduced-capability
-phase. No source change is warranted. Closing gate evidence is recorded in
-`TEST_LOG.md` for this branch.
+`RADON_WEEKEND_REDUCED=1`: T-486 through T-489 are in scope. T-486 merged
+current `origin/main`; T-487 and T-489 are DONE. T-488 is BLOCKED after three
+fixture attempts: the macOS GNU-timeout process tree outlives the fixed
+five-second harness bound after inventory modelling reaches the kill path.
+The exact operator action is to reproduce and repair this on Linux CI without
+widening the contract timeout. Closing gate evidence is recorded in `TEST_LOG.md`.

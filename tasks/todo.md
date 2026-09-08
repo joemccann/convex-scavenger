@@ -10,15 +10,15 @@
 
 ## Checklist
 
-- [ ] T1 Integrate and verify ledger gate.
-- [ ] T2 T-487 red/green.
-- [ ] T3 T-488 red/green.
-- [ ] T4 T-489 red/green.
+- [x] T1 Integrate and verify ledger gate.
+- [x] T2 T-487 red/green.
+- [x] T3 T-488 BLOCKED after three macOS timeout-harness attempts.
+- [x] T4 T-489 red/green.
 - [ ] T5 Closing gates and durable log.
 
 ## Review
 
-- [ ] `RADON_WEEKEND_REDUCED=1`: P0/P1 only; T-486 through T-489 are in scope.
+- [x] `RADON_WEEKEND_REDUCED=1`: P0/P1 only; T-486 through T-489 were reconciled.
 
 ---
 
