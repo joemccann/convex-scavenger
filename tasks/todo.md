@@ -5549,7 +5549,7 @@ Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
 
 - Inventory: 19 shared history routes plus eight independent regime chart implementations reviewed; all affected time and index axes use responsive tick spacing and inward endpoint anchors.
 - Regression evidence: pre-fix irregular-session minimum gap was 19.8px; focused Vitest is 194/194 and TRIN Playwright is 4/4 at 1,440px and 390px.
-- Full verification: 8,634/8,634 web tests, TypeScript, scoped ESLint, codemap freshness, diff check, and Impeccable detection pass.
+- Full verification: 8,634/8,634 web tests, TypeScript, scoped ESLint, codemap freshness, diff check, Impeccable detection, and the held-out E2E evidence contract pass.
 
 # Task: Reliability audit 2026-09-08 [IN PROGRESS]
 
