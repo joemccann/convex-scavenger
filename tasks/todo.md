@@ -5591,3 +5591,4 @@ User authorized fixing the live service; preserve source files, cursors, date/no
 - Focused research: 263 passed, 18 skipped, 23 subtests. Touched coverage: Dropbox reader 100%, worker 97%. Independent review approved; whitespace and generated map checks pass.
 - Integrated main 1090a84a (unrelated chart changes); research source unchanged from full verification. Regenerated combined source maps; 294 integrated research/codemap tests passed, 18 skipped, 23 subtests.
 - Integrated main c9305ba8 (independently green loop no-op change); repair implementation remains unchanged. Combined research/codemap/new-loop regressions: 318 passed, 18 skipped, 23 subtests. Merge TypeScript, ESLint and secret scans passed on the prior chart integration.
+- Integrated subsequent security release 1ab63ddf; no research implementation changed. Focused research reverified and combined maps regenerated; latest-head CI is the final integrated release gate.
