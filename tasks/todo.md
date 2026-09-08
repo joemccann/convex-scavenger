@@ -5746,12 +5746,14 @@ Keep the AI-cycle price cohort current as frontier models ship while preserving 
 ## Checklist
 
 - [x] T1 Trace source metadata, normalization, feed, lightbox, and existing Markdown renderer.
-- [ ] T2 Implement scoped rich-text rendering.
-- [ ] T3 Add regression coverage. Run suites only on GitHub runners.
+- [x] T2 Implement scoped rich-text rendering with preserved Markdown whitespace in feed and lightbox.
+- [x] T3 Add 6 component regressions and desktop/mobile Playwright assertions. Run suites only on GitHub runners.
 - [ ] T4 Review changes and complete exact-head CI and visual verification.
 
 ## Review
 
-- Pending CI and screenshot evidence.
+- Static review found no blocking issues; research typography uses Clear tokens and the existing safe Markdown renderer.
+- PR: https://github.com/joemccann/radon/pull/367. RED: 4 expected Markdown regressions failed on 0c7491ab2b1baf97dc21f7d4547dcbb3579bf287 (CI run 34282990355). Fixed-head CI and screenshot review pending.
+- Regenerate codemap from a clean index export so local generated sources do not enter the committed graph.
 
 ---
