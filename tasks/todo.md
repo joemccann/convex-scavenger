@@ -10,11 +10,12 @@
 
 - [x] T1 Dedicated markers, anchor `15e74ff1`, and `reliability/2026-09-09` verified.
 - [x] T2 Changed-surface and standing-sweep review.
-- [x] T3 Audit ledger publication; PR/report pending commit and push.
+- [x] T3 Audit ledger publication, commit, push, PR #383, and rolling-issue report.
 
 ## Review
 
 - [x] 12 commits / 28 changed source files reviewed; zero new source-actionable findings.
+- [x] `80e41b2a` pushed; PR #383 opened and issue #81 commented; Pushover accepted the audit notice.
 
 ---
 
