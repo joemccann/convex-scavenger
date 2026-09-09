@@ -1,3 +1,23 @@
+# Task: Reliability audit 2026-09-09 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify runner rails, ledger anchor, dated branch, and delta.
+- T2 depends_on: [T1] - Audit changed source surfaces and standing reliability sweeps.
+- T3 depends_on: [T2] - Append the ledger/findings, validate frozen IDs, commit, push, and update the nightly PR.
+
+## Checklist
+
+- [x] T1 Dedicated markers, anchor `15e74ff1`, and `reliability/2026-09-09` verified.
+- [x] T2 Changed-surface and standing-sweep review.
+- [x] T3 Audit ledger publication; PR/report pending commit and push.
+
+## Review
+
+- [x] 12 commits / 28 changed source files reviewed; zero new source-actionable findings.
+
+---
+
 # Task: Testing-weekend remediate 2026-09-08 [IN PROGRESS]
 
 ## Dependency graph
