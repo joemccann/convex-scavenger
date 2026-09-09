@@ -298,7 +298,7 @@ def test_eia_dom_and_unit_fail_closed():
 def test_noaa_skips_incomplete_station_days_without_losing_complete_rows():
     rows = parse_noaa(
         [
-            {"STATION": "USW00093738", "DATE": "2026-09-06", "TMAX": "30", "TMIN": "20"},
+            {"STATION": "USW00093738", "DATE": "2026-09-06", "TMAX": "30", "TMIN": "-10"},
             {"STATION": "USW00013743", "DATE": "2026-09-06", "TMAX": "", "TMIN": "19"},
         ],
         HASH,
@@ -307,7 +307,8 @@ def test_noaa_skips_incomplete_station_days_without_losing_complete_rows():
         "2026-09-06",
     )
     assert len(rows) == 1
-    assert rows[0]["value"] == 25
+    assert rows[0]["value"] == 10
+    assert rows[0]["metadata"]["tmin_c"] == -10
 
 
 def test_disclosure_cannot_import_unverified_memo_values():
@@ -624,6 +625,73 @@ def test_cli_record_checkpoint_and_cache_only_store(tmp_path, monkeypatch, capsy
     assert json.loads(capsys.readouterr().out)["observations"] == 1
     assert collect.main(args) == 0
     assert len(calls) == 1
+
+
+def test_cli_checkpoints_successful_empty_windows(tmp_path, monkeypatch, capsys):
+    from scripts.ai_cycle import collect
+
+    calls = []
+    monkeypatch.setattr(collect, "collect_source", lambda *args, **kwargs: calls.append(args) or [])
+    checkpoint = tmp_path / "checkpoint.json"
+    args = [
+        "--record",
+        "--database",
+        str(tmp_path / "local.db"),
+        "--sources",
+        "openrouter",
+        "--start",
+        "2026-09-01",
+        "--end",
+        "2026-09-06",
+        "--checkpoint",
+        str(checkpoint),
+    ]
+    assert collect.main(args) == 0
+    assert json.loads(checkpoint.read_text()) == ["openrouter:2026-09-01:2026-09-06"]
+    capsys.readouterr()
+    assert collect.main(args) == 0
+    assert len(calls) == 1
+
+
+def test_cli_stops_cleanly_when_run_budget_is_exhausted(tmp_path, monkeypatch, capsys):
+    from scripts.ai_cycle import collect
+
+    calls = []
+
+    def exhausted(source, *args, **kwargs):
+        calls.append(source)
+        raise SourceError("Per-run time budget exhausted")
+
+    monkeypatch.setattr(collect, "collect_source", exhausted)
+    assert (
+        collect.main(
+            [
+                "--record",
+                "--database",
+                str(tmp_path / "local.db"),
+                "--sources",
+                "openrouter,eia",
+                "--backfill",
+                "--start",
+                "2025-01-01",
+                "--end",
+                "2025-02-01",
+            ]
+        )
+        == 0
+    )
+    report = json.loads(capsys.readouterr().out)
+    assert calls == ["openrouter"]
+    assert report["sources"] == [
+        {
+            "source_id": "openrouter",
+            "status": "unavailable",
+            "reason": "Per-run time budget exhausted",
+            "checked_at": report["sources"][0]["checked_at"],
+            "start": "2025-01-01",
+            "end": "2025-01-07",
+        }
+    ]
 
 
 def test_cli_transport_error_sanitized_and_failure_exit(tmp_path, monkeypatch, capsys):
