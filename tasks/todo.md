@@ -203,6 +203,26 @@ Complete the reduced-rung P0/P1 backlog without leaving evidence archives corrup
 
 ---
 
+# Task: Reliability remediate 2026-09-09 [BLOCKED]
+
+## Dependency graph
+
+- T1 depends_on: [] - Resume the dated branch and reconcile reduced-rung P0/P1 backlog.
+- T2 depends_on: [T1] - Re-run the permanent fault-injection drills with resolved paths.
+- T3 depends_on: [T2] - Run three serial detached full gates and append durable results.
+
+## Checklist
+
+- [x] T1 REL-251 through REL-253 are source-DONE; reduced rung admits no new P0/P1 task.
+- [ ] T2 BLOCKED: detached drill stage was terminated before its required sentinel.
+- [ ] T3 BLOCKED: the third detached closing-gate attempt produced no `DONE` sentinel.
+
+## Review
+
+- [ ] Three genuine detached attempts across 2026-09-08/09 terminated before the stage sentinel; no gate count is claimed.
+
+---
+
 # Task: CI performance audit 2026-09-07 [IN PROGRESS]
 
 Record the current production critical path and every safe, source-actionable optimization candidate.
