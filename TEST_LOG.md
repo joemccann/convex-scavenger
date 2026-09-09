@@ -786,3 +786,12 @@ rendered-manual contracts); vitest 934 files / 9,276 passed; cloud 1,841
 passed / 4 failed (all standing T-488). One new P1, T-490; no invocation,
 exclusion, threshold, or coverage-measurement drift; 98 touched test files
 make scoped determinism reruns equivalent to full gates.
+
+## Remediation 2026-09-09
+
+| Task | Status | Evidence |
+|---|---|---|
+| T-490 | BLOCKED | RED: `test_portable_prompt_sync.py` 52 passed / 21 failed, all eight native Codex artifacts absent. Attempts: renderer write failed `PermissionError` on `.codex`; check still reported all eight stale; direct tracked-file patch denied by CLI policy. Operator: render in a checkout with writable `.codex`, run the focused contract, commit generated files. |
+
+Closing gates: not run. The focused P1 remains deterministically red and this
+runner cannot materialize its tracked artifacts; no green gate count is claimed.

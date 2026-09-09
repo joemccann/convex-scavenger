@@ -10123,3 +10123,19 @@ eight stale artifacts. This is the non-Claude fallback path introduced by
 - Gate drift/ratchet: `.github/workflows/ci.yml:784-808` adds two curated browser specs and artifact uploads only; invocations, exclusions, deploy dependencies, and thresholds are unchanged. No new blanket coverage exclude.
 - Skip sweep: `scripts/tests/test_loop_pr_selection.py:82` conditionally skips without `jq`; `jq-1.8.1` is present here and CI Ubuntu supplies it. No new executable `test.skip`, `it.skip`, `xfail`, or `.only`.
 - Post-gate tree: clean except this audit's documentation/task updates; no gate-created repository artifact.
+
+## Remediation 2026-09-09
+
+`RADON_WEEKEND_REDUCED=1`: T-490 is the sole in-scope P1 and is **BLOCKED**
+after three genuine attempts. The focused red is `52 passed / 21 failed` in
+`scripts/tests/test_portable_prompt_sync.py`: all eight tracked
+`.codex/skills/*/{SKILL.md,agents/openai.yaml}` artifacts are absent. Attempt
+one, `render_loop_prompt.py --write`, wrote portable prompts then failed with
+`PermissionError` creating `.codex`; attempt two confirmed `--check` still
+names all eight files; attempt three, a direct tracked-artifact patch, was
+rejected by this CLI's filesystem policy. Operator action: run
+`python3.13 scripts/render_loop_prompt.py --write` in a checkout where the
+repository `.codex/` directory is writable, then run
+`python3.13 -m pytest scripts/tests/test_portable_prompt_sync.py -q` and
+commit the eight generated artifacts. Full gates are not claimed because the
+known P1 remains red.
