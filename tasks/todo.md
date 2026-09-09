@@ -12,7 +12,7 @@
 - [x] T1 Dedicated runner markers, clean tree, branch, and ledger base verified.
 - [x] T2 Serial gates recorded; 98 touched test files make scoped 3× reruns full-gate equivalent.
 - [x] T3 Delta and standing sweeps complete.
-- [ ] T4 Append-only audit report committed and published.
+- [x] T4 Audit committed as `7c36bcf1`, pushed, and published as PR #385.
 
 ## Review
 
