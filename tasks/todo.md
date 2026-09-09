@@ -1,3 +1,25 @@
+# Task: Testing-weekend remediate 2026-09-08 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Integrate `origin/main` and verify the dated-ledger gate (T-486).
+- T2 depends_on: [T1] - Make env-file durability tests hermetic (T-487).
+- T3 depends_on: [T1] - Extend release-supervision fakes to the inventory path (T-488).
+- T4 depends_on: [T1] - Exercise the Anthropic streamed completion payload (T-489).
+- T5 depends_on: [T2,T3,T4] - Run three serial full gates and publish the remediation record.
+
+## Checklist
+
+- [x] T1 Integrate and verify ledger gate.
+- [x] T2 T-487 red/green.
+- [x] T3 T-488 BLOCKED after three macOS timeout-harness attempts.
+- [x] T4 T-489 red/green.
+- [ ] T5 Closing gates incomplete: both detached stages exited without a `DONE` sentinel; resume all three serial rounds.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1`: P0/P1 only; T-486 through T-489 were reconciled.
+- [ ] Closing-gate stage is incomplete; no full-suite count is claimed.
 # Task: CI performance audit 2026-09-08 (post-main delta) [COMPLETE]
 
 Measure the production critical path after `cc77928d`, verify delivery rails,
@@ -5566,6 +5588,14 @@ Verification: full root Python 12,282 passed, 19 skipped, 16 subtests. Full clou
 - [x] T1 depends_on: [] - Inspect sharing paths and preserve existing workspace changes.
 - [x] T2 depends_on: [T1] - Add red/green regressions and exclude The Market Ear/ZeroHedge names and links from outbound captions and card text.
 - [x] T3 depends_on: [T2] - Verify desktop/mobile browser exports and full web suite; review results.
+
+Dependency graph: T1 -> T2 -> T3.
+
+# Large AI-cycle snapshot deadline hierarchy (2026-09-08)
+
+- [x] T1 depends_on: [] - Measure the complete 79,078-observation production read/build and reproduce the API 503 at the old 18-second ceiling.
+- [x] T2 depends_on: [T1] - Pin and implement bounded store, API, and Next deadlines with explicit headroom at each layer.
+- [ ] T3 depends_on: [T2] - Run focused checks, ship through CI/deployment, and verify the full live payload returns HTTP 200.
 
 Dependency graph: T1 -> T2 -> T3.
 - [x] T4 depends_on: [] - Study verified @joemccann authored tweets and document an evidence-backed voice persona; establish whether X API access is required.
