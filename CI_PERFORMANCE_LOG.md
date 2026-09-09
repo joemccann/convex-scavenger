@@ -1377,3 +1377,36 @@ python/web gate co-wall then the deploy floor (CIP-004).
   CIP-005/CIP-007/CIP-009 remain `VALIDATING`; CIP-004/CIP-006/CIP-008 remain
   `DEFERRED`. Revert trigger: any later candidate that shrinks protected gate
   closure, inventory, provenance, recovery/rollback, or stability behavior.
+
+### 2026-09-09 - remediate - branch `ci-performance/2026-09-09`
+
+- Runner state: dedicated markers, dated remote branch, GitHub authentication,
+  `origin/main`, and the audit's required 24-context Production protection
+  remain verified. The audit's stale lock had already been recoverably
+  preserved before remediation; no other live loop lock was present.
+  `RADON_WEEKEND_REDUCED=1` limits this phase to verified P0/P1 findings.
+- Remediation eligibility: the current audit supplied zero P0/P1
+  source-actionable findings. The only observed source lead is the work-bound
+  `scripts-rs` shard, whose demonstrated critical-path ceiling is below 15
+  seconds before the node-image and protected Deploy floors; a repartition
+  risks shard-union completeness and higher runner minutes. The 40-second
+  stability window, complete required-gate closure, and exact-SHA image pair
+  are protected rails. No `CIP-010` was allocated, and no lower-priority
+  change was substituted.
+- Verification: `../venv-ci-performance/bin/python -m pytest
+  scripts/tests/test_ci_gate_integrity.py scripts/tests/test_ci_deploy_concurrency.py
+  scripts/tests/test_path_filter.py -q` — **88 passed in 9.48s**; `.github/
+  workflows/ci.yml` parsed, `bash -n scripts/ci_performance_nightly.sh`, and
+  both base and worktree `git diff --check` commands passed. A detached
+  broader stage exited before its prewritten `pytest_rc` placeholder changed
+  and without its `DONE` sentinel, so it is explicitly not counted as a
+  passing gate; no code-bearing workflow change required widening the focused
+  contract baseline.
+- Safety/impact: no test inventory, coverage, path classification, gate
+  dependency, immutable pin, artifact provenance, exact-SHA verification,
+  health, recovery, rollback, cancellation, or stability behavior changed.
+  Runner-minute impact is zero; cache state remains ordinary/warm and
+  production validation is `INSUFFICIENT_SAMPLE`. Outcome: `NO_SAFE_CHANGE` /
+  `INSUFFICIENT_SAMPLE`; CIP-005/CIP-007/CIP-009 remain `VALIDATING`, and
+  CIP-004/CIP-006/CIP-008 remain `DEFERRED`. Residual bottleneck remains the
+  required `scripts-rs`/image co-wall followed by the protected Deploy floor.

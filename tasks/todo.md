@@ -1,3 +1,26 @@
+# Task: CI performance remediate 2026-09-09 [COMPLETE]
+
+Apply each eligible P0/P1 finding from the 2026-09-09 performance audit while
+preserving the full test, provenance, and deployment-safety closure.
+
+## Dependency graph
+
+- T1 depends_on: [] - Resume dated branch and verify dedicated runner, audit eligibility, and reduced scope.
+- T2 depends_on: [T1] - Run focused workflow, path-filter, YAML, shell, and diff safety gates serially.
+- T3 depends_on: [T2] - Append the remediation decision, commit, and push the dated branch.
+
+## Checklist
+
+- [x] T1 `RADON_WEEKEND_REDUCED=1`; audit contains no source-actionable P0/P1 candidate.
+- [x] T2 88 workflow/path-filter safety contracts, YAML parsing, shell syntax, and diff checks passed serially.
+- [x] T3 Append-only remediation decision committed and pushed on the dated branch.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1` barred P2/P3 work; no lower-priority shard, cache, or deploy experiment was substituted.
+
+---
+
 # Task: CI performance audit 2026-09-09 [COMPLETE]
 
 Measure the latest organic production runs, verify the changed non-gating
