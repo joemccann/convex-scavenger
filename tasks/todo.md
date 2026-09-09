@@ -1,3 +1,23 @@
+# Task: Testing-weekend audit 2026-09-09 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Verify runner rails, ledger base, branch, and toolchain.
+- T2 depends_on: [T1] - Run serial CI-gated suites and delta-scoped determinism checks.
+- T3 depends_on: [T1,T2] - Inspect delta, blast radius, gates, skips, and ratchet integrity.
+- T4 depends_on: [T3] - Append the audit ledger/findings, commit, push, and open or update the nightly PR.
+
+## Checklist
+
+- [x] T1 Dedicated runner markers, clean tree, branch, and ledger base verified.
+- [x] T2 Serial gates recorded; 98 touched test files make scoped 3× reruns full-gate equivalent.
+- [x] T3 Delta and standing sweeps complete.
+- [ ] T4 Append-only audit report committed and published.
+
+## Review
+
+- [x] T-490 cites the rendering contract and reproduces deterministically in the full gate.
+
 # Task: Testing-weekend remediate 2026-09-08 [IN PROGRESS]
 
 ## Dependency graph

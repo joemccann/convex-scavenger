@@ -777,3 +777,12 @@ morning pass's promised counts never landed; superseded by these).
 | T-489 | DONE | Ambient xAI selection made the Anthropic-shaped mock parse empty; pinning `LLM_PROVIDER=anthropic` makes the streamed done payload contain the mocked text, green 1/1. |
 
 Closing gates: INCOMPLETE. Detached stages `/tmp/tw-2026-09-08/closing-gates.rc` and `closing-gates-2.rc` prewrote all nine steps but both exited with zero-byte pytest logs and no `DONE` sentinel. No gate count is claimed; resume with a runner that preserves detached children.
+
+## Delta audit 2026-09-09 (audit mode)
+
+Range `fcaa1c67..964b6b77`: 34 commits, 267 files, 98 touched test files.
+Serial gates: pytest 12,709 passed / 21 failed (all new T-490 stale Codex
+rendered-manual contracts); vitest 934 files / 9,276 passed; cloud 1,841
+passed / 4 failed (all standing T-488). One new P1, T-490; no invocation,
+exclusion, threshold, or coverage-measurement drift; 98 touched test files
+make scoped determinism reruns equivalent to full gates.
