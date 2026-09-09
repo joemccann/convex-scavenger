@@ -1,3 +1,25 @@
+# Task: Testing-weekend remediate 2026-09-08 [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Integrate `origin/main` and verify the dated-ledger gate (T-486).
+- T2 depends_on: [T1] - Make env-file durability tests hermetic (T-487).
+- T3 depends_on: [T1] - Extend release-supervision fakes to the inventory path (T-488).
+- T4 depends_on: [T1] - Exercise the Anthropic streamed completion payload (T-489).
+- T5 depends_on: [T2,T3,T4] - Run three serial full gates and publish the remediation record.
+
+## Checklist
+
+- [x] T1 Integrate and verify ledger gate.
+- [x] T2 T-487 red/green.
+- [x] T3 T-488 BLOCKED after three macOS timeout-harness attempts.
+- [x] T4 T-489 red/green.
+- [ ] T5 Closing gates incomplete: both detached stages exited without a `DONE` sentinel; resume all three serial rounds.
+
+## Review
+
+- [x] `RADON_WEEKEND_REDUCED=1`: P0/P1 only; T-486 through T-489 were reconciled.
+- [ ] Closing-gate stage is incomplete; no full-suite count is claimed.
 # Task: CI performance audit 2026-09-08 (post-main delta) [COMPLETE]
 
 Measure the production critical path after `cc77928d`, verify delivery rails,
@@ -5568,6 +5590,14 @@ Verification: full root Python 12,282 passed, 19 skipped, 16 subtests. Full clou
 - [x] T3 depends_on: [T2] - Verify desktop/mobile browser exports and full web suite; review results.
 
 Dependency graph: T1 -> T2 -> T3.
+
+# Large AI-cycle snapshot deadline hierarchy (2026-09-08)
+
+- [x] T1 depends_on: [] - Measure the complete 79,078-observation production read/build and reproduce the API 503 at the old 18-second ceiling.
+- [x] T2 depends_on: [T1] - Pin and implement bounded store, API, and Next deadlines with explicit headroom at each layer.
+- [ ] T3 depends_on: [T2] - Run focused checks, ship through CI/deployment, and verify the full live payload returns HTTP 200.
+
+Dependency graph: T1 -> T2 -> T3.
 - [x] T4 depends_on: [] - Study verified @joemccann authored tweets and document an evidence-backed voice persona; establish whether X API access is required.
 - [x] T5 depends_on: [T2, T4] - Integrate persona-based social copy rewriting with factual preservation and publisher exclusions, then verify.
 Extended dependency graph: T1 -> T2 -> T3; T4 + T2 -> T5.
@@ -5856,6 +5886,55 @@ Dependency graph: T1 -> T2 -> T3 -> T4 -> T5.
 - PR: https://github.com/joemccann/radon/pull/367. RED: 4 expected Markdown regressions failed on 0c7491ab2b1baf97dc21f7d4547dcbb3579bf287 (CI run 34282990355).
 - GREEN: a6035206 passed 31 applicable checks, including all 6 component regressions, 67 browser checks, and the demo transport check (CI run 34283301911). Reviewed 4 desktop/mobile screenshots; added scoped italic synthesis after visual review. Final-head verification pending.
 - Regenerate codemap from a clean index export so local generated sources do not enter the committed graph.
+
+---
+# Task: Research and social copy in Joe's voice [IN PROGRESS]
+
+## Dependency graph
+
+- T1 depends_on: [] - Inspect authored copy paths and documented @joemccann voice; isolate unrelated work.
+- T2 depends_on: [T1] - Enforce human voice and no em dashes in research generation/publication.
+- T3 depends_on: [T1] - Enforce no em dashes in existing research renderings and every social-share output; strengthen voice instructions.
+- T4 depends_on: [T2, T3] - Add regressions, publish PR, verify exact-head CI and browser artifacts, and notify.
+
+## Checklist
+
+- [x] T1 Read voice profile and source samples; create isolated worktree.
+- [x] T2 Research generation and publication.
+- [x] T3 Web rendering and social exports.
+- [ ] T4 GitHub-runner validation, visual verification, and delivery.
+
+## Review
+
+- No local test suites. Original PDF/chart evidence remains intact; changes apply to authored text. Preserve all financial grounding gates.
+- PR: https://github.com/joemccann/radon/pull/378. RED: GitHub run 34291166890, head 3a07ebdb, reproduced four voice-output failures and additional research/share regressions before production changes.
+- Added 63 unit regressions and browser assertions. Static review added nested URL-parentheses coverage; promoted social browser tests to CI and removed their held-out ledger entry.
+- GitHub run 34291510793 exposed sentence commas being captured as part of numeric claims after punctuation normalization. Restrict grouping commas to those followed by a digit; retain changed-value/sign rejection.
+- GREEN: 0067a67a passed all 31 applicable checks (run 34291738638), including 75 browser checks and the demo check. Reviewed research feed/lightbox and social export screenshots. Final merge-head verification pending after main advanced.
+
+---
+
+# Task: Radon AI conversation experience (2026-09-08)
+
+## Specification
+Replace the anonymous composer-only overlay with a readable Clear conversation workspace: explicit identity and close/new controls; task-specific editable starters; honest current-page context; multiline composer with visible attachment and model controls; cancellable generation, retry/edit recovery, retained session on close; readable transcript and inspectable tool evidence. Preserve order-risk approvals, quote provenance, auth and root socket ownership. Do not persist sensitive conversation data to disk. Desktop is a spacious centered workspace, mobile fills the viewport with accessible controls. No local test suites; GitHub CI owns Vitest and Playwright execution.
+
+## Dependency graph
+- T1 depends_on: [] - Inspect existing lifecycle, constraints and authoritative AI UX guidance.
+- T2 depends_on: [T1] - Implement composer improvements (parallel agent).
+- T3 depends_on: [T1] - Implement conversation layout, lifecycle and scoped styles (primary).
+- T4 depends_on: [T2,T3] - Regression tests and browser coverage; review semantics and order safety.
+- T5 depends_on: [T4] - Generate codemap, publish PR, resolve conflicts, await exact-head CI, inspect browser artifacts and notify.
+
+## Checklist
+- [x] T1 Source and design audit; isolated worktree preserves existing staged changes.
+- [x] T2 Composer implementation.
+- [x] T3 Conversation implementation.
+- [x] T4 Regression coverage and independent lifecycle review; all 8 Vitest shards and 10 browser scenarios pass on 0b54eecc.
+- [ ] T5 Exact-head CI and visual evidence, PR delivery.
+
+## Review
+PR #379: first GitHub run completed all 10 new browser scenarios; eight desktop/mobile light/dark screenshots inspected. Three unit assertions exposed missing whitespace across a heading line break; fixed the accessible text in the component. Remaining exact-head verification tracked in https://github.com/joemccann/radon/pull/379. No local suites executed. Sources: https://developer.apple.com/design/human-interface-guidelines/generative-ai and https://pair.withgoogle.com/guidebook-v2/chapter/explainability-trust/ . No system prompt or model-policy changes planned.
 
 ---
 
