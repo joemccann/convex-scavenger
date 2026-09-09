@@ -20,6 +20,7 @@
 - Full local suites were attempted; credential-store environment tests and other unrelated baseline failures prevent a full-local-green claim. Four credential-store failures reproduced independently; full Next E2E setup was blocked by local dependency resolution, while the actual-component Playwright harness passed all four live-data cases.
 - Reviewed bounded auth recovery, caller-owned explicit tokens, durable-cookie precedence, atomic persistence, typed failures and strict malformed-cube rejection. External outages/revoked access remain availability limits.
 - Production remains unchanged. User authorized a PR and exact-head CI supervision; GitHub checks and the accepted Pushover delivery will be recorded at completion.
+- PR #386 first run: 28 passed, two artifact/ledger checks failed. Added the dated browser-evidence annotation and regenerate codemap from a clean committed-tree snapshot to exclude eight ignored local `.claude-design` scripts.
 
 # Task: CI performance remediate 2026-09-09 [COMPLETE]
 
