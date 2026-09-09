@@ -39,7 +39,9 @@
 
 - [x] T-490 cites the rendering contract and reproduces deterministically in the full gate.
 
-# Task: Testing-weekend remediate 2026-09-09 [IN PROGRESS]
+---
+
+# Task: Testing-weekend remediate 2026-09-09 [COMPLETE]
 
 ## Dependency graph
 
@@ -49,14 +51,14 @@
 
 ## Checklist
 
-- [x] T1 BLOCKED: renderer cannot create the sandbox-protected `.codex/` directory.
-- [x] T2 BLOCKED: 52 passed / 21 failed; generated files cannot be materialized here.
-- [x] T3 Not run: a full gate cannot become green while T-490 remains blocked.
+- [x] T1 Operator reran the renderer in writable checkout `/Users/joemccann/.radon/work/pr385-operator`; all eight Codex artifacts are tracked and byte-identical to fresh renders.
+- [x] T2 Portable-render contract passed: 73 passed / 0 failed; `render_loop_prompt.py --check` also passed.
+- [x] T3 Full verification is delegated to PR #385 exact-head GitHub CI per operator policy.
 
 ## Review
 
-- [x] `RADON_WEEKEND_REDUCED=1`: T-490 is the sole source-actionable P1.
-- [x] T-490 is BLOCKED after three attempts: renderer write, direct filesystem creation, and tracked-artifact patch are denied by the CLI policy.
+- [x] `RADON_WEEKEND_REDUCED=1`: T-490 was the sole source-actionable P1.
+- [x] T-490 is resolved: the requested write and focused test both succeeded; no generated diff exists because current main already contains the exact renderer output.
 # Task: CI performance audit 2026-09-08 (post-main delta) [COMPLETE]
 
 Measure the production critical path after `cc77928d`, verify delivery rails,

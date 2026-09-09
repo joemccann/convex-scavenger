@@ -10139,3 +10139,12 @@ repository `.codex/` directory is writable, then run
 `python3.13 -m pytest scripts/tests/test_portable_prompt_sync.py -q` and
 commit the eight generated artifacts. Full gates are not claimed because the
 known P1 remains red.
+
+### T-490 operator resolution — 2026-09-09
+
+DONE. The operator commands ran in writable checkout
+`/Users/joemccann/.radon/work/pr385-operator`. The renderer completed, the
+focused portable-render contract passed 73 / 73, and renderer check mode passed.
+All eight Codex artifacts are tracked and already match fresh renders exactly,
+so the write produced no artifact diff. The earlier absence was local to the
+restricted audit checkout rather than stale committed content.

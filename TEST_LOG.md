@@ -795,3 +795,12 @@ make scoped determinism reruns equivalent to full gates.
 
 Closing gates: not run. The focused P1 remains deterministically red and this
 runner cannot materialize its tracked artifacts; no green gate count is claimed.
+
+## Operator completion 2026-09-09
+
+T-490 is DONE. In writable checkout `/Users/joemccann/.radon/work/pr385-operator`,
+`python3.13 scripts/render_loop_prompt.py --write` completed for all four loop
+skills and `python3.13 -m pytest scripts/tests/test_portable_prompt_sync.py -q`
+passed 73 / 73. `render_loop_prompt.py --check` also passed. The renderer left
+the tree clean because all eight tracked Codex artifacts already match the
+current templates byte-for-byte; there is no generated artifact delta to commit.
