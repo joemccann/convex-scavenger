@@ -714,6 +714,45 @@ on an instant FastAPI 502 capacity shed at the 10:00 ET timer.** Peak:
 
 ---
 
+## leap-reports-permission-aborts-cache
+
+**`radon-leap.service` oneshot pages P1 `Result=exit-code` (`NRestarts=0`)
+after a capacity-shed retry when the scan itself succeeded.** Peak:
+2026-09-09 14:05Z, page `392e8eed…`.
+
+- **Mechanism:** daily timer POSTs `/leap/scan?preset=largecaps`. First
+  POST is an instant capacity shed (top-of-hour pile-up); the wrapper
+  retries. The retry acquires a lane and finishes the largecaps scan
+  (~80s), then `leap_scanner_uw.main` calls `Path("reports").mkdir`
+  before writing the canonical `data/leap.json`. The API container app
+  root is not writable by uid 1000, so mkdir raises
+  `PermissionError: [Errno 13] Permission denied: 'reports'`. FastAPI
+  maps that to HTTP 502 with the PermissionError detail. The wrapper
+  (R-221) sees a non-capacity 502, logs `LEAP FastAPI outcome
+  indeterminate`, refuses the direct fallback, and exits 1.
+  `leap.json` and `service_health.leap-scan` stay on the prior day.
+  Next timer ~24h.
+- **Detection:** unit journal `capacity shed - retry 1` then ~80s later
+  `outcome indeterminate (curl=0, http=502)`; a live
+  `POST /leap/scan?tickers=AAPL` returns
+  `{"detail":"PermissionError: [Errno 13] Permission denied: 'reports'"}`;
+  `/health/lite` 200; `leap-scan` health row still yesterday.
+- **Discriminating check:** 502 body is PermissionError on `reports`
+  (this case). Capacity-marker body is `leap-capacity-502`. Instant
+  indeterminate with no prior `capacity shed - retry` line is the
+  pre-R-221 form of that case. `Result=signal` is deploy stop-clean.
+  If `/health/lite` is down too → API/IB, stand down.
+- **Remediation (code):** treat HTML/JSON writes under `reports/` as
+  best-effort `OSError` sinks; always write `data/leap.json` + the
+  `leap-scan` heartbeat when results are nonempty. After deploy,
+  `reset-failed` + start (unit is on `RERUNNABLE_ONESHOT_UNITS`) or
+  wait for the next timer.
+- **Regression:**
+  `test_leap_scanner.py::test_unwritable_reports_dir_still_writes_dashboard_cache`.
+- **Code:** `scripts/leap_scanner_uw.py` (`main` report + cache writes).
+
+---
+
 ## garch-capacity-502
 
 **`radon-garch.service` oneshot pages P1 `Result=exit-code` (`NRestarts=0`)

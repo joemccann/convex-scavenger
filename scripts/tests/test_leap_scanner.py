@@ -491,6 +491,46 @@ def test_a_provider_wipeout_exits_nonzero_and_marks_the_row_error(tmp_path, monk
     assert health[-1]["class"] == "provider_exhausted"
 
 
+def test_unwritable_reports_dir_still_writes_dashboard_cache(tmp_path, monkeypatch):
+    """2026-09-09 P1 page 392e8eed: after a capacity-shed retry the largecaps
+    scan produced results, then FastAPI 502'd with
+    ``PermissionError: [Errno 13] Permission denied: 'reports'``. The API
+    container app root is not writable by uid 1000, so ``mkdir(reports)``
+    aborted before ``data/leap.json``. The wrapper logged indeterminate,
+    ``radon-leap.service`` exited 1, next timer ~24h.
+    """
+    cache = tmp_path / "leap.json"
+    ro_parent = tmp_path / "ro"
+    ro_parent.mkdir()
+    report = ro_parent / "reports" / "leap-scan-uw.html"
+    monkeypatch.setattr(leap_scanner_uw, "DASHBOARD_CACHE_PATH", cache)
+    monkeypatch.setattr(leap_scanner_uw, "UWClient", lambda: nullcontext(object()))
+    monkeypatch.setattr(leap_scanner_uw, "mirror_scan_snapshot", lambda *a, **k: None)
+    monkeypatch.setattr(
+        leap_scanner_uw, "scan_ticker", lambda *_a, **_k: _one_scan_result("AAPL")
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "leap_scanner_uw.py",
+            "AAPL",
+            "--json",
+            "--output",
+            str(report),
+        ],
+    )
+    ro_parent.chmod(0o555)
+    try:
+        assert leap_scanner_uw.main() == 0
+    finally:
+        ro_parent.chmod(0o755)
+    payload = json.loads(cache.read_text())
+    assert [row["ticker"] for row in payload["results"]] == ["AAPL"]
+    assert payload["status"] == "ok"
+    assert not report.exists()
+
+
 # ── find_strikes_by_delta ───────────────────────────────────────────
 
 class TestFindStrikesByDelta:

@@ -974,13 +974,19 @@ def main():
         for r in sorted(mispriced, key=lambda x: x.best_gap, reverse=True)[:5]:
             print(f"   {r.ticker}: HV20={r.vol_data.hv_20:.1f}% vs LEAP IV gap +{r.best_gap:.1f}%")
     
-    # Generate report (HTML only when there is something to show)
+    # Optional HTML/JSON under reports/ is best-effort. The API container's
+    # app root is not writable by uid 1000, so mkdir(reports) raises
+    # PermissionError and used to abort before data/leap.json (P1 2026-09-09
+    # page 392e8eed). The dashboard cache under data/ is canonical.
     output_path = Path(args.output)
     if results:
-        report = generate_report(results, args.min_gap)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(report)
-        print(f"\n✓ Report saved to {output_path}")
+        try:
+            report = generate_report(results, args.min_gap)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(report)
+            print(f"\n✓ Report saved to {output_path}")
+        except OSError as exc:
+            print(f"⚠ Report not saved ({output_path}): {exc}", file=sys.stderr)
 
     if not results:
         print(
@@ -994,10 +1000,13 @@ def main():
         json_data["failed_tickers"] = failed_tickers
         json_data["provider_failures"] = provider_failures
         json_data["status"] = "degraded" if exhausted else "ok"
-        json_path = output_path.with_suffix(".json")
-        json_path.parent.mkdir(parents=True, exist_ok=True)
-        json_path.write_text(json.dumps(json_data, indent=2))
-        print(f"✓ JSON saved to {json_path}")
+        try:
+            json_path = output_path.with_suffix(".json")
+            json_path.parent.mkdir(parents=True, exist_ok=True)
+            json_path.write_text(json.dumps(json_data, indent=2))
+            print(f"✓ JSON saved to {json_path}")
+        except OSError as exc:
+            print(f"⚠ JSON report not saved ({output_path.with_suffix('.json')}): {exc}", file=sys.stderr)
 
         # Also mirror to data/leap.json so the dashboard
         # Opportunities → LEAP tab can read the latest scan via the
