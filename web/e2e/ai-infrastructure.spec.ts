@@ -13,6 +13,8 @@ test.describe("AI infrastructure", () => {
     await expect(page.getByRole("button", { name: "Refresh snapshot" })).toBeEnabled({ timeout: 45000 });
     await expect(page.getByRole("heading", { name: "AI infrastructure", exact: true })).toBeVisible();
     await expect(page.getByTestId("ai-indicator-D1").getByTestId("ai-source-fixture")).toContainText("Fixture publisher");
+    await expect(page.getByTestId("ai-indicator-D5")).toContainText("Ramp business AI spend");
+    await expect(page.getByTestId("ai-indicator-D5").getByTestId("ai-source-ramp")).toContainText("Ramp AI Index");
     for (const name of ["Demand", "Compute", "Delivery", "Finance"]) {
       await page.getByRole("tab", { name, exact: true }).click(); await expect(page.getByRole("tab", { name, exact: true })).toHaveAttribute("aria-selected", "true"); await expect(page.getByRole("slider", { name: /Inspect .* history/ })).toBeVisible();
     }
