@@ -6108,6 +6108,17 @@ Dependency graph: T1 -> T2 -> T3 -> T4.
 ### Review
 - [x] No new finding; existing T-490 and T-488 reproduced in isolation.
 
+## Testing-weekend remediate 2026-09-10 [COMPLETE]
+
+Dependency graph: T1 -> T2 -> T3.
+
+- [x] T1 — Reconcile all append-only audit sections and reduced-scope P0/P1 eligibility. depends_on: []
+- [x] T2 — Reverified T-490 as blocked by `.codex` filesystem policy; T-488 remains operator-only. depends_on: [T1]
+- [x] T3 — Append evidence, commit, and push; closing gates are inapplicable while T-490 remains deterministically red. depends_on: [T2]
+
+### Review
+- [x] Renderer write returned `PermissionError`; portable-render contract remains 52 passed / 21 failed.
+
 ## Ornn data diligence (2026-09-09)
 
 Research only; preserve existing work. Deliver a comprehensive cited Markdown report for Radon's AI/LLM indicators and a purchase recommendation. No subscriptions, external messages, code changes, or local test suites.

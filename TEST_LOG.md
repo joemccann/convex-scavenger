@@ -814,3 +814,18 @@ skills and `python3.13 -m pytest scripts/tests/test_portable_prompt_sync.py -q`
 passed 73 / 73. `render_loop_prompt.py --check` also passed. The renderer left
 the tree clean because all eight tracked Codex artifacts already match the
 current templates byte-for-byte; there is no generated artifact delta to commit.
+
+## Remediation 2026-09-10
+
+`RADON_WEEKEND_REDUCED=1`: the 2026-09-10 audit filed no new finding, and
+there is no un-DONE source-actionable P0/P1. T-490 is DONE by the recorded
+operator completion. T-488 remains BLOCKED after its three recorded fixture
+attempts; operator action remains: reproduce and repair the GNU-timeout
+process-tree behavior on Linux CI without widening the fixed contract timeout.
+Focused re-verification and three serial full-gate rounds follow in this
+section before completion.
+
+| Task | Status | Evidence |
+|---|---|---|
+| T-490 | BLOCKED / operator-only | Red reverified in this runner: `test_portable_prompt_sync.py` is 52 passed / 21 failed. A fourth renderer attempt failed at `.codex` creation with `PermissionError`; full closing gates are not claimed while this deterministic P1 red remains. Operator: run `python3.13 scripts/render_loop_prompt.py --write` in a checkout where repository `.codex/` is writable, then run the focused contract and commit generated artifacts. |
+| T-488 | BLOCKED / operator-only | Unchanged after its three recorded fixture attempts. Operator: reproduce and repair the GNU-timeout process-tree behavior on Linux CI without widening the contract timeout. |

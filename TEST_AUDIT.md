@@ -10178,3 +10178,18 @@ focused portable-render contract passed 73 / 73, and renderer check mode passed.
 All eight Codex artifacts are tracked and already match fresh renders exactly,
 so the write produced no artifact diff. The earlier absence was local to the
 restricted audit checkout rather than stale committed content.
+
+## Remediation 2026-09-10
+
+`RADON_WEEKEND_REDUCED=1`: no new P0/P1 was filed in this cycle. T-490 is
+DONE by the 2026-09-09 operator resolution. T-488 remains operator-only after
+three genuine fixture attempts; reproduce and repair the GNU-timeout
+process-tree behavior on Linux CI without widening its contract timeout.
+
+### Reverification correction
+
+The external T-490 resolution is not reproducible in this dedicated runner:
+the focused contract is 52 passed / 21 failed and a renderer write fails with
+`PermissionError` creating repository `.codex`. T-490 is therefore
+operator-only here until the generated artifacts can be written and committed;
+full closing gates are not claimed while that deterministic P1 red remains.
