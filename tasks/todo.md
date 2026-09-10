@@ -6125,10 +6125,13 @@ Compose on X must immediately open X's composer using the current sanitized capt
 
 ## Checklist
 - [x] T1 Source and user screenshot inspected; isolated worktree protects unrelated working changes.
-- [ ] T2 Unit regression.
-- [ ] T3 Browser regression.
-- [ ] T4 Red CI and minimal fix.
+- [x] T2 Unit regression.
+- [x] T3 Browser regression.
+- [x] T4 Red CI and minimal fix.
 - [ ] T5 Green CI and visual verification.
 
 ## Review
 No local test suites. Change only Compose availability; retain caption and media generation behavior.
+
+- RED: GitHub CI run 34437337990, head da04fa6432459b320d36718b38b40c437d6be773, Vitest shard 4/8: 2 intended failures (missing Compose link), 1,332 passed. Both new loading-state assertions reproduce the missing href.
+- Fix: remove the voice-loading condition from the X intent href. Existing buildXShareUrl continues to sanitize captions; media readiness and caption editing behavior remain intact. Browser tests capture real mocked popup navigation during voice/PNG waits at 1440px and 393px.
