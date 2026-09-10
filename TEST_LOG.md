@@ -796,6 +796,16 @@ make scoped determinism reruns equivalent to full gates.
 Closing gates: not run. The focused P1 remains deterministically red and this
 runner cannot materialize its tracked artifacts; no green gate count is claimed.
 
+## Delta audit 2026-09-10 (audit mode)
+
+Range `964b6b77..9dce4b3a`: 6 commits, 53 paths, 15 touched test files.
+No new finding. Serial gates: pytest 12,782 passed / 21 failed (all existing
+T-490); Vitest 9,263 passed; cloud 1,842 passed / 4 failed (all existing
+T-488). Changed Python tests 219 passed x3, changed Vitest tests passed x3,
+and changed cloud test 499 passed x3; T-490 isolated 52 passed / 21 failed.
+No new skips, xfails, `.only`, coverage threshold/exclusion, or CI-reachability
+drift.
+
 ## Operator completion 2026-09-09
 
 T-490 is DONE. In writable checkout `/Users/joemccann/.radon/work/pr385-operator`,
